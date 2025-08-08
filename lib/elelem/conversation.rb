@@ -5,8 +5,7 @@ module Elelem
     SYSTEM_MESSAGE = <<~SYS
       You are ChatGPT, a helpful assistant with reasoning capabilities.
       Current date: #{Time.now.strftime('%Y-%m-%d')}.
-      System info: `uname -a` output:
-      #{`uname -a`.strip}
+      System info: `uname -a` output: #{`uname -a`.strip}
       Reasoning: high
     SYS
 

@@ -2,11 +2,10 @@
 
 module Elelem
   class Agent
-    attr_reader :tools, :http, :configuration
+    attr_reader :configuration, :conversation, :tools
 
     def initialize(configuration)
       @configuration = configuration
-
       @conversation = configuration.conversation
       @tools = configuration.tools
     end
@@ -24,11 +23,11 @@ module Elelem
     private
 
     def process_input(text)
-      @conversation.add(role: 'user', content: text)
+      conversation.add(role: 'user', content: text)
 
       done = false
       loop do
-        call_api(@conversation.history) do |chunk|
+        call_api(conversation.history) do |chunk|
           debug_print(chunk)
 
           response = JSON.parse(chunk)
@@ -37,7 +36,7 @@ module Elelem
             print("\u001b[90m#{message['thinking']}\u001b[0m")
           elsif message['tool_calls']&.any?
             message['tool_calls'].each do |t|
-              @conversation.add(role: 'tool', content: @tools.execute(t))
+              conversation.add(role: 'tool', content: tools.execute(t))
             end
           elsif message['content'].to_s.strip
             print message['content'].to_s.strip
@@ -55,7 +54,7 @@ module Elelem
     def call_api(messages)
       body = {
         messages:   messages,
-        model:      @model,
+        model:      configuration.model,
         stream:     true,
         keep_alive: '5m',
         options:      { temperature: 0.1 },
