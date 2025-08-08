@@ -6,6 +6,6 @@ RSpec.describe Elelem do
   end
 
   it "does something useful" do
-    expect(false).to eq(true)
+    expect(Elelem.hello("World")).to eq("Hello from Rust, World!")
   end
 end

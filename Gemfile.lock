@@ -6,7 +6,7 @@ PATH
       logger
       net-http
       open3
-      rb_sys (~> 0.9.91)
+      rb_sys (~> 0.9.117)
       uri
 
 GEM
