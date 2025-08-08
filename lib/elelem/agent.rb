@@ -28,7 +28,6 @@ module Elelem
 
       done = false
       loop do
-        debug_print("Calling API...")
         call_api(@conversation.history) do |chunk|
           debug_print(chunk)
 
