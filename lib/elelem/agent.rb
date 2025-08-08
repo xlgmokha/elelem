@@ -31,20 +31,21 @@ module Elelem
           debug_print(chunk)
 
           response = JSON.parse(chunk)
+          done = response['done']
           message = response['message'] || {}
+
           if message['thinking']
             print("\u001b[90m#{message['thinking']}\u001b[0m")
           elsif message['tool_calls']&.any?
             message['tool_calls'].each do |t|
               conversation.add(role: 'tool', content: tools.execute(t))
             end
+            done = false
           elsif message['content'].to_s.strip
             print message['content'].to_s.strip
           else
             raise chunk.inspect
           end
-
-          done = response['done']
         end
 
         break if done
