@@ -12,7 +12,7 @@ module Elelem
     end
 
     def http
-      Net::HTTP.new(uri.host, uri.port).tap do |h|
+      @http ||= Net::HTTP.new(uri.host, uri.port).tap do |h|
         h.read_timeout = 3_600
         h.open_timeout = 10
       end
