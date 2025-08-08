@@ -6,7 +6,6 @@ PATH
       logger
       net-http
       open3
-      rb_sys (~> 0.9.117)
       uri
 
 GEM
@@ -44,9 +43,6 @@ GEM
     rake (13.3.0)
     rake-compiler (1.3.0)
       rake
-    rake-compiler-dock (1.9.1)
-    rb_sys (0.9.117)
-      rake-compiler-dock (= 1.9.1)
     rdoc (6.14.2)
       erb
       psych (>= 4.0.0)

@@ -2,21 +2,17 @@
 
 require "bundler/gem_tasks"
 require "rspec/core/rake_task"
+require "rubocop/rake_task"
+# require "rb_sys/extensiontask"
 
 RSpec::Core::RakeTask.new(:spec)
-
-require "rubocop/rake_task"
-
 RuboCop::RakeTask.new
 
-require "rb_sys/extensiontask"
+# task build: :compile
 
-task build: :compile
+# RbSys::ExtensionTask.new("elelem", Gem::Specification.load("elelem.gemspec")) do |ext|
+#   ext.lib_dir = "lib/elelem"
+# end
 
-GEMSPEC = Gem::Specification.load("elelem.gemspec")
-
-RbSys::ExtensionTask.new("elelem", GEMSPEC) do |ext|
-  ext.lib_dir = "lib/elelem"
-end
-
-task default: %i[compile spec rubocop]
+# task default: %i[compile spec rubocop]
+task default: %i[spec rubocop]
