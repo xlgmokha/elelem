@@ -1,23 +1,24 @@
 # frozen_string_literal: true
 
+require "json"
+require "logger"
+require "net/http"
+require "open3"
+require "uri"
+
 require_relative "elelem/version"
-require_relative "elelem/elelem"
 
 module Elelem
   class Error < StandardError; end
-
-  def env(k, d = nil)
-    ENV.fetch(k, d)
-  end
 
   class Agent
     attr_reader :tools, :http
 
     def initialize
-      @host   = env('OLLAMA_HOST', 'localhost:11434')
-      @model  = env('OLLAMA_MODEL', 'gpt-oss')
-      @token  = env('OLLAMA_API_KEY', nil)
-      @debug  = env('DEBUG', '0') == '1'
+      @host   = ENV.fetch('OLLAMA_HOST', 'localhost:11434')
+      @model  = ENV.fetch('OLLAMA_MODEL', 'gpt-oss')
+      @token  = ENV.fetch('OLLAMA_API_KEY', nil)
+      @debug  = ENV.fetch('DEBUG', '0') == '1'
       @logger = Logger.new(@debug ? $stderr : "/dev/null")
       @logger.formatter = ->(_, _, _, msg) { msg }
 

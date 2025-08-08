@@ -32,9 +32,7 @@ Gem::Specification.new do |spec|
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-  # spec.extensions = ["ext/elelem/extconf.rb"]
 
-  # spec.add_dependency "rb_sys", "~> 0.9.117"
   spec.add_dependency 'json'
   spec.add_dependency 'logger'
   spec.add_dependency 'net-http'

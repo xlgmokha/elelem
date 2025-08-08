@@ -7,8 +7,10 @@ default:
     - gem install bundler -v 2.6.9
     - bundle install
 
-example_job:
-  variables:
-    RB_SYS_FORCE_INSTALL_RUST_TOOLCHAIN: 'true'
+test:
   script:
-    - bundle exec rake
+    - ./bin/test
+
+lint:
+  script:
+    - ./bin/lint
