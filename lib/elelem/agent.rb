@@ -70,11 +70,11 @@ module Elelem
       req['Authorization'] = "Bearer #{configuration.token}" if configuration.token
 
       configuration.http.request(req) do |response|
-        debug_print(response.inspect)
         raise response.inspect unless response.code == "200"
 
         response.read_body do |chunk|
-          block_given? ? yield(chunk) : debug_print(chunk)
+          debug_print(chunk)
+          yield(chunk) if block_given?
           $stdout.flush
         end
       end
