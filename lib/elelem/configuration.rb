@@ -1,0 +1,47 @@
+# frozen_string_literal: true
+
+module Elelem
+  class Configuration
+    attr_reader :host, :model, :token, :debug
+
+    def initialize(host:, model:, token:, debug: false)
+      @host = host
+      @model = model
+      @token = token
+      @debug = debug
+    end
+
+    def http
+      Net::HTTP.new(uri.host, uri.port).tap do |h|
+        h.read_timeout = 3_600
+        h.open_timeout = 10
+      end
+    end
+
+    def logger
+      @logger ||= begin
+        Logger.new(debug ? $stderr : "/dev/null").tap do |logger|
+          logger.formatter = ->(_, _, _, msg) { msg }
+        end
+      end
+    end
+
+    def uri
+      @uri ||= URI("#{scheme}://#{host}/api/chat")
+    end
+
+    def conversation
+      @conversation ||= Conversation.new
+    end
+
+    def tools
+      @tools ||= Tools.new
+    end
+
+    private
+
+    def scheme
+      host.match?(/\A(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\z/) ? 'http' : 'https'
+    end
+  end
+end

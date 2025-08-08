@@ -3,4 +3,8 @@
 
 require "elelem"
 
-Elelem::Agent.new.repl
+Signal.trap('INT') do
+  exit(1)
+end
+
+Elelem::Application.start
