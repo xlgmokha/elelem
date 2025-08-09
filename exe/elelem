@@ -3,7 +3,7 @@
 
 require "elelem"
 
-Signal.trap('INT') do
+Signal.trap("INT") do
   exit(1)
 end
 

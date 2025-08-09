@@ -4,14 +4,14 @@ module Elelem
   class Conversation
     SYSTEM_MESSAGE = <<~SYS
       You are ChatGPT, a helpful assistant with reasoning capabilities.
-      Current date: #{Time.now.strftime('%Y-%m-%d')}.
+      Current date: #{Time.now.strftime("%Y-%m-%d")}.
       System info: `uname -a` output: #{`uname -a`.strip}
       Reasoning: high
     SYS
 
-    ROLES = ['system', 'user', 'tool'].freeze
+    ROLES = %w[system user tool].freeze
 
-    def initialize(items = [{ role: 'system', content: SYSTEM_MESSAGE }])
+    def initialize(items = [{ role: "system", content: SYSTEM_MESSAGE }])
       @items = items
     end
 
@@ -20,7 +20,7 @@ module Elelem
     end
 
     # :TODO truncate conversation history
-    def add(role: 'user', content: '')
+    def add(role: "user", content: "")
       raise "unknown role: #{role}" unless ROLES.include?(role)
 
       @items << { role: role, content: content }

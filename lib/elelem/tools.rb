@@ -4,36 +4,36 @@ module Elelem
   class Tools
     DEFAULT_TOOLS = [
       {
-        type: 'function',
+        type: "function",
         function: {
-          name:        'execute_command',
-          description: 'Execute a shell command.',
+          name: "execute_command",
+          description: "Execute a shell command.",
           parameters: {
-            type:       'object',
-            properties: { command: { type: 'string' } },
-            required:   ['command']
+            type: "object",
+            properties: { command: { type: "string" } },
+            required: ["command"]
           }
         },
-        handler: -> (args) {
-          stdout, stderr, _status = Open3.capture3('/bin/sh', '-c', args['command'])
+        handler: lambda { |args|
+          stdout, stderr, _status = Open3.capture3("/bin/sh", "-c", args["command"])
           stdout + stderr
         }
       },
       {
-        type: 'function',
+        type: "function",
         function: {
-          name:        'ask_user',
-          description: 'Ask the user to answer a question.',
+          name: "ask_user",
+          description: "Ask the user to answer a question.",
           parameters: {
-            type:       'object',
-            properties: { question: { type: 'string' } },
-            required:   ['question']
+            type: "object",
+            properties: { question: { type: "string" } },
+            required: ["question"]
           }
         },
-        handler: ->(args) {
-          puts("\u001b[35m#{args['question']}\u001b[0m")
+        handler: lambda { |args|
+          puts("\u001b[35m#{args["question"]}\u001b[0m")
           print "> "
-          STDIN.gets&.chomp
+          $stdin.gets&.chomp
         }
       }
     ]
@@ -52,8 +52,8 @@ module Elelem
     end
 
     def execute(tool_call)
-      name = tool_call.dig('function', 'name')
-      args = tool_call.dig('function', 'arguments')
+      name = tool_call.dig("function", "name")
+      args = tool_call.dig("function", "arguments")
 
       tool = @tools.find do |tool|
         tool.dig(:function, :name) == name

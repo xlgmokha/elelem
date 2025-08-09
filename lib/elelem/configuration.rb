@@ -19,10 +19,8 @@ module Elelem
     end
 
     def logger
-      @logger ||= begin
-        Logger.new(debug ? $stderr : "/dev/null").tap do |logger|
-          logger.formatter = ->(_, _, _, msg) { msg }
-        end
+      @logger ||= Logger.new(debug ? $stderr : "/dev/null").tap do |logger|
+        logger.formatter = ->(_, _, _, msg) { msg }
       end
     end
 
@@ -41,7 +39,7 @@ module Elelem
     private
 
     def scheme
-      host.match?(/\A(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\z/) ? 'http' : 'https'
+      host.match?(/\A(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\z/) ? "http" : "https"
     end
   end
 end
