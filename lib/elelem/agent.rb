@@ -1,6 +1,21 @@
 # frozen_string_literal: true
 
 module Elelem
+  class Idle
+    attr_reader :configuration
+
+    def initialize(configuration)
+      @configuration = configuration
+    end
+
+    def run(agent)
+      input = agent.prompt("\n> ")
+      agent.quit if input.nil? || input.empty? || input == "exit"
+
+      configuration.conversation.add(role: "user", content: input)
+    end
+  end
+
   class Agent
     attr_reader :configuration, :conversation, :tools
 
@@ -8,15 +23,27 @@ module Elelem
       @configuration = configuration
       @conversation = configuration.conversation
       @tools = configuration.tools
+      @current_state = Idle.new(configuration)
+    end
+
+    def prompt(message)
+      print(message)
+      $stdin.gets&.chomp
+    end
+
+    def quit
+      exit
     end
 
     def repl
       loop do
-        print "\n> "
-        input = $stdin.gets&.chomp
-        break if input.nil? || input.empty? || input == "exit"
+        @current_state.run(self)
 
-        conversation.add(role: "user", content: input)
+        # print "\n> "
+        # input = $stdin.gets&.chomp
+        # break if input.nil? || input.empty? || input == "exit"
+
+        # conversation.add(role: "user", content: input)
 
         done = false
         loop do

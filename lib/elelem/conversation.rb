@@ -9,7 +9,7 @@ module Elelem
       Reasoning: high
     SYS
 
-    ROLES = %w[system user tool].freeze
+    ROLES = [:system, :user, :tool].freeze
 
     def initialize(items = [{ role: "system", content: SYSTEM_MESSAGE }])
       @items = items
@@ -20,8 +20,8 @@ module Elelem
     end
 
     # :TODO truncate conversation history
-    def add(role: "user", content: "")
-      raise "unknown role: #{role}" unless ROLES.include?(role)
+    def add(role: user, content: "")
+      raise "unknown role: #{role}" unless ROLES.include?(role.to_sym)
 
       @items << { role: role, content: content }
     end
