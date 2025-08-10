@@ -58,7 +58,7 @@ module Elelem
       tool = @tools.find do |tool|
         tool.dig(:function, :name) == name
       end
-      tool.fetch(:handler).call(args)
+      tool&.fetch(:handler)&.call(args)
     end
 
     def to_h
