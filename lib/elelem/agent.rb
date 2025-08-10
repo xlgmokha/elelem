@@ -17,7 +17,6 @@ module Elelem
         break if user.nil? || user.empty? || user == "exit"
 
         process_input(user)
-        puts "\u001b[32mDone!\u001b[0m"
       end
     end
 
@@ -39,13 +38,8 @@ module Elelem
             print message["thinking"]
             $stdout.flush
           elsif message["tool_calls"]&.any?
-            puts
             message["tool_calls"].each do |t|
-              command = extract_command_from_tool_call(t)
-              puts "Running: #{command}"
-              tool_output = tools.execute(t)
-              puts tool_output
-              conversation.add(role: "tool", content: tool_output)
+              conversation.add(role: "tool", content: tools.execute(t))
             end
             done = false
           elsif message["content"].to_s.strip
@@ -92,20 +86,6 @@ module Elelem
 
     def debug_print(body = nil)
       configuration.logger.debug(body) if configuration.debug && body
-    end
-
-    def extract_command_from_tool_call(tool_call)
-      function_name = tool_call.dig("function", "name")
-      args = tool_call.dig("function", "arguments")
-
-      case function_name
-      when "execute_command"
-        args["command"]
-      when "ask_user"
-        "ask user: #{args["question"]}"
-      else
-        function_name
-      end
     end
   end
 end
