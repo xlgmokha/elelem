@@ -18,6 +18,10 @@ module Elelem
       end
     end
 
+    def api
+      @api ||= Api.new(self)
+    end
+
     def logger
       @logger ||= Logger.new(debug ? $stderr : "/dev/null").tap do |logger|
         logger.formatter = ->(_, _, _, msg) { msg }
