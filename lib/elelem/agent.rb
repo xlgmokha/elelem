@@ -16,38 +16,32 @@ module Elelem
         input = $stdin.gets&.chomp
         break if input.nil? || input.empty? || input == "exit"
 
-        process(input)
-      end
-    end
+        conversation.add(role: "user", content: input)
 
-    private
+        done = false
+        loop do
+          configuration.api.chat(conversation.history, tools) do |chunk|
+            response = JSON.parse(chunk)
+            done = response["done"]
+            message = response["message"] || {}
 
-    def process(text)
-      conversation.add(role: "user", content: text)
-
-      done = false
-      loop do
-        configuration.api.chat(conversation.history, tools) do |chunk|
-          response = JSON.parse(chunk)
-          done = response["done"]
-          message = response["message"] || {}
-
-          if message["thinking"]
-            print message["thinking"]
-          elsif message["tool_calls"]&.any?
-            message["tool_calls"].each do |t|
-              conversation.add(role: "tool", content: tools.execute(t))
+            if message["thinking"]
+              print message["thinking"]
+            elsif message["tool_calls"]&.any?
+              message["tool_calls"].each do |t|
+                conversation.add(role: "tool", content: tools.execute(t))
+              end
+              done = false
+            elsif message["content"].to_s.strip
+              print message["content"]
+            else
+              raise chunk.inspect
             end
-            done = false
-          elsif message["content"].to_s.strip
-            print message["content"]
-          else
-            raise chunk.inspect
+            $stdout.flush
           end
-          $stdout.flush
-        end
 
-        break if done
+          break if done
+        end
       end
     end
   end
