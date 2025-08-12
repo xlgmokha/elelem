@@ -8,14 +8,14 @@ module Elelem
       @configuration = configuration
     end
 
-    def chat(messages, tools)
+    def chat(messages)
       body = {
         messages: messages,
         model: configuration.model,
         stream: true,
         keep_alive: "5m",
         options: { temperature: 0.1 },
-        tools: tools.to_h
+        tools: configuration.tools.to_h
       }
       json_body = body.to_json
 

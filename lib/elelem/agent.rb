@@ -6,7 +6,7 @@ module Elelem
 
     def initialize(configuration)
       @configuration = configuration
-      transition_to(Idle.new(configuration))
+      transition_to(Idle.new)
     end
 
     def transition_to(next_state)
@@ -19,6 +19,10 @@ module Elelem
 
     def say(message, colour: :default, newline: false)
       configuration.tui.say(message, colour: colour, newline: newline)
+    end
+
+    def execute(tool_call)
+      configuration.tools.execute(tool_call)
     end
 
     def quit
