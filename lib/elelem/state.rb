@@ -84,7 +84,7 @@ module Elelem
       def process(message)
         if message["content"]
           agent.say(message["content"], colour: :default, newline: false)
-          self
+          message["done"] ? nil : self
         else
           agent.say("", newline: true)
           Waiting.new(agent).process(message)
