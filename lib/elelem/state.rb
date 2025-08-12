@@ -19,6 +19,10 @@ module Elelem
       def initialize(agent)
         @agent = agent
       end
+
+      def display_name
+        self.class.name.split("::").last
+      end
     end
 
     class Waiting < State
@@ -66,7 +70,7 @@ module Elelem
     class Talking < State
       def process(message)
         if message["content"] && !message["content"]&.empty?
-          # agent.conversation.add(role: message["role"], content: message["content"])
+          agent.conversation.add(role: message["role"], content: message["content"])
           agent.say(message["content"], colour: :default, newline: false)
           self
         else
@@ -87,7 +91,7 @@ module Elelem
           message = normalize(response["message"] || {})
           done = response["done"]
 
-          agent.logger.debug("[#{state.class.name} (#{done})]: #{message}")
+          agent.logger.debug("#{state.display_name}: #{message}")
           state = state.process(message)
         end
 

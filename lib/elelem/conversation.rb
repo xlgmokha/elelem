@@ -23,7 +23,7 @@ module Elelem
     def add(role: user, content: "")
       raise "unknown role: #{role}" unless ROLES.include?(role.to_sym)
 
-      @items.push({ role: role, content: content })
+      @items.push({ role: role, content: content }) unless content.empty?
     end
   end
 end

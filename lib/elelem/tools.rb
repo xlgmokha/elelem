@@ -10,7 +10,9 @@ module Elelem
           description: "Execute a shell command.",
           parameters: {
             type: "object",
-            properties: { command: { type: "string" } },
+            properties: {
+              command: { type: "string" },
+            },
             required: ["command"]
           }
         },
