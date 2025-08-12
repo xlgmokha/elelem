@@ -23,8 +23,13 @@ module Elelem
     def add(role: :user, content: "")
       role = role.to_sym
       raise "unknown role: #{role}" unless ROLES.include?(role)
+      return if content.empty?
 
-      @items.push({ role: role, content: content }) unless content.empty?
+      if @items.last && @items.last[:role] == role
+        @items.last[:content] += content
+      else
+        @items.push({ role: role, content: content })
+      end
     end
   end
 end
