@@ -13,6 +13,7 @@ require_relative "elelem/application"
 require_relative "elelem/configuration"
 require_relative "elelem/conversation"
 require_relative "elelem/tools"
+require_relative "elelem/tui"
 require_relative "elelem/version"
 
 module Elelem
