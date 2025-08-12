@@ -13,17 +13,54 @@ module Elelem
       agent.quit if input.nil? || input.empty? || input == "exit"
 
       configuration.conversation.add(role: "user", content: input)
+      agent.transition_to(ProcessingInput.new(configuration))
     end
   end
 
-  class Agent
+  class ProcessingInput
     attr_reader :configuration, :conversation, :tools
-    attr_reader :current_state
 
     def initialize(configuration)
       @configuration = configuration
       @conversation = configuration.conversation
       @tools = configuration.tools
+    end
+
+    def run(agent)
+      done = false
+
+      loop do
+        configuration.api.chat(conversation.history, tools) do |chunk|
+          response = JSON.parse(chunk)
+          done = response["done"]
+          message = response["message"] || {}
+
+          if message["thinking"]
+            configuration.tui.say(message["thinking"], colour: :gray, newline: false)
+          elsif message["tool_calls"]&.any?
+            message["tool_calls"].each do |t|
+              conversation.add(role: "tool", content: tools.execute(t))
+            end
+            done = false
+          elsif message["content"].to_s.strip
+            configuration.tui.say(message["content"], colour: :default, newline: false)
+          else
+            raise chunk.inspect
+          end
+        end
+
+        break if done
+      end
+
+      agent.transition_to(Idle.new(configuration))
+    end
+  end
+
+  class Agent
+    attr_reader :configuration, :current_state
+
+    def initialize(configuration)
+      @configuration = configuration
       transition_to(Idle.new(configuration))
     end
 
@@ -32,8 +69,7 @@ module Elelem
     end
 
     def prompt(message)
-      print(message)
-      $stdin.gets&.chomp
+      configuration.tui.prompt(message)
     end
 
     def quit
@@ -43,31 +79,6 @@ module Elelem
     def repl
       loop do
         current_state.run(self)
-
-        done = false
-        loop do
-          configuration.api.chat(conversation.history, tools) do |chunk|
-            response = JSON.parse(chunk)
-            done = response["done"]
-            message = response["message"] || {}
-
-            if message["thinking"]
-              print message["thinking"]
-            elsif message["tool_calls"]&.any?
-              message["tool_calls"].each do |t|
-                conversation.add(role: "tool", content: tools.execute(t))
-              end
-              done = false
-            elsif message["content"].to_s.strip
-              print message["content"]
-            else
-              raise chunk.inspect
-            end
-            $stdout.flush
-          end
-
-          break if done
-        end
       end
     end
   end
