@@ -9,7 +9,7 @@ module Elelem
       Reasoning: high
     SYS
 
-    ROLES = [:system, :user, :tool].freeze
+    ROLES = [:system, :assistant, :user, :tool].freeze
 
     def initialize(items = [{ role: "system", content: SYSTEM_MESSAGE }])
       @items = items
@@ -23,7 +23,7 @@ module Elelem
     def add(role: user, content: "")
       raise "unknown role: #{role}" unless ROLES.include?(role.to_sym)
 
-      @items << { role: role, content: content }
+      @items.push({ role: role, content: content })
     end
   end
 end

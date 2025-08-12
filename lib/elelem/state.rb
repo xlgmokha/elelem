@@ -25,14 +25,12 @@ module Elelem
       def process(message)
         state = self
 
-        if message["thinking"]
+        if message["thinking"] && !message["thinking"].empty?
           state = Thinking.new(agent)
         elsif message["tool_calls"]&.any?
           state = Executing.new(agent)
-        elsif message["content"].to_s.strip
+        elsif message["content"] && !message["content"].empty?
           state = Talking.new(agent)
-        elsif message["done"]
-          state = nil
         else
           raise message.inspect
         end
@@ -43,7 +41,7 @@ module Elelem
 
     class Thinking < State
       def process(message)
-        if message["thinking"]
+        if message["thinking"] && !message["thinking"]&.empty?
           agent.say(message["thinking"], colour: :gray, newline: false)
           self
         else
@@ -67,9 +65,10 @@ module Elelem
 
     class Talking < State
       def process(message)
-        if message["content"]
+        if message["content"] && !message["content"]&.empty?
+          # agent.conversation.add(role: message["role"], content: message["content"])
           agent.say(message["content"], colour: :default, newline: false)
-          message["done"] ? nil : self
+          self
         else
           agent.say("", newline: true)
           Waiting.new(agent).process(message)
@@ -80,19 +79,28 @@ module Elelem
     def run(agent)
       agent.logger.debug("Working...")
       state = Waiting.new(agent)
+      done = false
 
       loop do
         agent.api.chat(agent.conversation.history) do |chunk|
           response = JSON.parse(chunk)
-          message = response["message"] || {}
-          agent.logger.debug("#{state.class.name}: #{message}")
+          message = normalize(response["message"] || {})
+          done = response["done"]
+
+          agent.logger.debug("[#{state.class.name} (#{done})]: #{message}")
           state = state.process(message)
         end
 
-        break if state.nil?
+        break if done
       end
 
       agent.transition_to(Idle.new)
+    end
+
+    private
+
+    def normalize(message)
+      message.reject { |_key, value| value.empty? }
     end
   end
 end

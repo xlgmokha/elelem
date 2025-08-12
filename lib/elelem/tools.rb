@@ -19,23 +19,6 @@ module Elelem
           stdout + stderr
         }
       },
-      {
-        type: "function",
-        function: {
-          name: "ask_user",
-          description: "Ask the user to answer a question.",
-          parameters: {
-            type: "object",
-            properties: { question: { type: "string" } },
-            required: ["question"]
-          }
-        },
-        handler: lambda { |args|
-          puts("\u001b[35m#{args["question"]}\u001b[0m")
-          print "> "
-          $stdin.gets&.chomp
-        }
-      }
     ]
 
     def initialize(tools = DEFAULT_TOOLS)
