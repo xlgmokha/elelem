@@ -18,12 +18,17 @@ module Elelem
 
   class Agent
     attr_reader :configuration, :conversation, :tools
+    attr_reader :current_state
 
     def initialize(configuration)
       @configuration = configuration
       @conversation = configuration.conversation
       @tools = configuration.tools
-      @current_state = Idle.new(configuration)
+      transition_to(Idle.new(configuration))
+    end
+
+    def transition_to(next_state)
+      @current_state = next_state
     end
 
     def prompt(message)
@@ -37,13 +42,7 @@ module Elelem
 
     def repl
       loop do
-        @current_state.run(self)
-
-        # print "\n> "
-        # input = $stdin.gets&.chomp
-        # break if input.nil? || input.empty? || input == "exit"
-
-        # conversation.add(role: "user", content: input)
+        current_state.run(self)
 
         done = false
         loop do
