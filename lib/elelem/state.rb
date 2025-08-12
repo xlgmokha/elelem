@@ -7,7 +7,7 @@ module Elelem
       input = agent.prompt("\n> ")
       agent.quit if input.nil? || input.empty? || input == "exit"
 
-      agent.conversation.add(role: "user", content: input)
+      agent.conversation.add(role: :user, content: input)
       agent.transition_to(Working.new)
     end
   end
@@ -36,7 +36,7 @@ module Elelem
         elsif message["content"] && !message["content"].empty?
           state = Talking.new(agent)
         else
-          raise message.inspect
+          state = nil
         end
 
         state&.process(message)
@@ -59,7 +59,7 @@ module Elelem
       def process(message)
         if message["tool_calls"]&.any?
           message["tool_calls"].each do |tool_call|
-            agent.conversation.add(role: "tool", content: agent.execute(tool_call))
+            agent.conversation.add(role: :tool, content: agent.execute(tool_call))
           end
         end
 
@@ -95,7 +95,8 @@ module Elelem
           state = state.process(message)
         end
 
-        break if done
+        break if state.nil?
+        break if done && agent.conversation.history.last[:role] != :tool
       end
 
       agent.transition_to(Idle.new)

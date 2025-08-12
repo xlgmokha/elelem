@@ -20,8 +20,9 @@ module Elelem
     end
 
     # :TODO truncate conversation history
-    def add(role: user, content: "")
-      raise "unknown role: #{role}" unless ROLES.include?(role.to_sym)
+    def add(role: :user, content: "")
+      role = role.to_sym
+      raise "unknown role: #{role}" unless ROLES.include?(role)
 
       @items.push({ role: role, content: content }) unless content.empty?
     end
