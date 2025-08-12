@@ -1,28 +1,56 @@
 # Elelem
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/elelem`. To experiment with that code, run `bin/console` for an interactive prompt.
+Elelem is an interactive REPL (Read-Eval-Print Loop) for Ollama that provides a command-line chat interface for communicating with AI models. It features tool calling capabilities, streaming responses, and a clean state machine architecture.
 
 ## Installation
-
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
 
 Install the gem and add to the application's Gemfile by executing:
 
 ```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+bundle add elelem
 ```
 
 If bundler is not being used to manage dependencies, install the gem by executing:
 
 ```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+gem install elelem
 ```
 
 ## Usage
 
-TODO: Write usage instructions here
+Start an interactive chat session with an Ollama model:
+
+```bash
+elelem chat
+```
+
+### Options
+
+- `--host`: Specify Ollama host (default: localhost:11434)
+- `--model`: Specify Ollama model (default: gpt-oss, currently only tested with gpt-oss)  
+- `--token`: Provide authentication token
+- `--debug`: Enable debug logging
+
+### Examples
+
+```bash
+# Chat with default model
+elelem chat
+
+# Chat with specific model and host
+elelem chat --model llama2 --host remote-host:11434
+
+# Enable debug mode
+elelem chat --debug
+```
+
+### Features
+
+- **Interactive REPL**: Clean command-line interface for chatting
+- **Tool Execution**: Execute shell commands when requested by the AI
+- **Streaming Responses**: Real-time streaming of AI responses
+- **State Machine**: Robust state management for different interaction modes
+- **Conversation History**: Maintains context across the session
 
 ## Development
 
