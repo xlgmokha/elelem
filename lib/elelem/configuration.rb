@@ -27,8 +27,8 @@ module Elelem
     end
 
     def logger
-      @logger ||= Logger.new(debug ? $stderr : "/dev/null").tap do |logger|
-        logger.formatter = ->(_, _, _, msg) { msg }
+      @logger ||= Logger.new(debug ? "elelem.log" : "/dev/null").tap do |logger|
+        logger.formatter = ->(_, _, _, message) { message.strip + "\n" }
       end
     end
 

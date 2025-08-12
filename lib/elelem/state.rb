@@ -3,22 +3,25 @@
 module Elelem
   class Idle
     def run(agent)
+      agent.logger.debug("Idling...")
       input = agent.prompt("\n> ")
       agent.quit if input.nil? || input.empty? || input == "exit"
 
-      agent.configuration.conversation.add(role: "user", content: input)
-      agent.transition_to(ProcessingInput.new)
+      agent.conversation.add(role: "user", content: input)
+      agent.transition_to(Working.new)
     end
   end
 
-  class ProcessingInput
-    class Waiting
+  class Working
+    class State
       attr_reader :agent
 
       def initialize(agent)
         @agent = agent
       end
+    end
 
+    class Waiting < State
       def process(message)
         state = self
 
@@ -38,13 +41,7 @@ module Elelem
       end
     end
 
-    class Thinking
-      attr_reader :agent
-
-      def initialize(agent)
-        @agent = agent
-      end
-
+    class Thinking < State
       def process(message)
         if message["thinking"]
           agent.say(message["thinking"], colour: :gray, newline: false)
@@ -56,17 +53,11 @@ module Elelem
       end
     end
 
-    class Executing
-      attr_reader :agent
-
-      def initialize(agent)
-        @agent = agent
-      end
-
+    class Executing < State
       def process(message)
         if message["tool_calls"]&.any?
           message["tool_calls"].each do |tool_call|
-            agent.configuration.conversation.add(role: "tool", content: agent.execute(tool_call))
+            agent.conversation.add(role: "tool", content: agent.execute(tool_call))
           end
         end
 
@@ -74,13 +65,7 @@ module Elelem
       end
     end
 
-    class Talking
-      attr_reader :agent
-
-      def initialize(agent)
-        @agent = agent
-      end
-
+    class Talking < State
       def process(message)
         if message["content"]
           agent.say(message["content"], colour: :default, newline: false)
@@ -93,13 +78,14 @@ module Elelem
     end
 
     def run(agent)
+      agent.logger.debug("Working...")
       state = Waiting.new(agent)
 
       loop do
-        agent.configuration.api.chat(agent.configuration.conversation.history) do |chunk|
+        agent.api.chat(agent.conversation.history) do |chunk|
           response = JSON.parse(chunk)
           message = response["message"] || {}
-
+          agent.logger.debug("#{state.class.name}: #{message}")
           state = state.process(message)
         end
 

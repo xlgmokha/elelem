@@ -17,6 +17,7 @@ module Elelem
         options: { temperature: 0.1 },
         tools: configuration.tools.to_h
       }
+      configuration.logger.debug(JSON.pretty_generate(body))
       json_body = body.to_json
 
       req = Net::HTTP::Post.new(configuration.uri)
@@ -28,8 +29,7 @@ module Elelem
         raise response.inspect unless response.code == "200"
 
         response.read_body do |chunk|
-          yield(chunk) if block_given?
-          $stdout.flush
+          yield(chunk)
         end
       end
     end

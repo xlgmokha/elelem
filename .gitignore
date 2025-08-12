@@ -12,6 +12,7 @@
 *.a
 mkmf.log
 target/
+*.log
 
 # rspec failure tracking
 .rspec_status

@@ -2,14 +2,24 @@
 
 module Elelem
   class Agent
-    attr_reader :configuration, :current_state
+    attr_reader :api, :conversation, :logger
 
     def initialize(configuration)
+      @api = configuration.api
       @configuration = configuration
+      @conversation = configuration.conversation
+      @logger = configuration.logger
       transition_to(Idle.new)
     end
 
+    def repl
+      loop do
+        current_state.run(self)
+      end
+    end
+
     def transition_to(next_state)
+      logger.debug("Transition to: #{next_state.class.name}")
       @current_state = next_state
     end
 
@@ -22,17 +32,17 @@ module Elelem
     end
 
     def execute(tool_call)
+      logger.debug("Execute: #{tool_call}")
       configuration.tools.execute(tool_call)
     end
 
     def quit
+      logger.debug("Exiting...")
       exit
     end
 
-    def repl
-      loop do
-        current_state.run(self)
-      end
-    end
+    private
+
+    attr_reader :configuration, :current_state
   end
 end
