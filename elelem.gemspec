@@ -14,9 +14,7 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.1.0"
   spec.required_rubygems_version = ">= 3.3.11"
-
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
-
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://gitlab.com/mokhax/elelem"
   spec.metadata["changelog_uri"] = "https://gitlab.com/mokhax/elelem/-/blob/main/CHANGELOG.md"
@@ -37,6 +35,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "logger"
   spec.add_dependency "net-http"
   spec.add_dependency "open3"
+  spec.add_dependency "securerandom"
   spec.add_dependency "thor"
   spec.add_dependency "uri"
 end

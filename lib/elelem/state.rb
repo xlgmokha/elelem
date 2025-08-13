@@ -53,7 +53,7 @@ module Elelem
         if message["thinking"] && !message["thinking"]&.empty?
           unless @progress_shown
             agent.show_progress("Thinking...", "[*]", colour: :yellow)
-            agent.say("\n", newline: false)
+            agent.say("\n\n", newline: false)
             @progress_shown = true
           end
           agent.say(message["thinking"], colour: :gray, newline: false)
@@ -72,13 +72,12 @@ module Elelem
             tool_name = tool_call.dig("function", "name") || "unknown"
             agent.show_progress(tool_name, "[>]", colour: :magenta)
             agent.say("\n\n", newline: false)
-            
+
             result = agent.execute(tool_call)
             agent.conversation.add(role: :tool, content: result)
-            
+
             agent.say("\n", newline: false)
-            agent.complete_progress("Tool completed")
-            agent.say("\n", newline: false)
+            agent.complete_progress("#{tool_name} completed")
           end
         end
 
@@ -103,7 +102,7 @@ module Elelem
           agent.say(message["content"], colour: :default, newline: false)
           self
         else
-          agent.say("\n", newline: true)
+          agent.say("\n\n", newline: false)
           Waiting.new(agent).process(message)
         end
       end
@@ -113,7 +112,7 @@ module Elelem
       agent.logger.debug("Working...")
       agent.show_progress("Processing...", "[.]", colour: :cyan)
       agent.say("\n\n", newline: false)
-      
+
       state = Waiting.new(agent)
       done = false
 

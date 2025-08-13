@@ -19,17 +19,34 @@ module Elelem
         handler: lambda { |args|
           stdout, stderr, _status = Open3.capture3("/bin/sh", "-c", args["command"])
           stdout + stderr
-        }
+        },
       },
     ]
 
     def initialize(configuration, tools = DEFAULT_TOOLS)
       @configuration = configuration
-      @tools = tools
+      client = MCPClient.new(configuration)
+      @tools = tools + client.tools.map do |tool|
+        configuration.logger.debug(tool)
+        {
+          type: "function",
+          function: {
+            name: tool["name"],
+            description: tool["description"],
+            parameters: tool["inputSchema"] || {}
+          },
+          handler: lambda { |args|
+            result = client.call_tool(tool["name"], args)
+            output = result.dig("content", 0, "text") || result.to_s
+            configuration.tui.say(output)
+            return output
+          },
+        }
+      end
     end
 
     def banner
-      @tools.map do |h|
+      tools.map do |h|
         [
           h.dig(:function, :name),
           h.dig(:function, :description)
@@ -41,16 +58,14 @@ module Elelem
       name = tool_call.dig("function", "name")
       args = tool_call.dig("function", "arguments")
 
-      tool = @tools.find do |tool|
-        tool.dig(:function, :name) == name
-      end
-      tool&.fetch(:handler)&.call(args).tap do |result|
+      tool = tools.find { |tool| tool.dig(:function, :name) == name }
+      tool.fetch(:handler).call(args).tap do |result|
         configuration.tui.say(result)
       end
     end
 
     def to_h
-      @tools.map do |tool|
+      tools.map do |tool|
         {
           type: tool[:type],
           function: {
@@ -64,6 +79,6 @@ module Elelem
 
     private
 
-    attr_reader :configuration
+    attr_reader :configuration, :tools
   end
 end

@@ -35,10 +35,10 @@ module Elelem
           host: options[:host],
           model: options[:model],
           token: options[:token],
-          debug: options[:debug]
+          debug: options[:debug],
         )
-        say "Ollama Agent (#{configuration.model})", :green
-        say "Tools:\n  #{configuration.tools.banner}", :green
+        say "Agent (#{configuration.model})", :green
+        say "#{configuration.tools.banner}", :green
 
         agent = Agent.new(configuration)
         agent.repl
