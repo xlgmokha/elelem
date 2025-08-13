@@ -10,7 +10,9 @@ module Elelem
     def initialize(configuration)
       @configuration = configuration
       @stdin, @stdout, @stderr, @worker_thread = Open3.popen3(*serena_command, pgroup: true)
-      send_request(
+
+      # 1. Send initialize request
+      init_result = send_request(
         method: "initialize",
         params: {
           protocolVersion: "2024-11-05",
@@ -23,6 +25,11 @@ module Elelem
           }
         }
       )
+
+      # 2. Send initialized notification (required by MCP protocol)
+      send_notification(method: "notifications/initialized")
+
+      # 3. Now we can request tools
       @tools = send_request(method: "tools/list")&.dig("tools") || []
     end
 
@@ -77,6 +84,17 @@ module Elelem
       else
         response["result"]
       end
+    end
+
+    def send_notification(method:, params: {})
+      notification = {
+        jsonrpc: "2.0",
+        method: method,
+      }
+      notification[:params] = params unless params.empty?
+      configuration.logger.debug("Sending notification: #{JSON.pretty_generate(notification)}")
+      @stdin.puts(JSON.generate(notification))
+      @stdin.flush
     end
   end
 end
