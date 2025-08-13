@@ -2,14 +2,14 @@
 
 module Elelem
   class Conversation
-    SYSTEM_MESSAGE = <<~SYS
+    SYSTEM_MESSAGE = <<~SYS.freeze
       You are ChatGPT, a helpful assistant with reasoning capabilities.
       Current date: #{Time.now.strftime("%Y-%m-%d")}.
       System info: `uname -a` output: #{`uname -a`.strip}
       Reasoning: high
     SYS
 
-    ROLES = [:system, :assistant, :user, :tool].freeze
+    ROLES = %i[system assistant user tool].freeze
 
     def initialize(items = [{ role: "system", content: SYSTEM_MESSAGE }])
       @items = items

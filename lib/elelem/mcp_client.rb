@@ -9,7 +9,7 @@ module Elelem
       @stdin, @stdout, @stderr, @worker_thread = Open3.popen3(*serena_command, pgroup: true)
 
       # 1. Send initialize request
-      init_result = send_request(
+      send_request(
         method: "initialize",
         params: {
           protocolVersion: "2024-11-05",
@@ -46,8 +46,7 @@ module Elelem
 
     private
 
-    attr_reader :stdin, :stdout, :stderr, :worker_thread
-    attr_reader :configuration
+    attr_reader :stdin, :stdout, :stderr, :worker_thread, :configuration
 
     def serena_command
       [
@@ -58,7 +57,7 @@ module Elelem
         "start-mcp-server",
         "--transport", "stdio",
         "--context", "ide-assistant",
-        "--project", Dir.pwd,
+        "--project", Dir.pwd
       ]
     end
 
@@ -66,7 +65,7 @@ module Elelem
       request = {
         jsonrpc: "2.0",
         id: Time.now.to_i,
-        method: method,
+        method: method
       }
       request[:params] = params unless params.empty?
       configuration.logger.debug(JSON.pretty_generate(request))
@@ -86,7 +85,7 @@ module Elelem
     def send_notification(method:, params: {})
       notification = {
         jsonrpc: "2.0",
-        method: method,
+        method: method
       }
       notification[:params] = params unless params.empty?
       configuration.logger.debug("Sending notification: #{JSON.pretty_generate(notification)}")

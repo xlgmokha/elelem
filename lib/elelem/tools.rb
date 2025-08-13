@@ -11,7 +11,7 @@ module Elelem
           parameters: {
             type: "object",
             properties: {
-              command: { type: "string" },
+              command: { type: "string" }
             },
             required: ["command"]
           }
@@ -19,9 +19,9 @@ module Elelem
         handler: lambda { |args|
           stdout, stderr, _status = Open3.capture3("/bin/sh", "-c", args["command"])
           stdout + stderr
-        },
-      },
-    ]
+        }
+      }
+    ].freeze
 
     def initialize(configuration, tools = DEFAULT_TOOLS)
       @configuration = configuration
@@ -39,8 +39,8 @@ module Elelem
             result = client.call_tool(tool["name"], args)
             output = result.dig("content", 0, "text") || result.to_s
             configuration.tui.say(output)
-            return output
-          },
+            output
+          }
         }
       end
     end

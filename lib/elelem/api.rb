@@ -8,7 +8,7 @@ module Elelem
       @configuration = configuration
     end
 
-    def chat(messages)
+    def chat(messages, &block)
       body = {
         messages: messages,
         model: configuration.model,
@@ -28,9 +28,7 @@ module Elelem
       configuration.http.request(req) do |response|
         raise response.inspect unless response.code == "200"
 
-        response.read_body do |chunk|
-          yield(chunk)
-        end
+        response.read_body(&block)
       end
     end
   end

@@ -27,17 +27,13 @@ module Elelem
 
     class Waiting < State
       def process(message)
-        state = self
-
-        if message["thinking"] && !message["thinking"].empty?
-          state = Thinking.new(agent)
-        elsif message["tool_calls"]&.any?
-          state = Executing.new(agent)
-        elsif message["content"] && !message["content"].empty?
-          state = Talking.new(agent)
-        else
-          state = nil
-        end
+        state = if message["thinking"] && !message["thinking"].empty?
+                  Thinking.new(agent)
+                elsif message["tool_calls"]&.any?
+                  Executing.new(agent)
+                elsif message["content"] && !message["content"].empty?
+                  Talking.new(agent)
+                end
 
         state&.process(message)
       end

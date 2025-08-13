@@ -4,29 +4,29 @@ module Elelem
   class Application < Thor
     desc "chat", "Start the REPL"
     method_option :help,
-      aliases: "-h",
-      type: :boolean,
-      desc: "Display usage information"
+                  aliases: "-h",
+                  type: :boolean,
+                  desc: "Display usage information"
     method_option :host,
-      aliases: "--host",
-      type: :string,
-      desc: "Ollama host",
-      default: ENV.fetch("OLLAMA_HOST", "localhost:11434")
+                  aliases: "--host",
+                  type: :string,
+                  desc: "Ollama host",
+                  default: ENV.fetch("OLLAMA_HOST", "localhost:11434")
     method_option :model,
-      aliases: "--model",
-      type: :string,
-      desc: "Ollama model",
-      default: ENV.fetch("OLLAMA_MODEL", "gpt-oss")
+                  aliases: "--model",
+                  type: :string,
+                  desc: "Ollama model",
+                  default: ENV.fetch("OLLAMA_MODEL", "gpt-oss")
     method_option :token,
-      aliases: "--token",
-      type: :string,
-      desc: "Ollama token",
-      default: ENV.fetch("OLLAMA_API_KEY", nil)
+                  aliases: "--token",
+                  type: :string,
+                  desc: "Ollama token",
+                  default: ENV.fetch("OLLAMA_API_KEY", nil)
     method_option :debug,
-      aliases: "--debug",
-      type: :boolean,
-      desc: "Debug mode",
-      default: false
+                  aliases: "--debug",
+                  type: :boolean,
+                  desc: "Debug mode",
+                  default: false
     def chat(*)
       if options[:help]
         invoke :help, ["chat"]
@@ -35,10 +35,10 @@ module Elelem
           host: options[:host],
           model: options[:model],
           token: options[:token],
-          debug: options[:debug],
+          debug: options[:debug]
         )
         say "Agent (#{configuration.model})", :green
-        say "#{configuration.tools.banner}", :green
+        say configuration.tools.banner.to_s, :green
 
         agent = Agent.new(configuration)
         agent.repl

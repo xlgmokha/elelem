@@ -32,7 +32,7 @@ module Elelem
     end
 
     def clear_line
-      stdout.print("\r" + " " * 80 + "\r")
+      stdout.print("\r#{" " * 80}\r")
       stdout.flush
     end
 
