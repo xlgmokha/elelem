@@ -4,8 +4,9 @@ module Elelem
   class Idle
     def run(agent)
       agent.logger.debug("Idling...")
-      input = agent.prompt("\n> ")
-      agent.quit if input.nil? || input.empty? || input == "exit"
+      agent.say(Dir.pwd, colour: :magenta, newline: true)
+      input = agent.prompt("> ")
+      agent.quit if input.nil? || input.empty? || input == "exit" || input == "quit"
 
       agent.conversation.add(role: :user, content: input)
       agent.transition_to(Working.new)

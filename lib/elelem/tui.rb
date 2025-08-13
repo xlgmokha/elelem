@@ -52,18 +52,24 @@ module Elelem
 
     def colourize(text, colour: :default)
       case colour
-      when :gray
-        "\e[90m#{text}\e[0m"
-      when :cyan
-        "\e[36m#{text}\e[0m"
-      when :yellow
-        "\e[33m#{text}\e[0m"
-      when :magenta
-        "\e[35m#{text}\e[0m"
+      when :black
+        "\e[30m#{text}\e[0m"
+      when :red
+        "\e[31m#{text}\e[0m"
       when :green
         "\e[32m#{text}\e[0m"
+      when :yellow
+        "\e[33m#{text}\e[0m"
+      when :blue
+        "\e[34m#{text}\e[0m"
+      when :magenta
+        "\e[35m#{text}\e[0m"
+      when :cyan
+        "\e[36m#{text}\e[0m"
       when :white
         "\e[37m#{text}\e[0m"
+      when :gray
+        "\e[90m#{text}\e[0m"
       else
         text
       end
