@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = "A REPL for Ollama."
   spec.homepage = "https://www.mokhan.ca"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.1.0"
+  spec.required_ruby_version = ">= 3.4.0"
   spec.required_rubygems_version = ">= 3.3.11"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
