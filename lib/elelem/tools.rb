@@ -44,7 +44,6 @@ module Elelem
       tool = @tools.find do |tool|
         tool.dig(:function, :name) == name
       end
-      configuration.tui.say(args, newline: true)
       tool&.fetch(:handler)&.call(args).tap do |result|
         configuration.tui.say(result)
       end

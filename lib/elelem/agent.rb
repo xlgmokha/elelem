@@ -36,6 +36,18 @@ module Elelem
       configuration.tools.execute(tool_call)
     end
 
+    def show_progress(message, prefix = "[.]", colour: :gray)
+      configuration.tui.show_progress(message, prefix, colour: colour)
+    end
+
+    def clear_line
+      configuration.tui.clear_line
+    end
+
+    def complete_progress(message = "Completed")
+      configuration.tui.complete_progress(message)
+    end
+
     def quit
       logger.debug("Exiting...")
       exit
