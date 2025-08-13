@@ -34,7 +34,7 @@ module Elelem
       @worker_thread&.alive? && @stdin && !@stdin.closed?
     end
 
-    def call_tool(name, arguments = {})
+    def call(name, arguments = {})
       send_request(
         method: "tools/call",
         params: {

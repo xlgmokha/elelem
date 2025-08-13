@@ -41,13 +41,17 @@ module Elelem
     end
 
     def tools
-      @tools ||= Tools.new(self)
+      @tools ||= Tools.new(self, [BashTool.new(self)] + mcp_tools)
     end
 
     private
 
     def scheme
       host.match?(/\A(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\z/) ? "http" : "https"
+    end
+
+    def mcp_tools(clients = [MCPClient.new(self)])
+      @mcp_tools ||= clients.map { |client| client.tools.map { |tool| MCPTool.new(client, tui, tool) } }.flatten
     end
   end
 end
