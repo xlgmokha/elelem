@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "json"
-require "open3"
-
 module Elelem
   class MCPClient
     attr_reader :tools

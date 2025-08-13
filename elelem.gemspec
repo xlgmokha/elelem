@@ -35,7 +35,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "logger"
   spec.add_dependency "net-http"
   spec.add_dependency "open3"
-  spec.add_dependency "securerandom"
   spec.add_dependency "thor"
   spec.add_dependency "uri"
 end
