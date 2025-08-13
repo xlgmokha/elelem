@@ -6,7 +6,7 @@ module Elelem
       {
         type: "function",
         function: {
-          name: "execute_command",
+          name: "bash",
           description: "Execute a shell command.",
           parameters: {
             type: "object",
@@ -23,7 +23,8 @@ module Elelem
       },
     ]
 
-    def initialize(tools = DEFAULT_TOOLS)
+    def initialize(configuration, tools = DEFAULT_TOOLS)
+      @configuration = configuration
       @tools = tools
     end
 
@@ -43,7 +44,10 @@ module Elelem
       tool = @tools.find do |tool|
         tool.dig(:function, :name) == name
       end
-      tool&.fetch(:handler)&.call(args)
+      configuration.tui.say(args, newline: true)
+      tool&.fetch(:handler)&.call(args).tap do |result|
+        configuration.tui.say(result)
+      end
     end
 
     def to_h
@@ -58,5 +62,9 @@ module Elelem
         }
       end
     end
+
+    private
+
+    attr_reader :configuration
   end
 end

@@ -41,7 +41,7 @@ module Elelem
     end
 
     def tools
-      @tools ||= Tools.new
+      @tools ||= Tools.new(self)
     end
 
     private
