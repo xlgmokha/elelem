@@ -72,7 +72,7 @@ module Elelem
       response = JSON.parse(@stdout.gets.strip)
       configuration.logger.debug(JSON.pretty_generate(response))
       if response["error"]
-        configuration.logger.error(response["error"])
+        configuration.logger.error(response["error"]["message"])
         {}
       else
         response["result"]
