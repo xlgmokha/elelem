@@ -24,7 +24,7 @@ module Elelem
 
     def show_progress(message, icon = ".", colour: :gray)
       timestamp = Time.now.strftime("%H:%M:%S")
-      say("[#{icon}] #{timestamp} #{message}", colour: colour, newline: true)
+      say("\n[#{icon}] #{timestamp} #{message}", colour: colour, newline: true)
     end
 
     def clear_line
