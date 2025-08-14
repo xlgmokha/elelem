@@ -18,7 +18,7 @@ module Elelem
         end
 
         result = client.call(name, args)
-        tui.say(result)
+        tui.say(JSON.pretty_generate(result), newline: true)
 
         if result.nil? || result.empty?
           tui.say("Tool call failed: no response from MCP server", colour: :red)
