@@ -34,15 +34,21 @@ module Elelem
 
     class Waiting < State
       def process(message)
-        state = if message["thinking"] && !message["thinking"].empty?
-                  Thinking.new(agent)
-                elsif message["tool_calls"]&.any?
-                  Executing.new(agent)
-                elsif message["content"] && !message["content"].empty?
-                  Talking.new(agent)
-                end
+        state_for(message)&.process(message)
+      end
 
-        state&.process(message)
+      private
+
+      def state_for(message)
+        if message["thinking"] && !message["thinking"].empty?
+          Thinking.new(agent)
+        elsif message["tool_calls"]&.any?
+          Executing.new(agent)
+        elsif message["content"] && !message["content"].empty?
+          Talking.new(agent)
+        else
+          agent.logger.error("Unknown message type: #{message}")
+        end
       end
     end
 

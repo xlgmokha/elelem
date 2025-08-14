@@ -31,7 +31,7 @@ module Elelem
 
     def initialize(tui)
       @tui = tui
-      super("bash", "Execute a shell command.", {
+      super("bash(command)", "Execute a shell command.", {
         parameters: {
           type: "object",
           properties: {
