@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.1.2] - 2025-08-14
+
+### Fixed
+- Fixed critical bug where bash tool had nested parameters schema causing tool calls to fail with "no implicit conversion of nil into String" error
+
 ## [0.1.1] - 2025-08-12
 
 ### Fixed
