@@ -23,7 +23,7 @@ module Elelem
         }
       )
 
-      # 2. Send initialized notification (required by MCP protocol)
+      # 2. Send initialized notification (optional for some MCP servers)
       send_notification(method: "notifications/initialized")
 
       # 3. Now we can request tools
@@ -86,6 +86,8 @@ module Elelem
     end
 
     def send_notification(method:, params: {})
+      return unless connected?
+
       notification = {
         jsonrpc: "2.0",
         method: method
@@ -94,6 +96,13 @@ module Elelem
       configuration.logger.debug("Sending notification: #{JSON.pretty_generate(notification)}")
       @stdin.puts(JSON.generate(notification))
       @stdin.flush
+
+      response_line = @stdout.gets&.strip
+      return {} if response_line.nil? || response_line.empty?
+
+      response = JSON.parse(response_line)
+      configuration.logger.debug(JSON.pretty_generate(response))
+      response
     end
   end
 end
