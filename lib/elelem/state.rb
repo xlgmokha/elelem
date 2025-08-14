@@ -5,7 +5,7 @@ module Elelem
     def run(agent)
       agent.logger.debug("Idling...")
       agent.say(Dir.pwd, colour: :magenta, newline: true)
-      input = agent.prompt("> ")
+      input = agent.prompt("モ ")
       agent.quit if input.nil? || input.empty? || input == "exit" || input == "quit"
 
       agent.conversation.add(role: :user, content: input)
