@@ -23,8 +23,12 @@ module Elelem
     class State
       attr_reader :agent
 
-      def initialize(agent)
+      def initialize(agent, icon, colour)
         @agent = agent
+
+        agent.logger.debug("#{display_name}...")
+        agent.show_progress("#{display_name}...", "[#{icon}]", colour: colour)
+        agent.say("\n\n", newline: false)
       end
 
       def display_name
@@ -33,6 +37,10 @@ module Elelem
     end
 
     class Waiting < State
+      def initialize(agent)
+        super(agent, ".", :cyan)
+      end
+
       def process(message)
         state_for(message)&.process(message)
       end
@@ -41,28 +49,18 @@ module Elelem
 
       def state_for(message)
         if message["thinking"] && !message["thinking"].empty?
-          Thinking.new(agent)
+          Thinking.new(agent, "*", :yellow)
         elsif message["tool_calls"]&.any?
-          Executing.new(agent)
+          Executing.new(agent, ">", :magenta)
         elsif message["content"] && !message["content"].empty?
-          Talking.new(agent)
+          Talking.new(agent, "~", :white)
         end
       end
     end
 
     class Thinking < State
-      def initialize(agent)
-        super(agent)
-        @progress_shown = false
-      end
-
       def process(message)
         if message["thinking"] && !message["thinking"]&.empty?
-          unless @progress_shown
-            agent.show_progress("Thinking...", "[*]", colour: :yellow)
-            agent.say("\n\n", newline: false)
-            @progress_shown = true
-          end
           agent.say(message["thinking"], colour: :gray, newline: false)
           self
         else
@@ -76,15 +74,7 @@ module Elelem
       def process(message)
         if message["tool_calls"]&.any?
           message["tool_calls"].each do |tool_call|
-            tool_name = tool_call.dig("function", "name") || "unknown"
-            agent.show_progress(tool_name, "[>]", colour: :magenta)
-            agent.say("\n\n", newline: false)
-
-            output = agent.execute(tool_call)
-            agent.conversation.add(role: :tool, content: output)
-
-            agent.say("\n", newline: false)
-            agent.complete_progress("#{tool_name} completed")
+            agent.conversation.add(role: :tool, content: agent.execute(tool_call))
           end
         end
 
@@ -94,45 +84,29 @@ module Elelem
 
     class Error < State
       def initialize(agent, error_message)
-        super(agent)
+        super(agent, "X", :red)
         @error_message = error_message
       end
 
       def process(_message)
         agent.say("\nTool execution failed: #{@error_message}", colour: :red)
-        agent.say("Returning to idle state.\n\n", colour: :yellow)
         Waiting.new(agent)
       end
     end
 
     class Talking < State
-      def initialize(agent)
-        super(agent)
-        @progress_shown = false
-      end
-
       def process(message)
         if message["content"] && !message["content"]&.empty?
-          unless @progress_shown
-            agent.show_progress("Responding...", "[~]", colour: :white)
-            agent.say("\n", newline: false)
-            @progress_shown = true
-          end
           agent.conversation.add(role: message["role"], content: message["content"])
           agent.say(message["content"], colour: :default, newline: false)
           self
         else
-          agent.say("\n\n", newline: false)
           Waiting.new(agent).process(message)
         end
       end
     end
 
     def run(agent)
-      agent.logger.debug("Working...")
-      agent.show_progress("Processing...", "[.]", colour: :cyan)
-      agent.say("\n\n", newline: false)
-
       state = Waiting.new(agent)
       done = false
 
