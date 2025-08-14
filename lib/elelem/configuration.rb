@@ -41,7 +41,7 @@ module Elelem
     end
 
     def tools
-      @tools ||= Tools.new(self, [BashTool.new(self)] + mcp_tools)
+      @tools ||= Tools.new(self, [Toolbox::Bash.new(self)] + mcp_tools)
     end
 
     private
@@ -53,7 +53,7 @@ module Elelem
     def mcp_tools(clients = [serena_client])
       return [] if ENV["SMALL"]
 
-      @mcp_tools ||= clients.map { |client| client.tools.map { |tool| MCPTool.new(client, tui, tool) } }.flatten
+      @mcp_tools ||= clients.map { |client| client.tools.map { |tool| Toolbox::MCP.new(client, tui, tool) } }.flatten
     end
 
     def serena_client

@@ -43,6 +43,8 @@ Gem::Specification.new do |spec|
     "lib/elelem/state.rb",
     "lib/elelem/system_prompt.erb",
     "lib/elelem/tool.rb",
+    "lib/elelem/toolbox/bash.rb",
+    "lib/elelem/toolbox/mcp.rb",
     "lib/elelem/tools.rb",
     "lib/elelem/tui.rb",
     "lib/elelem/version.rb",
