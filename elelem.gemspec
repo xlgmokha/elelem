@@ -21,12 +21,33 @@ Gem::Specification.new do |spec|
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
-  gemspec = File.basename(__FILE__)
-  spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
-    ls.readlines("\x0", chomp: true).reject do |f|
-      (f == gemspec) || f.start_with?(*%w[bin/ test/ spec/ features/ .git Gemfile])
-    end
-  end
+  # gemspec = File.basename(__FILE__)
+  # spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
+  #   ls.readlines("\x0", chomp: true).reject do |f|
+  #     (f == gemspec) || f.start_with?(*%w[bin/ test/ spec/ features/ .git Gemfile])
+  #   end
+  # end
+  spec.files = [
+    "CHANGELOG.md",
+    "LICENSE.txt",
+    "README.md",
+    "Rakefile",
+    "exe/elelem",
+    "lib/elelem.rb",
+    "lib/elelem/agent.rb",
+    "lib/elelem/api.rb",
+    "lib/elelem/application.rb",
+    "lib/elelem/configuration.rb",
+    "lib/elelem/conversation.rb",
+    "lib/elelem/mcp_client.rb",
+    "lib/elelem/state.rb",
+    "lib/elelem/system_prompt.erb",
+    "lib/elelem/tool.rb",
+    "lib/elelem/tools.rb",
+    "lib/elelem/tui.rb",
+    "lib/elelem/version.rb",
+    "sig/elelem.rbs"
+  ]
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
