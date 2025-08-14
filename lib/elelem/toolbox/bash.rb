@@ -7,7 +7,7 @@ module Elelem
 
       def initialize(configuration)
         @tui = configuration.tui
-        super("bash", "Execute a shell command.", {
+        super("bash", "Run commands in /bin/bash -c. Full access to filesystem, network, processes, and all Unix tools.", {
           type: "object",
           properties: {
             command: { type: "string" }
@@ -20,7 +20,7 @@ module Elelem
         command = args["command"]
         output_buffer = []
 
-        Open3.popen3("/bin/sh", "-c", command) do |stdin, stdout, stderr, wait_thread|
+        Open3.popen3("/bin/bash", "-c", command) do |stdin, stdout, stderr, wait_thread|
           stdin.close
           streams = [stdout, stderr]
 
