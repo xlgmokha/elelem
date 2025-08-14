@@ -14,6 +14,7 @@ mkmf.log
 target/
 *.log
 *.gem
+.mcp.json
 
 # rspec failure tracking
 .rspec_status
