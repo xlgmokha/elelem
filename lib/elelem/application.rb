@@ -45,9 +45,9 @@ module Elelem
       end
     end
 
-    desc "version", "spandx version"
+    desc "version", "The version of this CLI"
     def version
-      puts "v#{Spandx::VERSION}"
+      say "v#{Elelem::VERSION}"
     end
     map %w[--version -v] => :version
   end
