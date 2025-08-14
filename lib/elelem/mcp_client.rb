@@ -4,9 +4,9 @@ module Elelem
   class MCPClient
     attr_reader :tools
 
-    def initialize(configuration)
+    def initialize(configuration, command = [])
       @configuration = configuration
-      @stdin, @stdout, @stderr, @worker_thread = Open3.popen3(*serena_command, pgroup: true)
+      @stdin, @stdout, @stderr, @worker_thread = Open3.popen3(*command, pgroup: true)
 
       # 1. Send initialize request
       send_request(
@@ -47,19 +47,6 @@ module Elelem
     private
 
     attr_reader :stdin, :stdout, :stderr, :worker_thread, :configuration
-
-    def serena_command
-      [
-        "uvx",
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
-        "--transport", "stdio",
-        "--context", "ide-assistant",
-        "--project", Dir.pwd
-      ]
-    end
 
     def send_request(method:, params: {})
       request = {

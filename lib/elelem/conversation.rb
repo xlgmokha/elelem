@@ -2,16 +2,9 @@
 
 module Elelem
   class Conversation
-    SYSTEM_MESSAGE = <<~SYS.freeze
-      You are ChatGPT, a helpful assistant with reasoning capabilities.
-      Current date: #{Time.now.strftime("%Y-%m-%d")}.
-      System info: `uname -a` output: #{`uname -a`.strip}
-      Reasoning: high
-    SYS
-
     ROLES = %i[system assistant user tool].freeze
 
-    def initialize(items = [{ role: "system", content: SYSTEM_MESSAGE }])
+    def initialize(items = [{ role: "system", content: system_prompt }])
       @items = items
     end
 
@@ -30,6 +23,12 @@ module Elelem
       else
         @items.push({ role: role, content: content })
       end
+    end
+
+    private
+
+    def system_prompt
+      ERB.new(Pathname.new(__dir__).join("system_prompt.erb").read).result(binding)
     end
   end
 end

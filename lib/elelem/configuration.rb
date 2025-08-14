@@ -50,8 +50,21 @@ module Elelem
       host.match?(/\A(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\z/) ? "http" : "https"
     end
 
-    def mcp_tools(clients = [MCPClient.new(self)])
+    def mcp_tools(clients = [serena_client])
       @mcp_tools ||= clients.map { |client| client.tools.map { |tool| MCPTool.new(client, tui, tool) } }.flatten
+    end
+
+    def serena_client
+      MCPClient.new(self, [
+        "uvx",
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server",
+        "--transport", "stdio",
+        "--context", "ide-assistant",
+        "--project", Dir.pwd
+      ])
     end
   end
 end
