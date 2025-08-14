@@ -14,40 +14,29 @@ module Elelem
     end
 
     def say(message, colour: :default, newline: false)
-      formatted_message = colourize(message, colour: colour)
       if newline
-        stdout.puts(formatted_message)
+        stdout.puts(colourize(message, colour: colour))
       else
-        stdout.print(formatted_message)
+        stdout.print(colourize(message, colour: colour))
       end
       stdout.flush
     end
 
-    def show_progress(message, prefix = "[.]", colour: :gray)
-      timestamp = current_time_string
-      formatted_message = colourize("#{prefix} #{timestamp} #{message}", colour: colour)
-      stdout.print(formatted_message)
-      stdout.flush
+    def show_progress(message, icon = ".", colour: :gray)
+      timestamp = Time.now.strftime("%H:%M:%S")
+      say("[#{icon}] #{timestamp} #{message}", colour: colour, newline: false)
     end
 
     def clear_line
-      stdout.print("\r#{" " * 80}\r")
-      stdout.flush
+      say("\r#{" " * 80}\r", newline: false)
     end
 
     def complete_progress(message = "Completed")
       clear_line
-      timestamp = current_time_string
-      formatted_message = colourize("[✓] #{timestamp} #{message}", colour: :green)
-      stdout.puts(formatted_message)
-      stdout.flush
+      show_progress(message, "✓", colour: :green)
     end
 
     private
-
-    def current_time_string
-      Time.now.strftime("%H:%M:%S")
-    end
 
     def colourize(text, colour: :default)
       case colour

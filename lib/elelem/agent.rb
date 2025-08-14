@@ -2,10 +2,11 @@
 
 module Elelem
   class Agent
-    attr_reader :api, :conversation, :logger, :model
+    attr_reader :api, :conversation, :logger, :model, :tui
 
     def initialize(configuration)
       @api = configuration.api
+      @tui = configuration.tui
       @configuration = configuration
       @model = configuration.model
       @conversation = configuration.conversation
@@ -24,29 +25,9 @@ module Elelem
       @current_state = next_state
     end
 
-    def prompt(message)
-      configuration.tui.prompt(message)
-    end
-
-    def say(message, colour: :default, newline: false)
-      configuration.tui.say(message, colour: colour, newline: newline)
-    end
-
     def execute(tool_call)
       logger.debug("Execute: #{tool_call}")
       configuration.tools.execute(tool_call)
-    end
-
-    def show_progress(message, prefix = "[.]", colour: :gray)
-      configuration.tui.show_progress(message, prefix, colour: colour)
-    end
-
-    def clear_line
-      configuration.tui.clear_line
-    end
-
-    def complete_progress(message = "Completed")
-      configuration.tui.complete_progress(message)
     end
 
     def quit

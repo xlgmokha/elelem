@@ -4,8 +4,8 @@ module Elelem
   class Idle
     def run(agent)
       agent.logger.debug("Idling...")
-      agent.say("#{Dir.pwd} (#{agent.model}) [#{git_branch}]", colour: :magenta, newline: true)
-      input = agent.prompt("モ ")
+      agent.tui.say("#{Dir.pwd} (#{agent.model}) [#{git_branch}]", colour: :magenta, newline: true)
+      input = agent.tui.prompt("モ ")
       agent.quit if input.nil? || input.empty? || input == "exit" || input == "quit"
 
       agent.conversation.add(role: :user, content: input)
@@ -27,8 +27,7 @@ module Elelem
         @agent = agent
 
         agent.logger.debug("#{display_name}...")
-        agent.show_progress("#{display_name}...", "[#{icon}]", colour: colour)
-        agent.say("\n\n", newline: false)
+        agent.tui.show_progress("#{display_name}...", icon, colour: colour)
       end
 
       def display_name
@@ -61,10 +60,9 @@ module Elelem
     class Thinking < State
       def process(message)
         if message["thinking"] && !message["thinking"]&.empty?
-          agent.say(message["thinking"], colour: :gray, newline: false)
+          agent.tui.say(message["thinking"], colour: :gray, newline: false)
           self
         else
-          agent.say("\n\n", newline: false)
           Waiting.new(agent).process(message)
         end
       end
@@ -89,7 +87,7 @@ module Elelem
       end
 
       def process(_message)
-        agent.say("\nTool execution failed: #{@error_message}", colour: :red)
+        agent.tui.say("\nTool execution failed: #{@error_message}", colour: :red)
         Waiting.new(agent)
       end
     end
@@ -98,7 +96,7 @@ module Elelem
       def process(message)
         if message["content"] && !message["content"]&.empty?
           agent.conversation.add(role: message["role"], content: message["content"])
-          agent.say(message["content"], colour: :default, newline: false)
+          agent.tui.say(message["content"], colour: :default, newline: false)
           self
         else
           Waiting.new(agent).process(message)
