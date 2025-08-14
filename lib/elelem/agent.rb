@@ -11,7 +11,7 @@ module Elelem
       @model = configuration.model
       @conversation = configuration.conversation
       @logger = configuration.logger
-      transition_to(Idle.new)
+      transition_to(States::Idle.new)
     end
 
     def repl

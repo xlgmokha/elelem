@@ -41,6 +41,7 @@ Gem::Specification.new do |spec|
     "lib/elelem/conversation.rb",
     "lib/elelem/mcp_client.rb",
     "lib/elelem/state.rb",
+    "lib/elelem/states/idle.rb",
     "lib/elelem/system_prompt.erb",
     "lib/elelem/tool.rb",
     "lib/elelem/toolbox/bash.rb",
