@@ -11,7 +11,7 @@ module Elelem
     end
 
     def banner
-      [name, description].join(": ")
+      [name, parameters].join(": ")
     end
 
     def valid?(args)
