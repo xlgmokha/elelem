@@ -5,6 +5,7 @@ require "json"
 require "logger"
 require "net/http"
 require "open3"
+require "reline"
 require "thor"
 require "uri"
 

@@ -3,6 +3,9 @@
 
 require "elelem"
 
+Reline.input = $stdin
+Reline.output = $stdout
+
 Signal.trap("INT") do
   exit(1)
 end

@@ -10,8 +10,7 @@ module Elelem
     end
 
     def prompt(message)
-      say(message)
-      stdin.gets&.chomp
+      Reline.readline(message, true)
     end
 
     def say(message, colour: :default, newline: false)
