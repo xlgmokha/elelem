@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "timeout"
+
 module Elelem
   class MCPClient
     attr_reader :tools
@@ -51,6 +53,29 @@ module Elelem
           arguments: arguments
         }
       )
+    end
+
+    def shutdown
+      return unless connected?
+
+      configuration.logger.debug("Shutting down MCP client")
+
+      [@stdin, @stdout, @stderr].each do |stream|
+        stream&.close unless stream&.closed?
+      end
+
+      return unless @worker&.alive?
+
+      begin
+        Process.kill("TERM", @worker.pid)
+        # Give it 2 seconds to terminate gracefully
+        Timeout.timeout(2) { @worker.value }
+      rescue Timeout::Error
+        # Force kill if it doesn't respond
+        Process.kill("KILL", @worker.pid) rescue nil
+      rescue Errno::ESRCH
+        # Process already dead
+      end
     end
 
     private

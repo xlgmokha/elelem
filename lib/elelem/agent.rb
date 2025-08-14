@@ -11,6 +11,9 @@ module Elelem
       @model = configuration.model
       @conversation = configuration.conversation
       @logger = configuration.logger
+
+      at_exit { cleanup }
+
       transition_to(States::Idle.new)
     end
 
@@ -32,7 +35,13 @@ module Elelem
 
     def quit
       logger.debug("Exiting...")
+      cleanup
       exit
+    end
+
+    def cleanup
+      logger.debug("Cleaning up agent...")
+      configuration.cleanup
     end
 
     private

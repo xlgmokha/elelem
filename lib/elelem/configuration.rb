@@ -44,6 +44,10 @@ module Elelem
       @tools ||= Tools.new(self, [Toolbox::Bash.new(self)] + mcp_tools)
     end
 
+    def cleanup
+      @mcp_clients&.each(&:shutdown)
+    end
+
     private
 
     def scheme
@@ -59,11 +63,13 @@ module Elelem
     end
 
     def mcp_clients
-      config = Pathname.pwd.join(".mcp.json")
-      return [] unless config.exist?
+      @mcp_clients ||= begin
+        config = Pathname.pwd.join(".mcp.json")
+        return [] unless config.exist?
 
-      JSON.parse(config.read).map do |_key, value|
-        MCPClient.new(self, [value["command"]] + value["args"])
+        JSON.parse(config.read).map do |_key, value|
+          MCPClient.new(self, [value["command"]] + value["args"])
+        end
       end
     end
   end
