@@ -90,10 +90,29 @@ module Elelem
     end
 
     def call(args)
+      unless client.connected?
+        error_msg = "MCP connection lost"
+        tui.say(error_msg, colour: :red)
+        return { success: false, output: "", error: error_msg }
+      end
+
       result = client.call(name, args)
+
+      if result.nil? || result.empty?
+        error_msg = "Tool call failed: no response from MCP server"
+        tui.say(error_msg, colour: :red)
+        return { success: false, output: "", error: error_msg }
+      end
+
+      if result["error"]
+        error_msg = "Tool error: #{result["error"]}"
+        tui.say(error_msg, colour: :red)
+        return { success: false, output: "", error: error_msg }
+      end
+
       output = result.dig("content", 0, "text") || result.to_s
       tui.say(output)
-      output
+      { success: true, output: output, error: nil }
     end
   end
 end

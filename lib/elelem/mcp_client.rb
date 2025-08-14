@@ -6,7 +6,7 @@ module Elelem
 
     def initialize(configuration, command = [])
       @configuration = configuration
-      @stdin, @stdout, @stderr, @worker_thread = Open3.popen3(*command, pgroup: true)
+      @stdin, @stdout, @stderr, @worker = Open3.popen3(*command, pgroup: true)
 
       # 1. Send initialize request
       send_request(
@@ -31,7 +31,16 @@ module Elelem
     end
 
     def connected?
-      @worker_thread&.alive? && @stdin && !@stdin.closed?
+      return false unless @worker&.alive?
+      return false unless @stdin && !@stdin.closed?
+      return false unless @stdout && !@stdout.closed?
+
+      begin
+        Process.getpgid(@worker.pid)
+        true
+      rescue Errno::ESRCH
+        false
+      end
     end
 
     def call(name, arguments = {})
@@ -46,9 +55,11 @@ module Elelem
 
     private
 
-    attr_reader :stdin, :stdout, :stderr, :worker_thread, :configuration
+    attr_reader :stdin, :stdout, :stderr, :worker, :configuration
 
     def send_request(method:, params: {})
+      return {} unless connected?
+
       request = {
         jsonrpc: "2.0",
         id: Time.now.to_i,
@@ -56,14 +67,19 @@ module Elelem
       }
       request[:params] = params unless params.empty?
       configuration.logger.debug(JSON.pretty_generate(request))
+
       @stdin.puts(JSON.generate(request))
       @stdin.flush
 
-      response = JSON.parse(@stdout.gets.strip)
+      response_line = @stdout.gets&.strip
+      return {} if response_line.nil? || response_line.empty?
+
+      response = JSON.parse(response_line)
       configuration.logger.debug(JSON.pretty_generate(response))
+
       if response["error"]
         configuration.logger.error(response["error"]["message"])
-        {}
+        { error: response["error"]["message"] }
       else
         response["result"]
       end

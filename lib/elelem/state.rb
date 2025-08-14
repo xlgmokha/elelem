@@ -71,13 +71,34 @@ module Elelem
             agent.say("\n\n", newline: false)
 
             result = agent.execute(tool_call)
-            agent.conversation.add(role: :tool, content: result)
+
+            if result.is_a?(Hash) && result[:success] == false
+              agent.say("\n", newline: false)
+              agent.complete_progress("#{tool_name} failed", colour: :red)
+              return Error.new(agent, result[:error])
+            end
+
+            output = result.is_a?(Hash) ? result[:output] : result
+            agent.conversation.add(role: :tool, content: output)
 
             agent.say("\n", newline: false)
             agent.complete_progress("#{tool_name} completed")
           end
         end
 
+        Waiting.new(agent)
+      end
+    end
+
+    class Error < State
+      def initialize(agent, error_message)
+        super(agent)
+        @error_message = error_message
+      end
+
+      def process(_message)
+        agent.say("\nTool execution failed: #{@error_message}", colour: :red)
+        agent.say("Returning to idle state.\n\n", colour: :yellow)
         Waiting.new(agent)
       end
     end
