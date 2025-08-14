@@ -51,14 +51,18 @@ module Elelem
     end
 
     def mcp_tools
-      @mcp_tools ||= mcp_clients.map { |client| client.tools.map { |tool| Toolbox::MCP.new(client, tui, tool) } }.flatten
+      @mcp_tools ||= mcp_clients.map do |client|
+        client.tools.map do |tool|
+          Toolbox::MCP.new(client, tui, tool)
+        end
+      end.flatten
     end
 
     def mcp_clients
       config = Pathname.pwd.join(".mcp.json")
       return [] unless config.exist?
 
-      JSON.parse(config.read).map do |key, value|
+      JSON.parse(config.read).map do |_key, value|
         MCPClient.new(self, [value["command"]] + value["args"])
       end
     end
