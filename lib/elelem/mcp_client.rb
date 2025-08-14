@@ -2,7 +2,7 @@
 
 module Elelem
   class MCPClient
-    attr_reader :tools
+    attr_reader :tools, :resources
 
     def initialize(configuration, command = [])
       @configuration = configuration
@@ -28,6 +28,7 @@ module Elelem
 
       # 3. Now we can request tools
       @tools = send_request(method: "tools/list")&.dig("tools") || []
+      @resources = send_request(method: "resources/list")&.dig("resources") || []
     end
 
     def connected?
