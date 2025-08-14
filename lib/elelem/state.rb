@@ -46,8 +46,6 @@ module Elelem
           Executing.new(agent)
         elsif message["content"] && !message["content"].empty?
           Talking.new(agent)
-        else
-          agent.logger.error("Unknown message type: #{message}")
         end
       end
     end
