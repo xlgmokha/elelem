@@ -36,13 +36,11 @@ module Elelem
     def initialize(configuration)
       @tui = configuration.tui
       super("bash", "Execute a shell command.", {
-        parameters: {
-          type: "object",
-          properties: {
-            command: { type: "string" }
-          },
-          required: ["command"]
-        }
+        type: "object",
+        properties: {
+          command: { type: "string" }
+        },
+        required: ["command"]
       })
     end
 
