@@ -14,6 +14,10 @@ module Elelem
       [name, description].join(": ")
     end
 
+    def valid?(args)
+      JSON::Validator.validate(parameters, args, insert_defaults: true)
+    end
+
     def to_h
       {
         type: "function",
@@ -29,9 +33,9 @@ module Elelem
   class BashTool < Tool
     attr_reader :tui
 
-    def initialize(tui)
-      @tui = tui
-      super("bash(command)", "Execute a shell command.", {
+    def initialize(configuration)
+      @tui = configuration.tui
+      super("bash", "Execute a shell command.", {
         parameters: {
           type: "object",
           properties: {
@@ -91,28 +95,24 @@ module Elelem
 
     def call(args)
       unless client.connected?
-        error_msg = "MCP connection lost"
-        tui.say(error_msg, colour: :red)
-        return { success: false, output: "", error: error_msg }
+        tui.say("MCP connection lost", colour: :red)
+        return ""
       end
 
       result = client.call(name, args)
+      tui.say(result)
 
       if result.nil? || result.empty?
-        error_msg = "Tool call failed: no response from MCP server"
-        tui.say(error_msg, colour: :red)
-        return { success: false, output: "", error: error_msg }
+        tui.say("Tool call failed: no response from MCP server", colour: :red)
+        return result
       end
 
       if result["error"]
-        error_msg = "Tool error: #{result["error"]}"
-        tui.say(error_msg, colour: :red)
-        return { success: false, output: "", error: error_msg }
+        tui.say(result["error"], colour: :red)
+        return result
       end
 
-      output = result.dig("content", 0, "text") || result.to_s
-      tui.say(output)
-      { success: true, output: output, error: nil }
+      result.dig("content", 0, "text") || result.to_s
     end
   end
 end

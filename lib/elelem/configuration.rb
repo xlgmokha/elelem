@@ -51,6 +51,8 @@ module Elelem
     end
 
     def mcp_tools(clients = [serena_client])
+      return [] if ENV["SMALL"]
+
       @mcp_tools ||= clients.map { |client| client.tools.map { |tool| MCPTool.new(client, tui, tool) } }.flatten
     end
 

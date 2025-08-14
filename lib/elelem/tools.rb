@@ -15,7 +15,11 @@ module Elelem
       name = tool_call.dig("function", "name")
       args = tool_call.dig("function", "arguments")
 
-      tools.find { |tool| tool.name == name }&.call(args)
+      tool = tools.find { |tool| tool.name == name }
+      return "Invalid function name: #{name}" if tool.nil?
+      return "Invalid function arguments: #{args}" unless tool.valid?(args)
+
+      tool.call(args)
     end
 
     def to_h

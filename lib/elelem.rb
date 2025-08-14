@@ -2,6 +2,7 @@
 
 require "erb"
 require "json"
+require "json-schema"
 require "logger"
 require "net/http"
 require "open3"

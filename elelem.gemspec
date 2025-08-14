@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "erb"
   spec.add_dependency "json"
+  spec.add_dependency "json-schema"
   spec.add_dependency "logger"
   spec.add_dependency "net-http"
   spec.add_dependency "open3"
