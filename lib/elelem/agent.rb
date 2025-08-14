@@ -2,11 +2,12 @@
 
 module Elelem
   class Agent
-    attr_reader :api, :conversation, :logger
+    attr_reader :api, :conversation, :logger, :model
 
     def initialize(configuration)
       @api = configuration.api
       @configuration = configuration
+      @model = configuration.model
       @conversation = configuration.conversation
       @logger = configuration.logger
       transition_to(Idle.new)
