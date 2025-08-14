@@ -10,7 +10,7 @@ module Elelem
         agent.quit if input.nil? || input.empty? || input == "exit" || input == "quit"
 
         agent.conversation.add(role: :user, content: input)
-        agent.transition_to(Working.new)
+        agent.transition_to(Working)
       end
 
       private
