@@ -61,6 +61,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "cli-ui"
   spec.add_dependency "erb"
   spec.add_dependency "json"
   spec.add_dependency "json-schema"

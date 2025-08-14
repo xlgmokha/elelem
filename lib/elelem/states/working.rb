@@ -5,8 +5,8 @@ module Elelem
     module Working
       class << self
         def run(agent)
-          state = Waiting.new(agent)
           done = false
+          state = Waiting.new(agent)
 
           loop do
             agent.api.chat(agent.conversation.history) do |chunk|
@@ -15,7 +15,7 @@ module Elelem
               done = response["done"]
 
               agent.logger.debug("#{state.display_name}: #{message}")
-              state = state.process(message)
+              state = state.run(message)
             end
 
             break if state.nil?

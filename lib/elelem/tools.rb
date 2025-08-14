@@ -19,7 +19,9 @@ module Elelem
       return "Invalid function name: #{name}" if tool.nil?
       return "Invalid function arguments: #{args}" unless tool.valid?(args)
 
-      tool.call(args)
+      CLI::UI::Frame.open(name) do
+        tool.call(args)
+      end
     end
 
     def to_h

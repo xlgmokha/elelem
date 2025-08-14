@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "cli/ui"
 require "erb"
 require "json"
 require "json-schema"
@@ -30,6 +31,10 @@ require_relative "elelem/toolbox/mcp"
 require_relative "elelem/tools"
 require_relative "elelem/tui"
 require_relative "elelem/version"
+
+CLI::UI::StdoutRouter.enable
+Reline.input = $stdin
+Reline.output = $stdout
 
 module Elelem
   class Error < StandardError; end

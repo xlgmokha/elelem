@@ -13,6 +13,10 @@ module Elelem
           agent.tui.show_progress("#{display_name}...", icon, colour: colour)
         end
 
+        def run(message)
+          process(message)
+        end
+
         def display_name
           self.class.name.split("::").last
         end

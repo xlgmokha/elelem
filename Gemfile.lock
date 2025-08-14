@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     elelem (0.1.2)
+      cli-ui
       erb
       json
       json-schema
@@ -19,6 +20,7 @@ GEM
       public_suffix (>= 2.0.2, < 7.0)
     ast (2.4.3)
     bigdecimal (3.2.2)
+    cli-ui (2.4.0)
     date (3.4.1)
     diff-lcs (1.6.2)
     erb (5.0.2)
