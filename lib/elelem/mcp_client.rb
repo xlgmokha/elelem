@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "timeout"
-
 module Elelem
   class MCPClient
     attr_reader :tools
@@ -14,7 +12,7 @@ module Elelem
       send_request(
         method: "initialize",
         params: {
-          protocolVersion: "2024-11-05",
+          protocolVersion: "2025-06-08",
           capabilities: {
             tools: {}
           },

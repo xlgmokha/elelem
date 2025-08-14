@@ -70,5 +70,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency "open3"
   spec.add_dependency "reline"
   spec.add_dependency "thor"
+  spec.add_dependency "timeout"
   spec.add_dependency "uri"
 end

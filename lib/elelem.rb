@@ -9,6 +9,7 @@ require "net/http"
 require "open3"
 require "reline"
 require "thor"
+require "timeout"
 require "uri"
 
 require_relative "elelem/agent"
