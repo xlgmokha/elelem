@@ -21,7 +21,7 @@ module Elelem
       if @items.last && @items.last[:role] == role
         @items.last[:content] += content
       else
-        @items.push({ role: role, content: content })
+        @items.push({ role: role, content: normalize(content) })
       end
     end
 
@@ -29,6 +29,14 @@ module Elelem
 
     def system_prompt
       ERB.new(Pathname.new(__dir__).join("system_prompt.erb").read).result(binding)
+    end
+
+    def normalize(content)
+      if content.is_a?(Array)
+        content.join(", ")
+      else
+        content.to_s
+      end
     end
   end
 end
