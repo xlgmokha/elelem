@@ -37,7 +37,14 @@ module Elelem
     end
 
     def conversation
-      @conversation ||= Conversation.new
+      @conversation ||= Conversation.new.tap do |conversation|
+        resources = mcp_clients.map do |client|
+          client.resources.map do |resource|
+            resource["uri"]
+          end
+        end.flatten
+        conversation.add(role: :tool, content: resources)
+      end
     end
 
     def tools

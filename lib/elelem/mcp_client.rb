@@ -71,7 +71,11 @@ module Elelem
         Timeout.timeout(2) { @worker.value }
       rescue Timeout::Error
         # Force kill if it doesn't respond
-        Process.kill("KILL", @worker.pid) rescue nil
+        begin
+          Process.kill("KILL", @worker.pid)
+        rescue StandardError
+          nil
+        end
       rescue Errno::ESRCH
         # Process already dead
       end
