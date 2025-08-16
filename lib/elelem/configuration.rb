@@ -11,13 +11,6 @@ module Elelem
       @debug = debug
     end
 
-    def http
-      @http ||= Net::HTTP.new(uri.host, uri.port).tap do |h|
-        h.read_timeout = 3_600
-        h.open_timeout = 10
-      end
-    end
-
     def tui
       @tui ||= TUI.new($stdin, $stdout)
     end
@@ -30,10 +23,6 @@ module Elelem
       @logger ||= Logger.new(debug ? "#{Time.now.strftime("%Y-%m-%d")}-elelem.log" : "/dev/null").tap do |logger|
         logger.formatter = ->(_, _, _, message) { "#{message.to_s.strip}\n" }
       end
-    end
-
-    def uri
-      @uri ||= URI("#{scheme}://#{host}/api/chat")
     end
 
     def conversation
@@ -56,10 +45,6 @@ module Elelem
     end
 
     private
-
-    def scheme
-      host.match?(/\A(?:localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\z/) ? "http" : "https"
-    end
 
     def mcp_tools
       @mcp_tools ||= mcp_clients.map do |client|
