@@ -27,7 +27,7 @@ module Elelem
     end
 
     def logger
-      @logger ||= Logger.new(debug ? "elelem.log" : "/dev/null").tap do |logger|
+      @logger ||= Logger.new(debug ? "#{Time.now.strftime("%Y-%m-%d")}-elelem.log" : "/dev/null").tap do |logger|
         logger.formatter = ->(_, _, _, message) { "#{message.to_s.strip}\n" }
       end
     end

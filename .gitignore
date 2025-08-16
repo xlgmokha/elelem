@@ -10,9 +10,8 @@
 *.so
 *.o
 *.a
-mkmf.log
-target/
 *.log
+target/
 *.gem
 .mcp.json
 
