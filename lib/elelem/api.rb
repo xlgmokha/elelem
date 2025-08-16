@@ -10,21 +10,27 @@ module Elelem
     end
 
     def chat(messages, &block)
-      Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == 'https') do |http|
-        http.read_timeout = 3_600
-        http.open_timeout = 10
-
+      Net::HTTP.start(uri.hostname, uri.port, http_options) do |http|
         http.request(build_request(messages)) do |response|
           if response.is_a?(Net::HTTPSuccess)
             response.read_body(&block)
           else
             configuration.logger.error(response.inspect)
+            raise response.inspect
           end
         end
       end
     end
 
     private
+
+    def http_options
+      {
+        open_timeout: 10,
+        read_timeout: 3_600,
+        use_ssl: uri.scheme == 'https',
+      }
+    end
 
     def build_uri(raw_host)
       if raw_host =~ %r{^https?://}
@@ -47,9 +53,35 @@ module Elelem
 
     def build_request(messages)
       Net::HTTP::Post.new(uri).tap do |request|
+        request["Accept"] = "application/json"
         request["Content-Type"] = "application/json"
-        request["Authorization"] = "Bearer #{configuration.token}" if configuration.token && !configuration.token.empty?
+        request["User-Agent"] = "ollama/0.11.3 (amd64 linux) Go/go1.24.6"
+        build_token do |token|
+          request["Authorization"] = token
+        end
         request.body = build_payload(messages).to_json
+      end
+    end
+
+    def build_token
+      if uri.host == "ollama.com"
+        raise "Not Implemented"
+
+        # if File.exist?("~/.ollama/id_ed25519")
+          # TODO:: return signature
+          # now := strconv.FormatInt(time.Now().Unix(), 10)
+          # challenge := fmt.Sprintf("%s,%s?ts=%s", method, path, now)
+          # token, err := auth.Sign(ctx, []byte(challenge))
+          # q := requestURL.Query()
+          # q.Set("ts", now)
+          # requestURL.RawQuery = q.Encode()
+          #
+          # request["Authorization"] = token
+        # end
+      end
+
+      if configuration.token && !configuration.token.empty?
+        yield "Bearer #{configuration.token}"
       end
     end
 
