@@ -68,18 +68,18 @@ module Elelem
     end
 
     def build_token(method, path, timestamp)
-      if uri.host == "ollama.com"
-        private_key_path = File.expand_path("~/.ollama/id_ed25519")
-        raise "Ollama Ed25519 key not found at #{private_key_path}" unless File.exist?(private_key_path)
+      # if uri.host == "ollama.com"
+      #   private_key_path = File.expand_path("~/.ollama/id_ed25519")
+      #   raise "Ollama Ed25519 key not found at #{private_key_path}" unless File.exist?(private_key_path)
 
-        challenge = "#{method},#{path}?ts=#{timestamp}"
-        private_key = load_ed25519_key(private_key_path)
-        signature = private_key.sign(challenge)
-        encoded_signature = Base64.strict_encode64(signature)
-        yield encoded_signature
-      end
+      #   challenge = "#{method},#{path}?ts=#{timestamp}"
+      #   private_key = load_ed25519_key(private_key_path)
+      #   signature = private_key.sign(challenge)
+      #   encoded_signature = Base64.strict_encode64(signature)
+      #   yield encoded_signature
+      # end
 
-      return unless configuration.token && !configuration.token.empty?
+      # return unless configuration.token && !configuration.token.empty?
 
       yield "Bearer #{configuration.token}"
     end
