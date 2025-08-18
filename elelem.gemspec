@@ -61,12 +61,16 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "base64"
+  spec.add_dependency "bcrypt_pbkdf"
   spec.add_dependency "cli-ui"
+  spec.add_dependency "ed25519"
   spec.add_dependency "erb"
   spec.add_dependency "json"
   spec.add_dependency "json-schema"
   spec.add_dependency "logger"
   spec.add_dependency "net-http"
+  spec.add_dependency "net-ssh"
   spec.add_dependency "open3"
   spec.add_dependency "reline"
   spec.add_dependency "thor"

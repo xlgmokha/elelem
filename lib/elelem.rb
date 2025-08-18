@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
+require "base64"
 require "cli/ui"
+require "ed25519"
 require "erb"
 require "json"
 require "json-schema"
 require "logger"
 require "net/http"
+require "net/ssh"
 require "open3"
 require "reline"
 require "thor"

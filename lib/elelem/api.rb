@@ -28,7 +28,7 @@ module Elelem
       {
         open_timeout: 10,
         read_timeout: 3_600,
-        use_ssl: uri.scheme == 'https',
+        use_ssl: uri.scheme == "https"
       }
     end
 
@@ -39,50 +39,49 @@ module Elelem
         # No scheme – decide which one to add.
         # * localhost or 127.0.0.1 → http
         # * anything else          → https
-        if raw_host.start_with?('localhost', '127.0.0.1')
-          scheme = 'http://'
-        else
-          scheme = 'https://'
-        end
+        scheme = raw_host.start_with?("localhost", "127.0.0.1") ? "http://" : "https://"
         host = scheme + raw_host
       end
 
-      endpoint = "#{host.sub(%r{/?$}, '')}/api/chat"
-      URI(endpoint)
+      URI("#{host.sub(%r{/?$}, "")}/api/chat")
     end
 
     def build_request(messages)
-      Net::HTTP::Post.new(uri).tap do |request|
+      timestamp = Time.now.to_i
+      request_uri = build_uri_with(timestamp)
+      Net::HTTP::Post.new(request_uri).tap do |request|
         request["Accept"] = "application/json"
         request["Content-Type"] = "application/json"
         request["User-Agent"] = "ollama/0.11.3 (amd64 linux) Go/go1.24.6"
-        build_token do |token|
+        build_token("POST", request_uri.path, timestamp) do |token|
           request["Authorization"] = token
         end
         request.body = build_payload(messages).to_json
       end
     end
 
-    def build_token
+    def build_uri_with(timestamp)
+      uri.dup.tap do |request_uri|
+        original_query = request_uri.query
+        request_uri.query = original_query ? "#{original_query}&ts=#{timestamp}" : "ts=#{timestamp}"
+      end
+    end
+
+    def build_token(method, path, timestamp)
       if uri.host == "ollama.com"
-        raise "Not Implemented"
+        private_key_path = File.expand_path("~/.ollama/id_ed25519")
+        raise "Ollama Ed25519 key not found at #{private_key_path}" unless File.exist?(private_key_path)
 
-        # if File.exist?("~/.ollama/id_ed25519")
-          # TODO:: return signature
-          # now := strconv.FormatInt(time.Now().Unix(), 10)
-          # challenge := fmt.Sprintf("%s,%s?ts=%s", method, path, now)
-          # token, err := auth.Sign(ctx, []byte(challenge))
-          # q := requestURL.Query()
-          # q.Set("ts", now)
-          # requestURL.RawQuery = q.Encode()
-          #
-          # request["Authorization"] = token
-        # end
+        challenge = "#{method},#{path}?ts=#{timestamp}"
+        private_key = load_ed25519_key(private_key_path)
+        signature = private_key.sign(challenge)
+        encoded_signature = Base64.strict_encode64(signature)
+        yield encoded_signature
       end
 
-      if configuration.token && !configuration.token.empty?
-        yield "Bearer #{configuration.token}"
-      end
+      return unless configuration.token && !configuration.token.empty?
+
+      yield "Bearer #{configuration.token}"
     end
 
     def build_payload(messages)
@@ -96,6 +95,11 @@ module Elelem
       }.tap do |payload|
         configuration.logger.debug(JSON.pretty_generate(payload))
       end
+    end
+
+    def load_ed25519_key(key_path)
+      ssh_key = Net::SSH::KeyFactory.load_private_key(key_path)
+      Ed25519::SigningKey.new(ssh_key.sign_key.seed)
     end
   end
 end
