@@ -9,7 +9,7 @@ module Elelem
         end
 
         def process(message)
-          state_for(message)&.process(message)
+          state_for(message)&.process(message) || self
         end
 
         private
