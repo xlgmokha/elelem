@@ -5,9 +5,9 @@ module Elelem
     class Prompt < Tool
       def initialize
         super(
-          name: "prompt",
-          description: "Ask the user a question and get their response.",
-          parameters: {
+          "prompt",
+          "Ask the user a question and get their response.",
+          {
             type: :object,
             properties: {
               question: {
