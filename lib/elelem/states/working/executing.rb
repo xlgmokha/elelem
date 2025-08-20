@@ -11,7 +11,7 @@ module Elelem
             end
           end
 
-          Waiting.new(agent)
+          Thinking.new(agent, "*", :yellow)
         end
       end
     end

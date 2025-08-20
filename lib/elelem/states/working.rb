@@ -19,7 +19,7 @@ module Elelem
             end
 
             break if state.nil?
-            break if done && agent.conversation.history.last[:role] != :tool
+            break if agent.conversation.history.last[:role] == :assistant && agent.conversation.history.last[:content]&.strip&.end_with?("I am finished with the task.")
           end
 
           agent.transition_to(States::Idle.new)
