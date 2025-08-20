@@ -5,14 +5,12 @@ module Elelem
     module Working
       class << self
         def run(agent)
-          done = false
           state = Waiting.new(agent)
 
           loop do
             agent.api.chat(agent.conversation.history) do |chunk|
               response = JSON.parse(chunk)
               message = normalize(response["message"] || {})
-              done = response["done"]
 
               agent.logger.debug("#{state.display_name}: #{message}")
               state = state.run(message)

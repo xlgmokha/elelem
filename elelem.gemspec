@@ -50,27 +50,27 @@ Gem::Specification.new do |spec|
     "lib/elelem/states/working/waiting.rb",
     "lib/elelem/system_prompt.erb",
     "lib/elelem/tool.rb",
+    "lib/elelem/toolbox.rb",
     "lib/elelem/toolbox/bash.rb",
+    "lib/elelem/toolbox/file.rb",
+    "lib/elelem/toolbox/git.rb",
     "lib/elelem/toolbox/mcp.rb",
+    "lib/elelem/toolbox/prompt.rb",
+    "lib/elelem/toolbox/search.rb",
     "lib/elelem/tools.rb",
     "lib/elelem/tui.rb",
     "lib/elelem/version.rb",
-    "sig/elelem.rbs"
   ]
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  # spec.add_dependency "base64"
-  # spec.add_dependency "bcrypt_pbkdf"
   spec.add_dependency "cli-ui"
-  # spec.add_dependency "ed25519"
   spec.add_dependency "erb"
   spec.add_dependency "json"
   spec.add_dependency "json-schema"
   spec.add_dependency "logger"
   spec.add_dependency "net-http"
-  # spec.add_dependency "net-ssh"
   spec.add_dependency "open3"
   spec.add_dependency "reline"
   spec.add_dependency "thor"

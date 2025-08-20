@@ -3,7 +3,7 @@
 module Elelem
   module Toolbox
     class Prompt < Tool
-      def initialize
+      def initialize(configuration)
         super(
           "prompt",
           "Ask the user a question and get their response.",

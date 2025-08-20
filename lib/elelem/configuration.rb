@@ -37,7 +37,15 @@ module Elelem
     end
 
     def tools
-      @tools ||= Tools.new(self, [Toolbox::Bash.new(self), Toolbox::Prompt.new] + mcp_tools)
+      @tools ||= Tools.new(self,
+        [
+          Toolbox::Bash.new(self),
+          Toolbox::File.new(self),
+          Toolbox::Git.new(self),
+          Toolbox::Prompt.new(self),
+          Toolbox::Search.new(self),
+        ] + mcp_tools
+      )
     end
 
     def cleanup
