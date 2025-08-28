@@ -20,6 +20,7 @@ module Elelem
         command = args["command"]
         output_buffer = []
 
+        tui.say(command, newline: true)
         Open3.popen3("/bin/bash", "-c", command) do |stdin, stdout, stderr, wait_thread|
           stdin.close
           streams = [stdout, stderr]
