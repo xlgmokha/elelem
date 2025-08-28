@@ -23,9 +23,22 @@ module Elelem
 
       def call(args)
         path = args["path"] || "."
-        `grep -rnw '#{args["pattern"]}' #{path}`
-      rescue => e
-        e.message
+        pattern = args["pattern"]
+
+        # Build search command - use git grep if in git repo, otherwise regular grep
+        if ::File.directory?(".git") || `git rev-parse --git-dir 2>/dev/null`.strip != ""
+          # Limit results: -m 3 = max 3 matches per file, head -20 = max 20 total lines
+          command = "git grep -n -m 3 '#{pattern}'"
+          command += " -- #{path}" unless path == "."
+          command += " | head -20"
+        else
+          # For regular grep, also limit results
+          command = "grep -rnw '#{pattern}' #{path} | head -20"
+        end
+
+        # Delegate to bash tool for consistent logging and streaming
+        bash_tool = Elelem::Toolbox::Bash.new(@configuration)
+        bash_tool.call({ "command" => command })
       end
     end
   end

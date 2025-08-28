@@ -23,7 +23,12 @@ module Elelem
             buffer += chunk
 
             while (message = extract_sse_message(buffer))
-              next if message.empty? || message == "[DONE]"
+              next if message.empty?
+
+              if message == "[DONE]"
+                block.call({ "done" => true })
+                break
+              end
 
               configuration.logger.debug(message)
               json = JSON.parse(message)
