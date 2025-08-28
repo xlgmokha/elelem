@@ -20,7 +20,7 @@ module Elelem
     def repl
       loop do
         current_state.run(self)
-        sleep 0.01
+        sleep 0.1
       end
     end
 
