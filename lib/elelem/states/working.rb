@@ -8,10 +8,7 @@ module Elelem
           state = Waiting.new(agent)
 
           loop do
-            agent.api.chat(agent.conversation.history) do |chunk|
-              response = JSON.parse(chunk)
-              message = normalize(response["message"] || {})
-
+            agent.api.chat(agent.conversation.history) do |message|
               agent.logger.debug("#{state.display_name}: #{message}")
               state = state.run(message)
             end
@@ -21,10 +18,6 @@ module Elelem
           end
 
           agent.transition_to(States::Idle.new)
-        end
-
-        def normalize(message)
-          message.reject { |_key, value| value.empty? }
         end
       end
     end
