@@ -12,8 +12,7 @@ module Elelem
     end
 
     def execute(tool_call)
-      name = tool_call.dig("function", "name")
-      args = tool_call.dig("function", "arguments")
+      name, args = parse(tool_call)
 
       tool = tools.find { |tool| tool.name == name }
       return "Invalid function name: #{name}" if tool.nil?
@@ -31,5 +30,12 @@ module Elelem
     private
 
     attr_reader :configuration, :tools
+
+    def parse(tool_call)
+      name = tool_call.dig("function", "name")
+      arguments = tool_call.dig("function", "arguments")
+
+      [name, arguments.is_a?(String) ? JSON.parse(arguments) : arguments]
+    end
   end
 end
