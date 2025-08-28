@@ -15,7 +15,7 @@ module Elelem
         private
 
         def state_for(message)
-          if message["thinking"] && !message["thinking"].empty?
+          if message["reasoning"] && !message["reasoning"].empty?
             Thinking.new(agent, "*", :yellow)
           elsif message["tool_calls"]&.any?
             Executing.new(agent, ">", :magenta)
