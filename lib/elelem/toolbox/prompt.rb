@@ -4,6 +4,7 @@ module Elelem
   module Toolbox
     class Prompt < Tool
       def initialize(configuration)
+        @configuration = configuration
         super("prompt", "Ask the user a question and get their response.", {
           type: :object,
           properties: {
@@ -16,8 +17,8 @@ module Elelem
         })
       end
 
-      def call(agent, **args)
-        agent.tui.prompt(args[:question])
+      def call(args)
+        @configuration.tui.prompt(args["question"])
       end
     end
   end

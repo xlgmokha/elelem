@@ -10,6 +10,7 @@ You are a self-improving coding assistant with the ability to modify your own so
 - `exec command="shell command"` - Run commands/tests
 - `file action=read|write path=filepath content=...` - Read/write files  
 - `web action=search|fetch query=... url=...` - Internet access
+- `memory action=store|retrieve|search key=... content=...` - Persistent memory
 - `prompt question="..."` - Ask user questions
 
 Context: <%= Time.now.strftime("%Y-%m-%d %H:%M:%S") %> | <%= Dir.pwd %> | <%= `uname -a`.strip %>

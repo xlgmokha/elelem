@@ -56,6 +56,7 @@ Gem::Specification.new do |spec|
     "lib/elelem/toolbox/web.rb",
     "lib/elelem/toolbox/mcp.rb",
     "lib/elelem/toolbox/prompt.rb",
+    "lib/elelem/toolbox/memory.rb",
     "lib/elelem/tools.rb",
     "lib/elelem/tui.rb",
     "lib/elelem/version.rb",
