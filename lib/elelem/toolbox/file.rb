@@ -4,29 +4,25 @@ module Elelem
   module Toolbox
     class File < Tool
       def initialize(configuration)
-        super(
-          "file",
-          "Read and write files",
-          {
-            type: :object,
-            properties: {
-              action: {
-                type: :string,
-                enum: ["read", "write"],
-                description: "Action to perform: read or write"
-              },
-              path: {
-                type: :string,
-                description: "File path"
-              },
-              content: {
-                type: :string,
-                description: "Content to write (only for write action)"
-              }
+        super("file", "Read and write files", {
+          type: :object,
+          properties: {
+            action: {
+              type: :string,
+              enum: ["read", "write"],
+              description: "Action to perform: read or write"
             },
-            required: [:action, :path]
-          }
-        )
+            path: {
+              type: :string,
+              description: "File path"
+            },
+            content: {
+              type: :string,
+              description: "Content to write (only for write action)"
+            }
+          },
+          required: [:action, :path]
+        })
       end
 
       def call(args)
