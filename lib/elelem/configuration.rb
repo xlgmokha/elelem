@@ -49,6 +49,7 @@ module Elelem
         [
           Toolbox::Exec.new(self),
           Toolbox::File.new(self),
+          Toolbox::Web.new(self),
           Toolbox::Prompt.new(self),
         ] + mcp_tools
       )

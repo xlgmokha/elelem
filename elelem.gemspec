@@ -53,6 +53,7 @@ Gem::Specification.new do |spec|
     "lib/elelem/toolbox.rb",
     "lib/elelem/toolbox/exec.rb",
     "lib/elelem/toolbox/file.rb",
+    "lib/elelem/toolbox/web.rb",
     "lib/elelem/toolbox/mcp.rb",
     "lib/elelem/toolbox/prompt.rb",
     "lib/elelem/tools.rb",
