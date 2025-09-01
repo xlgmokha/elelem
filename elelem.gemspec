@@ -51,7 +51,7 @@ Gem::Specification.new do |spec|
     "lib/elelem/system_prompt.erb",
     "lib/elelem/tool.rb",
     "lib/elelem/toolbox.rb",
-    "lib/elelem/toolbox/bash.rb",
+    "lib/elelem/toolbox/exec.rb",
     "lib/elelem/toolbox/file.rb",
     "lib/elelem/toolbox/git.rb",
     "lib/elelem/toolbox/mcp.rb",

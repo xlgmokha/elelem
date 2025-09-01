@@ -2,15 +2,18 @@
 
 module Elelem
   module Toolbox
-    class Bash < ::Elelem::Tool
+    class Exec < ::Elelem::Tool
       attr_reader :tui
 
       def initialize(configuration)
         @tui = configuration.tui
-        super("bash", "Run commands in /bin/bash -c. Full access to filesystem, network, processes, and all Unix tools.", {
+        super("exec", "Execute shell commands with pipe support", {
           type: "object",
           properties: {
-            command: { type: "string" }
+            command: { 
+              type: "string", 
+              description: "Shell command to execute (supports pipes, redirects, etc.)" 
+            }
           },
           required: ["command"]
         })
@@ -21,7 +24,7 @@ module Elelem
         output_buffer = []
 
         tui.say(command, newline: true)
-        Open3.popen3("/bin/bash", "-c", command) do |stdin, stdout, stderr, wait_thread|
+        Open3.popen3(command) do |stdin, stdout, stderr, wait_thread|
           stdin.close
           streams = [stdout, stderr]
 

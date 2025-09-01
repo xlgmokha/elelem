@@ -19,18 +19,7 @@ module Elelem
               state = state.run(message)
             end
 
-            break if state.nil?
-            break if agent.conversation.history.last[:role] == :assistant && agent.conversation.history.last[:content]&.strip&.end_with?("I am finished with the task.")
-
-            # For simple responses, check if we should return to idle
-            if done && agent.conversation.history.last[:role] == :assistant && 
-               !agent.conversation.history.last[:content]&.strip&.end_with?("I am finished with the task.")
-              # Check if this looks like a simple response (no pending tools/reasoning)
-              last_message = agent.conversation.history.last[:content]&.strip
-              if last_message && !last_message.empty?
-                break
-              end
-            end
+            break if state.nil? || done
           end
 
           agent.transition_to(States::Idle.new)

@@ -20,7 +20,12 @@ module Elelem
     end
 
     def logger
-      @logger ||= Logger.new(debug ? "#{Time.now.strftime("%Y-%m-%d")}-elelem.log" : "/dev/null").tap do |logger|
+      @logger ||= Logger.new("#{Time.now.strftime("%Y-%m-%d")}-elelem.log").tap do |logger|
+        if debug
+          logger.level = :debug
+        else
+          logger.level = ENV.fetch("LOG_LEVEL", "warn")
+        end
         logger.formatter = ->(_, _, _, message) { "#{message.to_s.strip}\n" }
       end
     end
@@ -39,10 +44,10 @@ module Elelem
     def tools
       @tools ||= Tools.new(self,
         [
-          Toolbox::Bash.new(self),
-          Toolbox::File.new(self),
-          Toolbox::Git.new(self),
-          Toolbox::Prompt.new(self),
+          Toolbox::Exec.new(self),
+          # Toolbox::File.new(self),
+          # Toolbox::Git.new(self),
+          # Toolbox::Prompt.new(self),
           Toolbox::Search.new(self),
         ] + mcp_tools
       )

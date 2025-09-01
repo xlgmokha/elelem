@@ -36,9 +36,9 @@ module Elelem
           command = "grep -rnw '#{pattern}' #{path} | head -20"
         end
 
-        # Delegate to bash tool for consistent logging and streaming
-        bash_tool = Elelem::Toolbox::Bash.new(@configuration)
-        bash_tool.call({ "command" => command })
+        # Delegate to exec tool for consistent logging and streaming
+        exec_tool = Elelem::Toolbox::Exec.new(@configuration)
+        exec_tool.call({ "command" => command })
       end
     end
   end
