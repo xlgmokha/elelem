@@ -4,6 +4,9 @@ module Elelem
   module Toolbox
     class File < Tool
       def initialize(configuration)
+        @configuration = configuration
+        @tui = configuration.tui
+
         super("file", "Read and write files", {
           type: :object,
           properties: {
@@ -42,13 +45,17 @@ module Elelem
 
       private
 
+      attr_reader :configuration, :tui
+
       def read_file(path)
+        tui.say("Read: #{path}", newline: true)
         ::File.read(path)
       rescue => e
         "Error reading file: #{e.message}"
       end
 
       def write_file(path, content)
+        tui.say("Write: #{path}", newline: true)
         ::File.write(path, content)
         "File written successfully"
       rescue => e
