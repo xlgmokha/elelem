@@ -2,46 +2,61 @@
 
 module Elelem
   module Toolbox
-    class File < ::Elelem::Tool
-      attr_reader :tui
-
+    class File < Tool
       def initialize(configuration)
-        @tui = configuration.tui
-        super("file", "Read/write files in project directory", {
-          type: "object",
-          properties: {
-            action: {
-              type: "string",
-              enum: ["read", "write", "append"],
-              description: "File operation to perform"
+        super(
+          "file",
+          "Read and write files",
+          {
+            type: :object,
+            properties: {
+              action: {
+                type: :string,
+                enum: ["read", "write"],
+                description: "Action to perform: read or write"
+              },
+              path: {
+                type: :string,
+                description: "File path"
+              },
+              content: {
+                type: :string,
+                description: "Content to write (only for write action)"
+              }
             },
-            path: {
-              type: "string",
-              description: "Relative path to file from project root"
-            },
-            content: {
-              type: "string",
-              description: "Content to write/apppend (only for write/append actions)"
-            }
-          },
-          required: ["action", "path"]
-        })
+            required: [:action, :path]
+          }
+        )
       end
 
       def call(args)
-        path = Pathname.pwd.join(args["path"])
-        case args["action"]
+        action = args["action"]
+        path = args["path"]
+        content = args["content"]
+
+        case action
         when "read"
-          path.read
+          read_file(path)
         when "write"
-          path.write(args["content"])
-          "File written successfully"
-        when "append"
-          path.open("a") { |f| f << args["content"] }
-          "Content appended successfully"
+          write_file(path, content)
+        else
+          "Invalid action: #{action}"
         end
+      end
+
+      private
+
+      def read_file(path)
+        ::File.read(path)
       rescue => e
-        e.message
+        "Error reading file: #{e.message}"
+      end
+
+      def write_file(path, content)
+        ::File.write(path, content)
+        "File written successfully"
+      rescue => e
+        "Error writing file: #{e.message}"
       end
     end
   end

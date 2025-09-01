@@ -26,7 +26,10 @@ module Elelem
         else
           logger.level = ENV.fetch("LOG_LEVEL", "warn")
         end
-        logger.formatter = ->(_, _, _, message) { "#{message.to_s.strip}\n" }
+        logger.formatter = ->(severity, datetime, progname, message) {
+          timestamp = datetime.strftime("%H:%M:%S.%3N")
+          "[#{timestamp}] #{severity.ljust(5)} #{message.to_s.strip}\n"
+        }
       end
     end
 
@@ -45,10 +48,8 @@ module Elelem
       @tools ||= Tools.new(self,
         [
           Toolbox::Exec.new(self),
-          # Toolbox::File.new(self),
-          # Toolbox::Git.new(self),
-          # Toolbox::Prompt.new(self),
-          Toolbox::Search.new(self),
+          Toolbox::File.new(self),
+          Toolbox::Prompt.new(self),
         ] + mcp_tools
       )
     end

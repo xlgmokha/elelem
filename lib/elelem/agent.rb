@@ -25,23 +25,28 @@ module Elelem
     end
 
     def transition_to(next_state)
-      logger.debug("Transition to: #{next_state.class.name}")
+      if @current_state
+        logger.info("AGENT: #{@current_state.class.name.split('::').last} -> #{next_state.class.name.split('::').last}")
+      else
+        logger.info("AGENT: Starting in #{next_state.class.name.split('::').last}")
+      end
       @current_state = next_state
     end
 
     def execute(tool_call)
-      logger.debug("Execute: #{tool_call}")
-      configuration.tools.execute(tool_call)
+      tool_name = tool_call.dig("function", "name")
+      logger.debug("TOOL: Full call - #{tool_call}")
+      result = configuration.tools.execute(tool_call)
+      logger.debug("TOOL: Result (#{result.length} chars)") if result
+      result
     end
 
     def quit
-      logger.debug("Exiting...")
       cleanup
       exit
     end
 
     def cleanup
-      logger.debug("Cleaning up agent...")
       configuration.cleanup
     end
 

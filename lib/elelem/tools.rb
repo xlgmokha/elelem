@@ -19,7 +19,6 @@ module Elelem
       return "Invalid function arguments: #{args}" unless tool.valid?(args)
 
       CLI::UI::Frame.open(name) do
-        configuration.logger.debug("Calling tool: #{tool} with #{args}")
         tool.call(args)
       end
     end

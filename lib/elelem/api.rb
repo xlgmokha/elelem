@@ -13,13 +13,14 @@ module Elelem
       Net::HTTP.start(uri.hostname, uri.port, http_options) do |http|
         http.request(build_request(messages)) do |response|
           if !response.is_a?(Net::HTTPSuccess)
-            configuration.logger.error(response.inspect)
+            configuration.logger.error("API: HTTP error - #{response.code} #{response.message}")
             raise response.inspect
           end
 
           buffer = ""
+          chunk_count = 0
+
           response.read_body do |chunk|
-            configuration.logger.debug(chunk)
             buffer += chunk
 
             while (message = extract_sse_message(buffer))
@@ -30,9 +31,18 @@ module Elelem
                 break
               end
 
-              configuration.logger.debug(message)
               json = JSON.parse(message)
-              block.call(normalize(json.dig("choices", 0, "delta")))
+              delta = json.dig("choices", 0, "delta")
+              finish_reason = json.dig("choices", 0, "finish_reason")
+
+              if finish_reason
+                block.call({ "finish_reason" => finish_reason })
+              end
+
+              if delta
+                chunk_count += 1
+                block.call(normalize(delta))
+              end
             end
           end
         end
@@ -103,7 +113,7 @@ module Elelem
         temperature: 0.1,
         tools: configuration.tools.to_h
       }.tap do |payload|
-        configuration.logger.debug(JSON.pretty_generate(payload))
+        configuration.logger.debug(JSON.pretty_generate(payload)) if configuration.debug
       end
     end
   end
