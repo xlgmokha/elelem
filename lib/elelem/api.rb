@@ -71,7 +71,7 @@ module Elelem
     end
 
     def normalize(message)
-      message.reject { |_key, value| value.empty? }
+      message.reject { |_key, value| value&.empty? }
     end
 
     def http_options
