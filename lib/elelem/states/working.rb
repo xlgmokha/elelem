@@ -44,6 +44,7 @@ module Elelem
 
           agent.transition_to(States::Idle.new)
         rescue StandardError => e
+          agent.logger.error(e)
           agent.conversation.add(role: :tool, content: e.message)
           agent.tui.say(e.message, colour: :red, newline: true)
           agent.transition_to(States::Idle.new)
