@@ -82,7 +82,7 @@ STDOUT.set_encoding(Encoding::UTF_8)
 STDERR.set_encoding(Encoding::UTF_8)
 
 OLLAMA_HOST = ENV["OLLAMA_HOST"] || "localhost:11434"
-OLLAMA_MODEL = ENV["OLLAMA_MODEL"] || "qwen2.5-coder:7b"
+OLLAMA_MODEL = ENV["OLLAMA_MODEL"] || "gpt-oss:latest"
 SYSTEM_PROMPT="You are a reasoning coding and system agent."
 
 def build_tool(name, description, properties, required = [])
