@@ -25,21 +25,24 @@ module Elelem
     private
 
     def normalize_ollama_response(chunk)
-      if chunk["done"]
-        finish_reason = chunk["done_reason"] || "stop"
-        return { "done" => true, "finish_reason" => finish_reason }
-      end
+      return done_response(chunk) if chunk["done"]
 
-      message = chunk["message"]
+      normalize_message(chunk["message"])
+    end
+
+    def done_response(chunk)
+      { "done" => true, "finish_reason" => chunk["done_reason"] || "stop" }
+    end
+
+    def normalize_message(message)
       return nil unless message
 
-      result = {}
-      result["role"] = message["role"] if message["role"]
-      result["content"] = message["content"] if message["content"]
-      result["reasoning"] = message["thinking"] if message["thinking"]
-      result["tool_calls"] = message["tool_calls"] if message["tool_calls"]
-
-      result.empty? ? nil : result
+      {}.tap do |result|
+        result["role"] = message["role"] if message["role"]
+        result["content"] = message["content"] if message["content"]
+        result["reasoning"] = message["thinking"] if message["thinking"]
+        result["tool_calls"] = message["tool_calls"] if message["tool_calls"]
+      end.then { |r| r.empty? ? nil : r }
     end
   end
 end
