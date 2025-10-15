@@ -1,120 +1,45 @@
 # frozen_string_literal: true
 
+require "net/llm"
+
 module Elelem
   class Api
-    attr_reader :configuration, :uri
+    attr_reader :configuration, :client
 
     def initialize(configuration)
       @configuration = configuration
-      @uri = build_uri(configuration.host)
+      @client = Net::Llm::Ollama.new(
+        host: configuration.host,
+        model: configuration.model
+      )
     end
 
     def chat(messages, &block)
-      Net::HTTP.start(uri.hostname, uri.port, http_options) do |http|
-        http.request(build_request(messages)) do |response|
-          if !response.is_a?(Net::HTTPSuccess)
-            configuration.logger.error("API: HTTP error - #{response.code} #{response.message}")
-            raise response.inspect
-          end
-
-          buffer = ""
-          chunk_count = 0
-
-          response.read_body do |chunk|
-            buffer += chunk
-
-            while (message = extract_sse_message(buffer))
-              next if message.empty?
-
-              if message == "[DONE]"
-                block.call({ "done" => true })
-                break
-              end
-
-              json = JSON.parse(message)
-              delta = json.dig("choices", 0, "delta")
-              finish_reason = json.dig("choices", 0, "finish_reason")
-
-              if finish_reason
-                block.call({ "finish_reason" => finish_reason })
-              end
-
-              if delta
-                chunk_count += 1
-                block.call(normalize(delta))
-              end
-            end
-          end
-        end
+      tools = configuration.tools.to_h
+      client.chat(messages, tools) do |chunk|
+        normalized = normalize_ollama_response(chunk)
+        block.call(normalized) if normalized
       end
     end
 
     private
 
-    def extract_sse_message(buffer)
-      message_end = buffer.index("\n\n")
-      return nil unless message_end
-
-      message_data = buffer[0...message_end]
-      buffer.replace(buffer[(message_end + 2)..-1] || "")
-
-      data_lines = message_data.split("\n").filter_map do |line|
-        if line.start_with?("data: ")
-          line[6..-1]
-        elsif line == "data:"
-          ""
-        end
+    def normalize_ollama_response(chunk)
+      if chunk["done"]
+        finish_reason = chunk["done_reason"] || "stop"
+        return { "done" => true, "finish_reason" => finish_reason }
       end
 
-      return "" if data_lines.empty?
-      data_lines.join("\n")
-    end
+      message = chunk["message"]
+      return nil unless message
 
-    def normalize(message)
-      message.reject { |_key, value| value&.empty? }
-    end
+      result = {}
+      result["role"] = message["role"] if message["role"]
+      result["content"] = message["content"] if message["content"]
+      result["reasoning"] = message["thinking"] if message["thinking"]
+      result["tool_calls"] = message["tool_calls"] if message["tool_calls"]
 
-    def http_options
-      {
-        open_timeout: 10,
-        read_timeout: 3_600,
-        use_ssl: uri.scheme == "https"
-      }
-    end
-
-    def build_uri(raw_host)
-      if raw_host =~ %r{^https?://}
-        host = raw_host
-      else
-        # No scheme – decide which one to add.
-        # * localhost or 127.0.0.1 → http
-        # * anything else          → https
-        scheme = raw_host.start_with?("localhost", "127.0.0.1") ? "http://" : "https://"
-        host = scheme + raw_host
-      end
-
-      URI("#{host.sub(%r{/?$}, "")}/v1/chat/completions")
-    end
-
-    def build_request(messages)
-      Net::HTTP::Post.new(uri).tap do |request|
-        request["Accept"] = "application/json"
-        request["Content-Type"] = "application/json"
-        request["Authorization"] = "Bearer #{configuration.token}" if configuration.token
-        request.body = build_payload(messages).to_json
-      end
-    end
-
-    def build_payload(messages)
-      {
-        messages: messages,
-        model: configuration.model,
-        stream: true,
-        temperature: 0.1,
-        tools: configuration.tools.to_h
-      }.tap do |payload|
-        configuration.logger.debug(JSON.pretty_generate(payload)) if configuration.debug
-      end
+      result.empty? ? nil : result
     end
   end
 end
