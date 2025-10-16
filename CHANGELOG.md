@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.2.1] - 2025-10-15
+
+### Fixed
+- Added missing `exe/llm-ollama` and `exe/llm-openai` files to gemspec
+- These executables were added in 0.2.0 but not included in the packaged gem
+
 ## [0.2.0] - 2025-10-15
 
 ### Added
