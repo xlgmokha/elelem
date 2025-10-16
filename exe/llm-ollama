@@ -205,14 +205,40 @@ def execute_turn(client, messages, tools:)
   turn_context = []
 
   loop do
-    puts "Thinking..."
-    response = client.chat(messages + turn_context, tools)
-    abort "API Error #{response['code']}: #{response['body']}" if response["code"]
-    message = response["message"]
-    turn_context << { role: message["role"], content: message["content"] || "", tool_calls: message["tool_calls"] }.compact
+    content = ""
+    tool_calls = nil
+    role = "assistant"
+    first_content = true
 
-    if message["tool_calls"]
-      message["tool_calls"].each do |call|
+    print "Thinking..."
+    client.chat(messages + turn_context, tools) do |chunk|
+      if chunk["message"]
+        msg = chunk["message"]
+        role = msg["role"] if msg["role"]
+
+        if msg["thinking"] && !msg["thinking"].empty?
+          print "."
+        end
+
+        if msg["content"] && !msg["content"].empty?
+          if first_content
+            print "\r\e[KAssistant> "
+            first_content = false
+          end
+          print msg["content"]
+          $stdout.flush
+          content += msg["content"]
+        end
+
+        tool_calls = msg["tool_calls"] if msg["tool_calls"]
+      end
+    end
+    puts
+
+    turn_context << { role: role, content: content, tool_calls: tool_calls }.compact
+
+    if tool_calls
+      tool_calls.each do |call|
         name = call.dig("function", "name")
         args_raw = call.dig("function", "arguments")
 
@@ -236,13 +262,7 @@ def execute_turn(client, messages, tools:)
       next
     end
 
-    if message["content"] && !message["content"].strip.empty?
-      puts "\nAssistant>\n#{message['content']}"
-
-      unless message["tool_calls"]
-        return { role: "assistant", content: message["content"] }
-      end
-    end
+    return { role: "assistant", content: content } unless content.strip.empty?
   end
 end
 
