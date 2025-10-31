@@ -300,7 +300,8 @@ end
 
 def print_help
   puts <<~HELP
-  /chmod - (+|-)rwx auto build plan
+  /chmod - (+|-)rwx
+  /mode auto build plan verify
   /clear
   /context
   /exit
