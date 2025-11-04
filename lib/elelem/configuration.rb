@@ -2,13 +2,12 @@
 
 module Elelem
   class Configuration
-    attr_reader :host, :model, :token, :debug
+    attr_reader :host, :model, :token
 
-    def initialize(host:, model:, token:, debug: false)
+    def initialize(host:, model:, token:)
       @host = host
       @model = model
       @token = token
-      @debug = debug
     end
 
     def tui
@@ -21,11 +20,7 @@ module Elelem
 
     def logger
       @logger ||= Logger.new("#{Time.now.strftime("%Y-%m-%d")}-elelem.log").tap do |logger|
-        if debug
-          logger.level = :debug
-        else
-          logger.level = ENV.fetch("LOG_LEVEL", "warn")
-        end
+        logger.level = ENV.fetch("LOG_LEVEL", "warn")
         logger.formatter = ->(severity, datetime, progname, message) {
           timestamp = datetime.strftime("%H:%M:%S.%3N")
           "[#{timestamp}] #{severity.ljust(5)} #{message.to_s.strip}\n"
