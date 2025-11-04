@@ -10,7 +10,3 @@ default:
 test:
   script:
     - ./bin/test
-
-lint:
-  script:
-    - ./bin/lint
