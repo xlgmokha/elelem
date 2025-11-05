@@ -2,7 +2,7 @@
 
 module Elelem
   class Agent
-    attr_reader :conversation, :tui, :client, :tools
+    attr_reader :conversation, :client, :tools
 
     def initialize(client)
       @conversation = Conversation.new
@@ -30,15 +30,25 @@ module Elelem
         break if input.nil?
         if input.start_with?("/")
           case input
-          when "/mode auto" then mode = Set[:read, :write, :execute]
-          when "/mode build" then mode = Set[:read, :write]
-          when "/mode plan" then mode = Set[:read]
-          when "/mode verify" then mode = Set[:read, :execute]
+          when "/mode auto"
+            mode = Set[:read, :write, :execute]
+            puts "  → Mode: auto (all tools enabled)"
+          when "/mode build"
+            mode = Set[:read, :write]
+            puts "  → Mode: build (read + write)"
+          when "/mode plan"
+            mode = Set[:read]
+            puts "  → Mode: plan (read-only)"
+          when "/mode verify"
+            mode = Set[:read, :execute]
+            puts "  → Mode: verify (read + execute)"
           when "/mode"
-            puts("  Mode: #{mode.to_a.inspect}")
-            puts("  Tools: #{tools_for(mode).map { |t| t.dig(:function, :name) }}")
+            puts "  Mode: #{mode.to_a.inspect}"
+            puts "  Tools: #{tools_for(mode).map { |t| t.dig(:function, :name) }}"
           when "/exit" then exit
-          when "/clear" then conversation.clear
+          when "/clear"
+            conversation.clear
+            puts "  → Conversation cleared"
           when "/context" then puts conversation.dump
           else
             puts help_banner
@@ -60,7 +70,6 @@ module Elelem
 
     def help_banner
       <<~HELP
-  /chmod (+|-)rwx
   /mode auto build plan verify
   /clear
   /context
@@ -96,6 +105,22 @@ module Elelem
       end
     end
 
+    def format_tool_call(name, args)
+      case name
+      when "execute"
+        cmd = args["cmd"]
+        cmd_args = args["args"] || []
+        cmd_args.empty? ? cmd : "#{cmd} #{cmd_args.join(' ')}"
+      when "grep" then "grep(#{args["query"]})"
+      when "list" then "list(#{args["path"] || "."})"
+      when "patch" then "patch(#{args["diff"]&.lines&.count || 0} lines)"
+      when "read" then "read(#{args["path"]})"
+      when "write" then "write(#{args["path"]})"
+      else
+        "#{name}(#{args.to_s[0...50]})"
+      end
+    end
+
     def execute_turn(messages, tools:)
       turn_context = []
 
@@ -107,9 +132,8 @@ module Elelem
         client.chat(messages + turn_context, tools) do |chunk|
           msg = chunk["message"]
           if msg
-            print msg["thinking"] unless msg["thinking"]&.empty?
-
             if msg["content"] && !msg["content"].empty?
+              print "\r\e[K" if content.empty?
               print msg["content"]
               content += msg["content"]
             end
@@ -126,7 +150,7 @@ module Elelem
             name = call.dig("function", "name")
             args = call.dig("function", "arguments")
 
-            puts "Tool> #{name}(#{args})}"
+            puts "Tool> #{format_tool_call(name, args)}"
             result = run_tool(name, args)
             turn_context << { role: "tool", content: JSON.dump(result) }
           end
