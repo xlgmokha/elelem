@@ -2,13 +2,8 @@
 
 module Elelem
   class Tools
-    def initialize(configuration, tools)
-      @configuration = configuration
+    def initialize(tools)
       @tools = tools
-    end
-
-    def banner
-      tools.map(&:banner).sort.join("\n  ")
     end
 
     def execute(tool_call)
@@ -29,7 +24,7 @@ module Elelem
 
     private
 
-    attr_reader :configuration, :tools
+    attr_reader :tools
 
     def parse(tool_call)
       name = tool_call.dig("function", "name")

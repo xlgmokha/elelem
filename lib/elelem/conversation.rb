@@ -4,7 +4,7 @@ module Elelem
   class Conversation
     ROLES = %i[system assistant user tool].freeze
 
-    def initialize(items = [{ role: "system", content: system_prompt }])
+    def initialize(items = default_context)
       @items = items
     end
 
@@ -25,7 +25,19 @@ module Elelem
       end
     end
 
+    def clear
+      @items = default_context
+    end
+
+    def dump
+      JSON.pretty_generate(@items)
+    end
+
     private
+
+    def default_context
+      [{ role: "system", content: system_prompt }]
+    end
 
     def system_prompt
       ERB.new(Pathname.new(__dir__).join("system_prompt.erb").read).result(binding)

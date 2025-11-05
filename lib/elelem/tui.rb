@@ -9,8 +9,8 @@ module Elelem
       @stdout = stdout
     end
 
-    def prompt(message)
-      Reline.readline(message, true)
+    def ask?(text)
+      Reline.readline(text, true)&.strip
     end
 
     def say(message, colour: :default, newline: false)

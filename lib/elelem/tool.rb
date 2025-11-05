@@ -10,10 +10,6 @@ module Elelem
       @parameters = parameters
     end
 
-    def banner
-      [name, parameters].join(": ")
-    end
-
     def valid?(args)
       JSON::Validator.validate(parameters, args, insert_defaults: true)
     end

@@ -29,7 +29,6 @@ elelem chat
 - `--host`: Specify Ollama host (default: localhost:11434)
 - `--model`: Specify Ollama model (default: gpt-oss, currently only tested with gpt-oss)  
 - `--token`: Provide authentication token
-- `--debug`: Enable debug logging
 
 ### Examples
 
@@ -39,9 +38,6 @@ elelem chat
 
 # Chat with specific model and host
 elelem chat --model llama2 --host remote-host:11434
-
-# Enable debug mode
-elelem chat --debug
 ```
 
 ### Features
@@ -57,10 +53,6 @@ elelem chat --debug
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/xlgmokha/elelem.
 
 ## License
 

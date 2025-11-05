@@ -4,8 +4,7 @@ module Elelem
   class MCPClient
     attr_reader :tools, :resources
 
-    def initialize(configuration, command = [])
-      @configuration = configuration
+    def initialize(command = [])
       @stdin, @stdout, @stderr, @worker = Open3.popen3(*command, pgroup: true)
 
       # 1. Send initialize request
@@ -57,8 +56,6 @@ module Elelem
     def shutdown
       return unless connected?
 
-      configuration.logger.debug("Shutting down MCP client")
-
       [@stdin, @stdout, @stderr].each do |stream|
         stream&.close unless stream&.closed?
       end
@@ -83,7 +80,7 @@ module Elelem
 
     private
 
-    attr_reader :stdin, :stdout, :stderr, :worker, :configuration
+    attr_reader :stdin, :stdout, :stderr, :worker
 
     def send_request(method:, params: {})
       return {} unless connected?
@@ -94,7 +91,6 @@ module Elelem
         method: method
       }
       request[:params] = params unless params.empty?
-      configuration.logger.debug(JSON.pretty_generate(request))
 
       @stdin.puts(JSON.generate(request))
       @stdin.flush
@@ -103,10 +99,8 @@ module Elelem
       return {} if response_line.nil? || response_line.empty?
 
       response = JSON.parse(response_line)
-      configuration.logger.debug(JSON.pretty_generate(response))
 
       if response["error"]
-        configuration.logger.error(response["error"]["message"])
         { error: response["error"]["message"] }
       else
         response["result"]
@@ -121,7 +115,6 @@ module Elelem
         method: method
       }
       notification[:params] = params unless params.empty?
-      configuration.logger.debug("Sending notification: #{JSON.pretty_generate(notification)}")
       @stdin.puts(JSON.generate(notification))
       @stdin.flush
 
@@ -129,7 +122,6 @@ module Elelem
       return {} if response_line.nil? || response_line.empty?
 
       response = JSON.parse(response_line)
-      configuration.logger.debug(JSON.pretty_generate(response))
       response
     end
   end

@@ -26,8 +26,6 @@ module Elelem
         token: options[:token],
       )
       say "Agent (#{configuration.model})", :green
-      say configuration.tools.banner.to_s, :green
-
       agent = Agent.new(configuration)
       agent.repl
     end
