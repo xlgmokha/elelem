@@ -46,9 +46,8 @@ module Elelem
             puts help_banner
           end
         else
-          conversation.set_system_prompt(system_prompt_for(mode))
           conversation.add(role: :user, content: input)
-          result = execute_turn(conversation.history, tools: tools_for(mode))
+          result = execute_turn(conversation.history_for(mode), tools: tools_for(mode))
           conversation.add(role: result[:role], content: result[:content])
         end
       end
@@ -72,29 +71,6 @@ module Elelem
 
     def tools_for(modes)
       modes.map { |mode| tools[mode] }.flatten
-    end
-
-    def system_prompt_for(mode)
-      base = "You are a reasoning coding and system agent."
-
-      case mode.to_a.sort
-      when [:read]
-        "#{base}\n\nRead and analyze. Understand before suggesting action."
-      when [:write]
-        "#{base}\n\nWrite clean, thoughtful code."
-      when [:execute]
-        "#{base}\n\nUse shell commands creatively to understand and manipulate the system."
-      when [:read, :write]
-        "#{base}\n\nFirst understand, then build solutions that integrate well."
-      when [:read, :execute]
-        "#{base}\n\nUse commands to deeply understand the system."
-      when [:write, :execute]
-        "#{base}\n\nCreate and execute freely. Have fun. Be kind."
-      when [:read, :write, :execute]
-        "#{base}\n\nYou have all tools. Use them wisely."
-      else
-        base
-      end
     end
 
     def format_tool_call(name, args)

@@ -8,8 +8,10 @@ module Elelem
       @items = items
     end
 
-    def history
-      @items
+    def history_for(mode)
+      history = @items.dup
+      history[0] = { role: "system", content: system_prompt_for(mode) }
+      history
     end
 
     def add(role: :user, content: "")
@@ -28,18 +30,37 @@ module Elelem
       @items = default_context
     end
 
-    def set_system_prompt(prompt)
-      @items[0] = { role: :system, content: prompt }
-    end
-
     def dump
       JSON.pretty_generate(@items)
     end
 
     private
 
-    def default_context
-      [{ role: "system", content: system_prompt }]
+    def default_context(prompt = system_prompt_for([]))
+      [{ role: "system", content: prompt }]
+    end
+
+    def system_prompt_for(mode)
+      base = system_prompt
+
+      case mode.sort
+      when [:read]
+        "#{base}\n\nRead and analyze. Understand before suggesting action."
+      when [:write]
+        "#{base}\n\nWrite clean, thoughtful code."
+      when [:execute]
+        "#{base}\n\nUse shell commands creatively to understand and manipulate the system."
+      when [:read, :write]
+        "#{base}\n\nFirst understand, then build solutions that integrate well."
+      when [:read, :execute]
+        "#{base}\n\nUse commands to deeply understand the system."
+      when [:write, :execute]
+        "#{base}\n\nCreate and execute freely. Have fun. Be kind."
+      when [:read, :write, :execute]
+        "#{base}\n\nYou have all tools. Use them wisely."
+      else
+        base
+      end
     end
 
     def system_prompt
