@@ -56,7 +56,7 @@ module Elelem
         "#{base}\n\nUse commands to deeply understand the system."
       when [:execute, :write]
         "#{base}\n\nCreate and execute freely. Have fun. Be kind."
-      when [:read, :execute, :write]
+      when [:execute, :read, :write]
         "#{base}\n\nYou have all tools. Use them wisely."
       else
         base
