@@ -2,16 +2,11 @@
 
 module Elelem
   class Agent
-    attr_reader :conversation, :model, :tui, :client, :tools
+    attr_reader :conversation, :tui, :client, :tools
 
-    def initialize(configuration)
-      @tui = TUI.new
-      @configuration = configuration
+    def initialize(client)
       @conversation = Conversation.new
-      @client = Net::Llm::Ollama.new(
-        host: configuration.host,
-        model: configuration.model,
-      )
+      @client = client
 
       exec_tool = build_tool("execute", "Execute shell commands. Returns stdout, stderr, and exit code. Use for: checking system state, running tests, managing services. Common Unix tools available: git, bash, grep, etc. Tip: Check exit_status in response to determine success.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory for command execution (defaults to current directory if not specified)" }, stdin: { type: "string" } }, ["cmd"])
       grep_tool = build_tool("grep", "Search all git-tracked files using git grep. Returns file paths with matching line numbers. Use this to discover where code/configuration exists before reading files. Examples: search 'def method_name' to find method definitions. Much faster than reading multiple files.", { query: { type: "string" } }, ["query"])
@@ -25,25 +20,31 @@ module Elelem
         write: [patch_tool, write_tool],
         execute: [exec_tool]
       }
-
-      at_exit { cleanup }
     end
 
     def repl
-      mode = Set.new([:read, :write, :execute])
+      mode = Set.new([:read])
 
       loop do
-        input = tui.ask?("User> ")
+        input = ask?("User> ")
         break if input.nil?
         if input.start_with?("/")
           case input
+          when "/mode auto" then mode = Set[:read, :write, :execute]
+          when "/mode build" then mode = Set[:read, :write]
+          when "/mode plan" then mode = Set[:read]
+          when "/mode verify" then mode = Set[:read, :execute]
+          when "/mode"
+            puts("  Mode: #{mode.to_a.inspect}")
+            puts("  Tools: #{tools_for(mode).map { |t| t.dig(:function, :name) }}")
           when "/exit" then exit
           when "/clear" then conversation.clear
-          when "/context" then tui.say(conversation.dump)
+          when "/context" then puts conversation.dump
           else
-            tui.say(help_banner)
+            puts help_banner
           end
         else
+          conversation.set_system_prompt(system_prompt_for(mode))
           conversation.add(role: :user, content: input)
           result = execute_turn(conversation.history, tools: tools_for(mode))
           conversation.add(role: result[:role], content: result[:content])
@@ -51,32 +52,48 @@ module Elelem
       end
     end
 
-    def quit
-      cleanup
-      exit
-    end
-
-    def cleanup
-      configuration.cleanup
-    end
-
     private
 
-    attr_reader :configuration
+    def ask?(text)
+      Reline.readline(text, true)&.strip
+    end
 
     def help_banner
       <<~HELP
+  /chmod (+|-)rwx
   /mode auto build plan verify
   /clear
   /context
   /exit
   /help
-  /shell
       HELP
     end
 
     def tools_for(modes)
       modes.map { |mode| tools[mode] }.flatten
+    end
+
+    def system_prompt_for(mode)
+      base = "You are a reasoning coding and system agent."
+
+      case mode.to_a.sort
+      when [:read]
+        "#{base}\n\nRead and analyze. Understand before suggesting action."
+      when [:write]
+        "#{base}\n\nWrite clean, thoughtful code."
+      when [:execute]
+        "#{base}\n\nUse shell commands creatively to understand and manipulate the system."
+      when [:read, :write]
+        "#{base}\n\nFirst understand, then build solutions that integrate well."
+      when [:read, :execute]
+        "#{base}\n\nUse commands to deeply understand the system."
+      when [:write, :execute]
+        "#{base}\n\nCreate and execute freely. Have fun. Be kind."
+      when [:read, :write, :execute]
+        "#{base}\n\nYou have all tools. Use them wisely."
+      else
+        base
+      end
     end
 
     def execute_turn(messages, tools:)
@@ -159,6 +176,8 @@ module Elelem
       else
         { error: "Unknown tool", name: name, args: args }
       end
+    rescue => error
+      { error: error.message, name: name, args: args }
     end
 
     def build_tool(name, description, properties, required = [])

@@ -12,7 +12,6 @@ module Elelem
       @items
     end
 
-    # :TODO truncate conversation history
     def add(role: :user, content: "")
       role = role.to_sym
       raise "unknown role: #{role}" unless ROLES.include?(role)
@@ -27,6 +26,10 @@ module Elelem
 
     def clear
       @items = default_context
+    end
+
+    def set_system_prompt(prompt)
+      @items[0] = { role: :system, content: prompt }
     end
 
     def dump

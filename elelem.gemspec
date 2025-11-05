@@ -36,16 +36,9 @@ Gem::Specification.new do |spec|
     "lib/elelem.rb",
     "lib/elelem/agent.rb",
     "lib/elelem/application.rb",
-    "lib/elelem/configuration.rb",
     "lib/elelem/conversation.rb",
-    "lib/elelem/mcp_client.rb",
     "lib/elelem/system_prompt.erb",
     "lib/elelem/tool.rb",
-    "lib/elelem/toolbox.rb",
-    "lib/elelem/toolbox/exec.rb",
-    "lib/elelem/toolbox/file.rb",
-    "lib/elelem/toolbox/mcp.rb",
-    "lib/elelem/toolbox/web.rb",
     "lib/elelem/tools.rb",
     "lib/elelem/tui.rb",
     "lib/elelem/version.rb",
@@ -54,7 +47,6 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "cli-ui"
   spec.add_dependency "erb"
   spec.add_dependency "json"
   spec.add_dependency "json-schema"

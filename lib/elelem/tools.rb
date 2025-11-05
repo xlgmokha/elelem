@@ -6,6 +6,10 @@ module Elelem
       @tools = tools
     end
 
+    def add(name, description, parameters, &block)
+      @tools << Tool.new(name, description, parameters, &block)
+    end
+
     def execute(tool_call)
       name, args = parse(tool_call)
 
@@ -13,9 +17,7 @@ module Elelem
       return "Invalid function name: #{name}" if tool.nil?
       return "Invalid function arguments: #{args}" unless tool.valid?(args)
 
-      CLI::UI::Frame.open(name) do
-        tool.call(args)
-      end
+      tool.call(args)
     end
 
     def to_h
