@@ -15,9 +15,6 @@ module Elelem
       @tools ||= Tools.new([
         Toolbox::Exec.new(self),
         Toolbox::File.new(self),
-        Toolbox::Web.new(self),
-        Toolbox::Prompt.new(self),
-        Toolbox::Memory.new(self),
       ] + mcp_tools)
     end
 

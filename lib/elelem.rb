@@ -12,7 +12,6 @@ require "thor"
 require "timeout"
 
 require_relative "elelem/agent"
-require_relative "elelem/api"
 require_relative "elelem/application"
 require_relative "elelem/configuration"
 require_relative "elelem/conversation"

@@ -10,9 +10,9 @@ module Elelem
         super("exec", "Execute shell commands with pipe support", {
           type: "object",
           properties: {
-            command: { 
-              type: "string", 
-              description: "Shell command to execute (supports pipes, redirects, etc.)" 
+            command: {
+              type: "string",
+              description: "Shell command to execute (supports pipes, redirects, etc.)"
             }
           },
           required: ["command"]
