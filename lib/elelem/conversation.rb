@@ -30,8 +30,8 @@ module Elelem
       @items = default_context
     end
 
-    def dump
-      JSON.pretty_generate(@items)
+    def dump(mode)
+      JSON.pretty_generate(history_for(mode))
     end
 
     private
@@ -52,11 +52,11 @@ module Elelem
         "#{base}\n\nUse shell commands creatively to understand and manipulate the system."
       when [:read, :write]
         "#{base}\n\nFirst understand, then build solutions that integrate well."
-      when [:read, :execute]
+      when [:execute, :read]
         "#{base}\n\nUse commands to deeply understand the system."
-      when [:write, :execute]
+      when [:execute, :write]
         "#{base}\n\nCreate and execute freely. Have fun. Be kind."
-      when [:read, :write, :execute]
+      when [:read, :execute, :write]
         "#{base}\n\nYou have all tools. Use them wisely."
       else
         base

@@ -41,7 +41,7 @@ module Elelem
           when "/clear"
             conversation.clear
             puts "  → Conversation cleared"
-          when "/context" then puts conversation.dump
+          when "/context" then puts conversation.dump(mode)
           else
             puts help_banner
           end
