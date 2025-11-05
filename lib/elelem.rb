@@ -16,8 +16,6 @@ require "timeout"
 require_relative "elelem/agent"
 require_relative "elelem/application"
 require_relative "elelem/conversation"
-require_relative "elelem/tool"
-require_relative "elelem/tools"
 require_relative "elelem/version"
 
 Reline.input = $stdin

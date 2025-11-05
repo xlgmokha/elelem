@@ -38,8 +38,6 @@ Gem::Specification.new do |spec|
     "lib/elelem/application.rb",
     "lib/elelem/conversation.rb",
     "lib/elelem/system_prompt.erb",
-    "lib/elelem/tool.rb",
-    "lib/elelem/tools.rb",
     "lib/elelem/version.rb",
   ]
   spec.bindir = "exe"

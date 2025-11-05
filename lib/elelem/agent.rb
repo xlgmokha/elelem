@@ -7,16 +7,8 @@ module Elelem
     def initialize(client)
       @conversation = Conversation.new
       @client = client
-
-      exec_tool = build_tool("execute", "Execute shell commands directly. Returns stdout, stderr, and exit code. Commands run in a shell context. Examples: 'date', 'git status', 'ls -la'. Use for: checking system state, running tests, managing services. Tip: Check exit_status in response to determine success.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory for command execution (defaults to current directory if not specified)" }, stdin: { type: "string" } }, ["cmd"])
-      grep_tool = build_tool("grep", "Search all git-tracked files using git grep. Returns file paths with matching line numbers. Use this to discover where code/configuration exists before reading files. Examples: search 'def method_name' to find method definitions. Much faster than reading multiple files.", { query: { type: "string" } }, ["query"])
-      ls_tool = build_tool("list", "List all git-tracked files in the repository, optionally filtered by path. Use this to explore project structure or find files in a directory. Returns relative paths from repo root. Tip: Use this before reading if you need to discover what files exist.", { path: { type: "string" } })
-      patch_tool = build_tool("patch", "Apply a unified diff patch via 'git apply'. Use this for surgical edits to existing files rather than rewriting entire files. Generates proper git diffs. Format: standard unified diff with --- and +++ headers. Tip: More efficient than write for small changes to large files.", { diff: { type: "string" } }, ["diff"])
-      read_tool = build_tool("read", "Read complete contents of a file. Requires exact file path. Use grep or list first if you don't know the path. Best for: understanding existing code, reading config files, reviewing implementation details. Tip: For large files, grep first to confirm relevance.", { path: { type: "string" } }, ["path"])
-      write_tool = build_tool("write", "Write complete file contents (overwrites existing files). Creates parent directories automatically. Best for: creating new files, replacing entire file contents. For small edits to existing files, consider using patch instead.", { path: { type: "string" }, content: { type: "string" } }, ["path", "content"])
-
       @tools = {
-        read: [grep_tool, ls_tool, read_tool],
+        read: [grep_tool, list_tool, read_tool],
         write: [patch_tool, write_tool],
         execute: [exec_tool]
       }
@@ -202,6 +194,65 @@ module Elelem
       end
     rescue => error
       { error: error.message, name: name, args: args }
+    end
+
+    def exec_tool
+      build_tool(
+        "execute",
+        "Execute shell commands directly. Commands run in a shell context. Examples: 'date', 'git status'.",
+        {
+          cmd: { type: "string" },
+          args: { type: "array", items: { type: "string" } },
+          env: { type: "object", additionalProperties: { type: "string" } },
+          cwd: { type: "string", description: "Working directory (defaults to current)" },
+          stdin: { type: "string" }
+        },
+        ["cmd"]
+      )
+    end
+
+    def grep_tool
+      build_tool(
+        "grep",
+        "Search all git-tracked files using git grep. Returns file paths with matching line numbers.",
+        { query: { type: "string" } },
+        ["query"]
+      )
+    end
+
+    def list_tool
+      build_tool(
+        "list",
+        "List all git-tracked files in the repository, optionally filtered by path.",
+        { path: { type: "string" } }
+      )
+    end
+
+    def patch_tool
+      build_tool(
+        "patch",
+        "Apply a unified diff patch via 'git apply'. Use for surgical edits to existing files.",
+        { diff: { type: "string" } },
+        ["diff"]
+      )
+    end
+
+    def read_tool
+      build_tool(
+        "read",
+        "Read complete contents of a file. Requires exact file path.",
+        { path: { type: "string" } },
+        ["path"]
+      )
+    end
+
+    def write_tool
+      build_tool(
+        "write",
+        "Write complete file contents (overwrites existing files). Creates parent directories automatically.",
+        { path: { type: "string" }, content: { type: "string" } },
+        ["path", "content"]
+      )
     end
 
     def build_tool(name, description, properties, required = [])
