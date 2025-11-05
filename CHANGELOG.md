@@ -1,5 +1,54 @@
 ## [Unreleased]
 
+## [0.3.0] - 2025-11-05
+
+### Added
+- **Mode System**: Control agent capabilities with workflow modes
+  - `/mode plan` - Read-only mode (grep, list, read)
+  - `/mode build` - Read + Write mode (grep, list, read, patch, write)
+  - `/mode verify` - Read + Execute mode (grep, list, read, execute)
+  - `/mode auto` - All tools enabled
+  - Each mode adapts system prompt to guide appropriate behavior
+- Improved output formatting
+  - Suppressed verbose thinking/reasoning output
+  - Clean tool call display (e.g., `date` instead of full JSON hash)
+  - Mode switch confirmation messages
+  - Clear command feedback
+- Design philosophy documentation in README
+- Mode system documentation
+
+### Changed
+- **BREAKING**: Removed `llm-ollama` and `llm-openai` standalone executables (use main `elelem chat` command)
+- **BREAKING**: Simplified architecture - consolidated all logic into Agent class
+  - Removed Configuration class
+  - Removed Toolbox system
+  - Removed MCP client infrastructure
+  - Removed Tool and Tools classes
+  - Removed TUI abstraction layer (direct puts/Reline usage)
+  - Removed API wrapper class
+  - Removed state machine
+- Improved execute tool description to guide LLM toward direct command execution
+- Extracted tool definitions from long inline strings to readable private methods
+- Updated README with clear philosophy and usage examples
+- Reduced total codebase from 417 to 395 lines (-5%)
+
+### Fixed
+- Working directory handling for execute tool (handles empty string cwd)
+- REPL EOF handling (graceful exit when input stream ends)
+- Tool call formatting now shows clean, readable commands
+
+### Removed
+- `exe/llm-ollama` (359 lines)
+- `exe/llm-openai` (340 lines)
+- `lib/elelem/configuration.rb`
+- `lib/elelem/toolbox.rb` and toolbox/* files
+- `lib/elelem/mcp_client.rb`
+- `lib/elelem/tool.rb` and `lib/elelem/tools.rb`
+- `lib/elelem/tui.rb`
+- `lib/elelem/api.rb`
+- `lib/elelem/states/*` (state machine infrastructure)
+- Removed ~750 lines of unused/redundant code
+
 ## [0.2.1] - 2025-10-15
 
 ### Fixed

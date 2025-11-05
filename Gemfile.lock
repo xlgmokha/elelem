@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    elelem (0.2.1)
+    elelem (0.3.0)
       erb
       json
       json-schema
