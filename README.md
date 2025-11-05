@@ -101,10 +101,23 @@ elelem chat --model llama2 --host remote-host:11434
 ### Features
 
 - **Interactive REPL**: Clean command-line interface for chatting
-- **Tool Execution**: Execute shell commands when requested by the AI
+- **Mode System**: Control agent capabilities with workflow modes (plan, build, verify, auto)
+- **Tool Execution**: Execute shell commands, read/write files, search code
 - **Streaming Responses**: Real-time streaming of AI responses
-- **State Machine**: Robust state management for different interaction modes
 - **Conversation History**: Maintains context across the session
+
+### Mode System
+
+Control what tools the agent can access:
+
+```bash
+/mode plan    # Read-only (grep, list, read)
+/mode build   # Read + Write (grep, list, read, patch, write)
+/mode verify  # Read + Execute (grep, list, read, execute)
+/mode auto    # All tools enabled
+```
+
+Each mode adapts the system prompt to guide appropriate behavior.
 
 ## Development
 
