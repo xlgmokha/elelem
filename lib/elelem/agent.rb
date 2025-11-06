@@ -10,10 +10,6 @@ module Elelem
       @toolbox = toolbox
     end
 
-    def tools
-      toolbox.all
-    end
-
     def repl
       mode = Set.new([:read])
 

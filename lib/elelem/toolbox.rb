@@ -1,6 +1,21 @@
 # frozen_string_literal: true
 
 module Elelem
+  class Tool
+    def initialize(schema, &block)
+      @schema = schema
+      @block = block
+    end
+
+    def call(args)
+      @block.call(args)
+    end
+
+    def to_h
+      @schema
+    end
+  end
+
   class Toolbox
     attr_reader :tools
 
@@ -13,7 +28,7 @@ module Elelem
     end
 
     def tools_for(modes)
-      modes.map { |mode| tools[mode] }.flatten
+      modes.map { |mode| tools[mode].map(&:to_h) }.flatten
     end
 
     def run_tool(name, args)
@@ -64,12 +79,14 @@ module Elelem
     end
 
     def grep_tool
-      build_tool(
+      Tool.new(build_tool(
         "grep",
         "Search all git-tracked files using git grep. Returns file paths with matching line numbers.",
         { query: { type: "string" } },
         ["query"]
-      )
+      )) do |args|
+        run_grep(args)
+      end
     end
 
     def run_grep(args)
