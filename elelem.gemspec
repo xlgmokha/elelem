@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
     "lib/elelem/application.rb",
     "lib/elelem/conversation.rb",
     "lib/elelem/system_prompt.erb",
+    "lib/elelem/toolbox.rb",
     "lib/elelem/version.rb",
   ]
   spec.bindir = "exe"
@@ -45,12 +46,15 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "erb"
+  spec.add_dependency "fileutils"
   spec.add_dependency "json"
   spec.add_dependency "json-schema"
   spec.add_dependency "logger"
   spec.add_dependency "net-llm"
   spec.add_dependency "open3"
+  spec.add_dependency "pathname"
   spec.add_dependency "reline"
+  spec.add_dependency "set"
   spec.add_dependency "thor"
   spec.add_dependency "timeout"
 end

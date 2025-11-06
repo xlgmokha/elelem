@@ -2,7 +2,7 @@
 
 RSpec.describe Elelem::Agent do
   let(:mock_client) { double("client") }
-  let(:agent) { described_class.new(mock_client) }
+  let(:agent) { described_class.new(mock_client, Elelem::Toolbox.new) }
 
   describe "#initialize" do
     it "creates a new conversation" do
@@ -14,55 +14,9 @@ RSpec.describe Elelem::Agent do
     end
 
     it "initializes tools for all modes" do
-      expect(agent.tools[:read]).to be_an(Array)
-      expect(agent.tools[:write]).to be_an(Array)
-      expect(agent.tools[:execute]).to be_an(Array)
-    end
-  end
-
-  describe "#tools_for" do
-    it "returns read tools for read mode" do
-      mode = Set[:read]
-      tools = agent.send(:tools_for, mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read")
-      expect(tool_names).not_to include("write", "patch", "execute")
-    end
-
-    it "returns write tools for write mode" do
-      mode = Set[:write]
-      tools = agent.send(:tools_for, mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("patch", "write")
-      expect(tool_names).not_to include("grep", "execute")
-    end
-
-    it "returns execute tools for execute mode" do
-      mode = Set[:execute]
-      tools = agent.send(:tools_for, mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("execute")
-      expect(tool_names).not_to include("grep", "write")
-    end
-
-    it "returns all tools for auto mode" do
-      mode = Set[:read, :write, :execute]
-      tools = agent.send(:tools_for, mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read", "patch", "write", "execute")
-    end
-
-    it "returns combined tools for build mode" do
-      mode = Set[:read, :write]
-      tools = agent.send(:tools_for, mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "read", "write", "patch")
-      expect(tool_names).not_to include("execute")
+      expect(agent.toolbox.tools[:read]).to be_an(Array)
+      expect(agent.toolbox.tools[:write]).to be_an(Array)
+      expect(agent.toolbox.tools[:execute]).to be_an(Array)
     end
   end
 

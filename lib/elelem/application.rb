@@ -20,8 +20,7 @@ module Elelem
         model: options[:model],
       )
       say "Agent (#{options[:model]})", :green
-      agent = Agent.new(client)
-
+      agent = Agent.new(client, Toolbox.new)
       agent.repl
     end
 
