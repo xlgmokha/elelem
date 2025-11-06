@@ -16,6 +16,7 @@ require "timeout"
 require_relative "elelem/agent"
 require_relative "elelem/application"
 require_relative "elelem/conversation"
+require_relative "elelem/tool"
 require_relative "elelem/toolbox"
 require_relative "elelem/version"
 

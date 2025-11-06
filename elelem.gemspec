@@ -38,6 +38,7 @@ Gem::Specification.new do |spec|
     "lib/elelem/application.rb",
     "lib/elelem/conversation.rb",
     "lib/elelem/system_prompt.erb",
+    "lib/elelem/tool.rb",
     "lib/elelem/toolbox.rb",
     "lib/elelem/version.rb",
   ]
