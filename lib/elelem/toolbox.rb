@@ -18,12 +18,12 @@ module Elelem
 
     def run_tool(name, args)
       case name
-      when "execute" then run_exec(args["cmd"], args: args["args"] || [], env: args["env"] || {}, cwd: args["cwd"].to_s.empty? ? Dir.pwd : args["cwd"], stdin: args["stdin"])
+      when "execute" then exec_tool.call(args)
       when "grep" then grep_tool.call(args)
-      when "list" then run_list(args)
-      when "patch" then run_patch(args)
-      when "read" then read_file(args["path"])
-      when "write" then write_file(args["path"], args["content"])
+      when "list" then list_tool.call(args)
+      when "patch" then patch_tool.call(args)
+      when "read" then read_tool.call(args)
+      when "write" then write_tool.call(args)
       else
         { error: "Unknown tool", name: name, args: args }
       end
@@ -38,7 +38,7 @@ module Elelem
     end
 
     def exec_tool
-      build_tool(
+      @exec_tools ||= Tool.new(build_tool(
         "execute",
         "Execute shell commands directly. Commands run in a shell context. Examples: 'date', 'git status'.",
         {
@@ -49,7 +49,15 @@ module Elelem
           stdin: { type: "string" }
         },
         ["cmd"]
-      )
+      )) do |args|
+        run_exec(
+          args["cmd"],
+          args: args["args"] || [],
+          env: args["env"] || {},
+          cwd: args["cwd"].to_s.empty? ? Dir.pwd : args["cwd"],
+          stdin: args["stdin"]
+        )
+      end
     end
 
     def run_exec(command, args: [], env: {}, cwd: Dir.pwd, stdin: nil)
@@ -75,37 +83,35 @@ module Elelem
     end
 
     def list_tool
-      build_tool(
+      @list_tool ||= Tool.new(build_tool(
         "list",
         "List all git-tracked files in the repository, optionally filtered by path.",
         { path: { type: "string" } }
-      )
-    end
-
-    def run_list(args)
-      run_exec("git", args: args["path"] ? ["ls-files", "--", args["path"]] : ["ls-files"])
+      )) do |args|
+        run_exec("git", args: args["path"] ? ["ls-files", "--", args["path"]] : ["ls-files"])
+      end
     end
 
     def patch_tool
-      build_tool(
+      @patch_tool ||= Tool.new(build_tool(
         "patch",
         "Apply a unified diff patch via 'git apply'. Use for surgical edits to existing files.",
         { diff: { type: "string" } },
         ["diff"]
-      )
-    end
-
-    def run_patch(args)
-      run_exec("git", args: ["apply", "--index", "--whitespace=nowarn", "-p1"], stdin: args["diff"])
+      )) do |args|
+        run_exec("git", args: ["apply", "--index", "--whitespace=nowarn", "-p1"], stdin: args["diff"])
+      end
     end
 
     def read_tool
-      build_tool(
+      @read_tool ||= Tool.new(build_tool(
         "read",
         "Read complete contents of a file. Requires exact file path.",
         { path: { type: "string" } },
         ["path"]
-      )
+      )) do |args|
+        read_file(args["path"])
+      end
     end
 
     def read_file(path)
@@ -115,12 +121,14 @@ module Elelem
 
 
     def write_tool
-      build_tool(
+      @write_tool ||= Tool.new(build_tool(
         "write",
         "Write complete file contents (overwrites existing files). Creates parent directories automatically.",
         { path: { type: "string" }, content: { type: "string" } },
         ["path", "content"]
-      )
+      )) do |args|
+        write_file(args["path"], args["content"])
+      end
     end
 
     def write_file(path, content)
