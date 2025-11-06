@@ -19,7 +19,7 @@ module Elelem
     def run_tool(name, args)
       case name
       when "execute" then run_exec(args["cmd"], args: args["args"] || [], env: args["env"] || {}, cwd: args["cwd"].to_s.empty? ? Dir.pwd : args["cwd"], stdin: args["stdin"])
-      when "grep" then run_grep(args)
+      when "grep" then grep_tool.call(args)
       when "list" then run_list(args)
       when "patch" then run_patch(args)
       when "read" then read_file(args["path"])
@@ -64,18 +64,14 @@ module Elelem
     end
 
     def grep_tool
-      Tool.new(build_tool(
+      @grep_tool ||= Tool.new(build_tool(
         "grep",
         "Search all git-tracked files using git grep. Returns file paths with matching line numbers.",
         { query: { type: "string" } },
         ["query"]
       )) do |args|
-        run_grep(args)
+        run_exec("git", args: ["grep", "-nI", args["query"]])
       end
-    end
-
-    def run_grep(args)
-      run_exec("git", args: ["grep", "-nI", args["query"]])
     end
 
     def list_tool
