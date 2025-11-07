@@ -2,12 +2,13 @@
 
 module Elelem
   class Toolbox
-    attr_reader :tools
+    attr_reader :tools, :shell
 
     def initialize
       @tools_by_name = {}
       @tools = { read: [], write: [], execute: [] }
 
+      @shell = Shell.new
       add_tool(exec_tool, :execute)
       add_tool(grep_tool, :read)
       add_tool(list_tool, :read)
@@ -33,17 +34,6 @@ module Elelem
 
     private
 
-    def run_exec(command, args: [], env: {}, cwd: Dir.pwd, stdin: nil)
-      cmd = command.is_a?(Array) ? command.first : command
-      cmd_args = command.is_a?(Array) ? command[1..] + args : args
-      stdout, stderr, status = Open3.capture3(env, cmd, *cmd_args, chdir: cwd, stdin_data: stdin)
-      {
-        "exit_status" => status.exitstatus,
-        "stdout" => stdout.to_s,
-        "stderr" => stderr.to_s
-      }
-    end
-
     def exec_tool
       @exec_tools ||= Tool.build(
         "execute",
@@ -57,7 +47,7 @@ module Elelem
         },
         ["cmd"]
       ) do |args|
-        run_exec(
+        shell.execute(
           args["cmd"],
           args: args["args"] || [],
           env: args["env"] || {},
@@ -74,7 +64,7 @@ module Elelem
         { query: { type: "string" } },
         ["query"]
       ) do |args|
-        run_exec("git", args: ["grep", "-nI", args["query"]])
+        shell.execute("git", args: ["grep", "-nI", args["query"]])
       end
     end
 
@@ -84,7 +74,7 @@ module Elelem
         "List all git-tracked files in the repository, optionally filtered by path.",
         { path: { type: "string" } }
       ) do |args|
-        run_exec("git", args: args["path"] ? ["ls-files", "--", args["path"]] : ["ls-files"])
+        shell.execute("git", args: args["path"] ? ["ls-files", "--", args["path"]] : ["ls-files"])
       end
     end
 
@@ -95,7 +85,7 @@ module Elelem
         { diff: { type: "string" } },
         ["diff"]
       ) do |args|
-        run_exec("git", args: ["apply", "--index", "--whitespace=nowarn", "-p1"], stdin: args["diff"])
+        shell.execute("git", args: ["apply", "--index", "--whitespace=nowarn", "-p1"], stdin: args["diff"])
       end
     end
 

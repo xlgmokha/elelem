@@ -25,4 +25,23 @@ Reline.output = $stdout
 
 module Elelem
   class Error < StandardError; end
+
+  class Shell
+    def execute(command, args: [], env: {}, cwd: Dir.pwd, stdin: nil)
+      cmd = command.is_a?(Array) ? command.first : command
+      cmd_args = command.is_a?(Array) ? command[1..] + args : args
+      stdout, stderr, status = Open3.capture3(
+        env,
+        cmd,
+        *cmd_args,
+        chdir: cwd,
+        stdin_data: stdin
+      )
+      {
+        "exit_status" => status.exitstatus,
+        "stdout" => stdout.to_s,
+        "stderr" => stderr.to_s
+      }
+    end
+  end
 end
