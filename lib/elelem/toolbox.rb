@@ -4,12 +4,21 @@ module Elelem
   class Toolbox
     attr_reader :tools
 
-    def initialize()
-      @tools = {
-        read: [grep_tool, list_tool, read_tool],
-        write: [patch_tool, write_tool],
-        execute: [exec_tool]
-      }
+    def initialize
+      @tools_by_name = {}
+      @tools = { read: [], write: [], execute: [] }
+
+      add_tool(exec_tool, :execute)
+      add_tool(grep_tool, :read)
+      add_tool(list_tool, :read)
+      add_tool(patch_tool, :write)
+      add_tool(read_tool, :read)
+      add_tool(write_tool, :write)
+    end
+
+    def add_tool(tool, mode)
+      @tools[mode] << tool
+      @tools_by_name[tool.to_h.dig(:function, :name)] = tool
     end
 
     def tools_for(modes)
@@ -17,16 +26,7 @@ module Elelem
     end
 
     def run_tool(name, args)
-      case name
-      when "execute" then exec_tool.call(args)
-      when "grep" then grep_tool.call(args)
-      when "list" then list_tool.call(args)
-      when "patch" then patch_tool.call(args)
-      when "read" then read_tool.call(args)
-      when "write" then write_tool.call(args)
-      else
-        { error: "Unknown tool", name: name, args: args }
-      end
+      @tools_by_name[name]&.call(args) || { error: "Unknown tool", name: name, args: args }
     rescue => error
       { error: error.message, name: name, args: args }
     end
