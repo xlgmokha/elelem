@@ -2,19 +2,17 @@
 
 module Elelem
   class Toolbox
-    attr_reader :tools, :shell
+    attr_reader :tools
 
     def initialize
       @tools_by_name = {}
       @tools = { read: [], write: [], execute: [] }
-
-      @shell = Shell.new
-      add_tool(exec_tool, :execute)
-      add_tool(grep_tool, :read)
-      add_tool(list_tool, :read)
-      add_tool(patch_tool, :write)
-      add_tool(read_tool, :read)
-      add_tool(write_tool, :write)
+      add_tool(EXEC_TOOL, :execute)
+      add_tool(GREP_TOOL, :read)
+      add_tool(LIST_TOOL, :read)
+      add_tool(PATCH_TOOL, :write)
+      add_tool(READ_TOOL, :read)
+      add_tool(WRITE_TOOL, :write)
     end
 
     def add_tool(tool, mode)
@@ -29,89 +27,8 @@ module Elelem
     def run_tool(name, args)
       @tools_by_name[name]&.call(args) || { error: "Unknown tool", name: name, args: args }
     rescue => error
+      puts error.inspect
       { error: error.message, name: name, args: args }
-    end
-
-    private
-
-    def exec_tool
-      @exec_tools ||= Tool.build(
-        "execute",
-        "Execute shell commands directly. Commands run in a shell context. Examples: 'date', 'git status'.",
-        {
-          cmd: { type: "string" },
-          args: { type: "array", items: { type: "string" } },
-          env: { type: "object", additionalProperties: { type: "string" } },
-          cwd: { type: "string", description: "Working directory (defaults to current)" },
-          stdin: { type: "string" }
-        },
-        ["cmd"]
-      ) do |args|
-        shell.execute(
-          args["cmd"],
-          args: args["args"] || [],
-          env: args["env"] || {},
-          cwd: args["cwd"].to_s.empty? ? Dir.pwd : args["cwd"],
-          stdin: args["stdin"]
-        )
-      end
-    end
-
-    def grep_tool
-      @grep_tool ||= Tool.build(
-        "grep",
-        "Search all git-tracked files using git grep. Returns file paths with matching line numbers.",
-        { query: { type: "string" } },
-        ["query"]
-      ) do |args|
-        shell.execute("git", args: ["grep", "-nI", args["query"]])
-      end
-    end
-
-    def list_tool
-      @list_tool ||= Tool.build(
-        "list",
-        "List all git-tracked files in the repository, optionally filtered by path.",
-        { path: { type: "string" } }
-      ) do |args|
-        shell.execute("git", args: args["path"] ? ["ls-files", "--", args["path"]] : ["ls-files"])
-      end
-    end
-
-    def patch_tool
-      @patch_tool ||= Tool.build(
-        "patch",
-        "Apply a unified diff patch via 'git apply'. Use for surgical edits to existing files.",
-        { diff: { type: "string" } },
-        ["diff"]
-      ) do |args|
-        shell.execute("git", args: ["apply", "--index", "--whitespace=nowarn", "-p1"], stdin: args["diff"])
-      end
-    end
-
-    def read_tool
-      @read_tool ||= Tool.build(
-        "read",
-        "Read complete contents of a file. Requires exact file path.",
-        { path: { type: "string" } },
-        ["path"]
-      ) do |args|
-        full_path = Pathname.new(args["path"]).expand_path
-        full_path.exist? ? { content: full_path.read } : { error: "File not found: #{path}" }
-      end
-    end
-
-    def write_tool
-      @write_tool ||= Tool.build(
-        "write",
-        "Write complete file contents (overwrites existing files). Creates parent directories automatically.",
-        { path: { type: "string" }, content: { type: "string" } },
-        ["path", "content"]
-      ) do |args|
-        full_path = Pathname.new(args["path"]).expand_path
-        FileUtils.mkdir_p(full_path.dirname)
-        { bytes_written: full_path.write(args["content"]) }
-      end
     end
   end
 end
