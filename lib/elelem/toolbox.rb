@@ -36,16 +36,12 @@ module Elelem
       { bytes_written: full_path.write(args["content"]) }
     end
 
-    EVAL_TOOL = Tool.build("eval", "Evaluates the Ruby expression(s) in the elelem coding agent allowing an LLM to create its own tools", { ruby: { type: "string" }, }, ["ruby"]) do |args|
-      { result: eval(args["ruby"]) }
-    end
-
     attr_reader :tools
 
     def initialize
       @tools_by_name = {}
       @tools = { read: [], write: [], execute: [] }
-      add_tool(EVAL_TOOL, :execute)
+      add_tool(eval_tool(binding), :execute)
       add_tool(EXEC_TOOL, :execute)
       add_tool(GREP_TOOL, :read)
       add_tool(LIST_TOOL, :read)
@@ -59,15 +55,30 @@ module Elelem
       @tools_by_name[tool.name] = tool
     end
 
+    def register_tool(name, description, properties = {}, required = [], mode: :execute, &block)
+      add_tool(Tool.build(name, description, properties, required, &block), mode)
+    end
+
     def tools_for(modes)
-      modes.map { |mode| tools[mode].map(&:to_h) }.flatten
+      Array(modes).map { |mode| tools[mode].map(&:to_h) }.flatten
     end
 
     def run_tool(name, args)
       @tools_by_name[name]&.call(args) || { error: "Unknown tool", name: name, args: args }
     rescue => error
-      puts error.inspect
-      { error: error.message, name: name, args: args }
+      { error: error.message, name: name, args: args, backtrace: error.backtrace.first(5) }
+    end
+
+    def tool_schema(name)
+      @tools_by_name[name]&.to_h
+    end
+
+    private
+
+    def eval_tool(target_binding)
+      Tool.build("eval", "Evaluates Ruby code with full access to register new tools via the `register_tool(name, desc, properties, required, mode: :execute) { |args| ... }` method.", { ruby: { type: "string" } }, ["ruby"]) do |args|
+        { result: target_binding.eval(args["ruby"]) }
+      end
     end
   end
 end
