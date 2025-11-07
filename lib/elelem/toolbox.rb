@@ -36,11 +36,16 @@ module Elelem
       { bytes_written: full_path.write(args["content"]) }
     end
 
+    EVAL_TOOL = Tool.build("eval", "Evaluates the Ruby expression(s) in the elelem coding agent allowing an LLM to create its own tools", { ruby: { type: "string" }, }, ["ruby"]) do |args|
+      { result: eval(args["ruby"]) }
+    end
+
     attr_reader :tools
 
     def initialize
       @tools_by_name = {}
       @tools = { read: [], write: [], execute: [] }
+      add_tool(EVAL_TOOL, :execute)
       add_tool(EXEC_TOOL, :execute)
       add_tool(GREP_TOOL, :read)
       add_tool(LIST_TOOL, :read)
