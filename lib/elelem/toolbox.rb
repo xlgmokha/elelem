@@ -119,7 +119,6 @@ module Elelem
       full_path.exist? ? { content: full_path.read } : { error: "File not found: #{path}" }
     end
 
-
     def write_tool
       @write_tool ||= Tool.new(build_tool(
         "write",
