@@ -2,7 +2,10 @@
 
 module Elelem
   class Tool
+    attr_reader :name
+
     def initialize(schema, &block)
+      @name = schema.dig(:function, :name)
       @schema = schema
       @block = block
     end

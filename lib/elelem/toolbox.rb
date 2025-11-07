@@ -18,7 +18,7 @@ module Elelem
 
     def add_tool(tool, mode)
       @tools[mode] << tool
-      @tools_by_name[tool.to_h.dig(:function, :name)] = tool
+      @tools_by_name[tool.name] = tool
     end
 
     def tools_for(modes)
