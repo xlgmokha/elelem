@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
 
   spec.summary = "A REPL for Ollama."
   spec.description = "A REPL for Ollama."
-  spec.homepage = "https://www.mokhan.ca"
+  spec.homepage = "https://gitlab.com/mokhax/elelem"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.4.0"
   spec.required_rubygems_version = ">= 3.3.11"
