@@ -17,8 +17,7 @@ module Elelem
     end
 
     def valid?(args)
-      # TODO:: Use JSON Schema Validator
-      true
+      JSON::Validator.validate(@schema.dig(:function, :parameters), args)
     end
 
     def to_h
