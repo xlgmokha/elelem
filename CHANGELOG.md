@@ -1,5 +1,27 @@
 ## [Unreleased]
 
+## [0.4.0] - 2025-11-10
+
+### Added
+- **Eval Tool**: Meta-programming tool that allows the LLM to dynamically create and register new tools at runtime
+  - Eval tool has access to the toolbox for enhanced capabilities
+- Comprehensive test coverage with RSpec
+  - Agent specs
+  - Conversation specs
+  - Toolbox specs
+
+### Changed
+- **Architecture Improvements**: Significant refactoring for better separation of concerns
+  - Extracted Tool class to separate file (`lib/elelem/tool.rb`)
+  - Extracted Toolbox class to separate file (`lib/elelem/toolbox.rb`)
+  - Extracted Shell class for command execution
+  - Improved tool registration through `#add_tool` method
+  - Tool constants moved to Toolbox for better organization
+  - Agent class simplified by delegating to Tool instances
+
+### Fixed
+- `/context` command now correctly accounts for the current mode
+
 ## [0.3.0] - 2025-11-05
 
 ### Added
