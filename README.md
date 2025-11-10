@@ -87,7 +87,7 @@ elelem chat --model llama2 --host remote-host:11434
 
 ## Mode System
 
-The agent exposes six built‑in tools. You can switch which ones are
+The agent exposes seven built‑in tools. You can switch which ones are
 available by changing the *mode*:
 
 | Mode    | Enabled Tools                            |
@@ -121,10 +121,11 @@ are permissible.
 ## Toolbox Overview
 
 The `Toolbox` class is defined in `lib/elelem/toolbox.rb`. It supplies
-six tools, each represented by a JSON schema that the LLM can call.
+seven tools, each represented by a JSON schema that the LLM can call.
 
 | Tool      | Purpose                              | Parameters                           |
 | ----      | -------                              | ----------                           |
+| `eval`    | Dynamically create new tools         | `code`                               |
 | `grep`    | Search Git‑tracked files             | `query`                              |
 | `list`    | List tracked files                   | `path` (optional)                    |
 | `read`    | Read file contents                   | `path`                               |
