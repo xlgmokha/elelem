@@ -10,14 +10,14 @@ Gem::Specification.new do |spec|
 
   spec.summary = "A REPL for Ollama."
   spec.description = "A REPL for Ollama."
-  spec.homepage = "https://gitlab.com/mokhax/elelem"
+  spec.homepage = "https://github.com/xlgmokha/elelem"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.4.0"
   spec.required_rubygems_version = ">= 3.3.11"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://gitlab.com/mokhax/elelem"
-  spec.metadata["changelog_uri"] = "https://gitlab.com/mokhax/elelem/-/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/xlgmokha/elelem"
+  spec.metadata["changelog_uri"] = "https://github.com/xlgmokha/elelem/blob/main/CHANGELOG.md"
 
   # Specify which files should be added to the gem when it is released.
   # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
