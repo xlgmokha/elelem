@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.4.1] - 2025-11-26
+
+### Added
+- Updated version to 0.4.1
+
 ## [0.4.0] - 2025-11-10
 
 ### Added

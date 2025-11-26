@@ -65,22 +65,6 @@ module Elelem
       HELP
     end
 
-    def format_tool_call(name, args)
-      case name
-      when "execute"
-        cmd = args["cmd"]
-        cmd_args = args["args"] || []
-        cmd_args.empty? ? cmd : "#{cmd} #{cmd_args.join(' ')}"
-      when "grep" then "grep(#{args["query"]})"
-      when "list" then "list(#{args["path"] || "."})"
-      when "patch" then "patch(#{args["diff"]&.lines&.count || 0} lines)"
-      when "read" then "read(#{args["path"]})"
-      when "write" then "write(#{args["path"]})"
-      else
-        "#{name}(#{args.to_s[0...50]})"
-      end
-    end
-
     def execute_turn(messages, tools:)
       turn_context = []
 
@@ -110,7 +94,7 @@ module Elelem
             name = call.dig("function", "name")
             args = call.dig("function", "arguments")
 
-            puts "Tool> #{format_tool_call(name, args)}"
+            puts "Tool> #{name}(#{args})"
             result = toolbox.run_tool(name, args)
             turn_context << { role: "tool", content: JSON.dump(result) }
           end
