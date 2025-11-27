@@ -66,6 +66,7 @@ module Elelem
     end
 
     def format_tool_call_result(result)
+      return if result.nil?
       return result["stdout"] if result["stdout"]
       return result["stderr"] if result["stderr"]
       return result[:error] if result[:error]
