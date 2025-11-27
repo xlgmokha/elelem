@@ -121,3 +121,17 @@
 ## [0.1.0] - 2025-08-08
 
 - Initial release
+
+## [0.4.2] - 2025-11-27
+
+### Added
+- `elelem files` subcommand: generates Claude‑compatible XML file listings.
+- Rake task `files:prompt` to output a ready‑to‑copy list of files for prompts.
+
+### Changed
+- Refactor tool‑call formatting to a more compact JSON payload for better LLM parsing.
+- Updated CI and documentation to use GitHub instead of previous hosting.
+- Runtime validation of command‑line parameters against a JSON schema.
+
+### Fixed
+- Minor documentation and CI workflow adjustments.
