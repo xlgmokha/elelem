@@ -80,7 +80,7 @@ module Elelem
         content = ""
         tool_calls = []
 
-        print "Thinking..."
+        print "Assistant> Thinking..."
         client.chat(messages + turn_context, tools) do |chunk|
           msg = chunk["message"]
           if msg
