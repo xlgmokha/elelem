@@ -68,8 +68,9 @@ module Elelem
     def format_tool_call_result(result)
       return result["stdout"] if result["stdout"]
       return result["stderr"] if result["stderr"]
+      return result[:error] if result[:error]
 
-      JSON.pretty_generate(result)
+      ""
     end
 
     def execute_turn(messages, tools:)
