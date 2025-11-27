@@ -8,7 +8,7 @@ module Elelem
       full_path.exist? ? { content: full_path.read } : { error: "File not found: #{path}" }
     end
 
-    EXEC_TOOL = Tool.build("execute", "Run shell commands. For git: execute({\"cmd\": \"git\", \"args\": [\"log\", \"--oneline\"]}). Returns stdout/stderr/exit_status.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory (defaults to current)" }, stdin: { type: "string" } }, ["cmd"]) do |args|
+    BASH_TOOL = Tool.build("bash", "Run shell commands. For git: bash({\"cmd\": \"git\", \"args\": [\"log\", \"--oneline\"]}). Returns stdout/stderr/exit_status.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory (defaults to current)" }, stdin: { type: "string" } }, ["cmd"]) do |args|
       Elelem.shell.execute(
         args["cmd"],
         args: args["args"] || [],
@@ -42,7 +42,7 @@ module Elelem
       @tools_by_name = {}
       @tools = { read: [], write: [], execute: [] }
       add_tool(eval_tool(binding), :execute)
-      add_tool(EXEC_TOOL, :execute)
+      add_tool(BASH_TOOL, :execute)
       add_tool(GREP_TOOL, :read)
       add_tool(LIST_TOOL, :read)
       add_tool(PATCH_TOOL, :write)

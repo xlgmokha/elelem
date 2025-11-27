@@ -125,13 +125,13 @@ seven tools, each represented by a JSON schema that the LLM can call.
 
 | Tool      | Purpose                              | Parameters                           |
 | ----      | -------                              | ----------                           |
+| `bash`    | Run shell commands                   | `cmd`, `args`, `env`, `cwd`, `stdin` |
 | `eval`    | Dynamically create new tools         | `code`                               |
 | `grep`    | Search Git‑tracked files             | `query`                              |
 | `list`    | List tracked files                   | `path` (optional)                    |
+| `patch`   | Apply a unified diff via `git apply` | `diff`                               |
 | `read`    | Read file contents                   | `path`                               |
 | `write`   | Overwrite a file                     | `path`, `content`                    |
-| `patch`   | Apply a unified diff via `git apply` | `diff`                               |
-| `execute` | Run shell commands                   | `cmd`, `args`, `env`, `cwd`, `stdin` |
 
 ## Tool Definition
 
