@@ -45,19 +45,19 @@ module Elelem
 
       case mode.sort
       when [:read]
-        "#{base}\n\nRead and analyze. Understand before suggesting action."
+        "#{base}\n\n## MODE: plan (read-only)\nFocus on EXPLORE and UNDERSTAND phases. Research thoroughly before suggesting solutions. No implementation yet."
       when [:write]
-        "#{base}\n\nWrite clean, thoughtful code."
+        "#{base}\n\n## MODE: write-only\nWrite clean code. Cannot execute or verify with tests."
       when [:execute]
-        "#{base}\n\nUse shell commands creatively to understand and manipulate the system."
+        "#{base}\n\n## MODE: execute-only\nUse shell commands creatively to understand and manipulate the system. Cannot modify files."
       when [:read, :write]
-        "#{base}\n\nFirst understand, then build solutions that integrate well."
+        "#{base}\n\n## MODE: build (read + write)\nFollow full workflow: EXPLORE → PLAN → EXECUTE. Verify syntax after changes. Cannot run tests with bash."
       when [:execute, :read]
-        "#{base}\n\nUse commands to deeply understand the system."
+        "#{base}\n\n## MODE: verify (read + execute)\nUse commands to deeply understand the system. Run tests and checks. Cannot modify files."
       when [:execute, :write]
-        "#{base}\n\nCreate and execute freely. Have fun. Be kind."
+        "#{base}\n\n## MODE: write + execute\nCreate and execute freely. VERIFY your changes by running tests."
       when [:execute, :read, :write]
-        "#{base}\n\nYou have all tools. Use them wisely."
+        "#{base}\n\n## MODE: auto (full autonomy)\nYou have all tools. Follow complete workflow: EXPLORE → PLAN → EXECUTE → VERIFY. Run tests after changes."
       else
         base
       end
