@@ -11,7 +11,9 @@ module Elelem
     end
 
     def call(args)
-      return ArgumentError.new(args) unless valid?(args)
+      unless valid?(args)
+        return { error: "Invalid args for #{@name}", received: args.keys, expected: @schema.dig(:function, :parameters, :required) }
+      end
 
       @block.call(args)
     end
