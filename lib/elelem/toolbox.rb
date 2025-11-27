@@ -8,7 +8,7 @@ module Elelem
       full_path.exist? ? { content: full_path.read } : { error: "File not found: #{path}" }
     end
 
-    EXEC_TOOL = Tool.build("execute", "Execute shell commands directly. Commands run in a shell context. Examples: 'date', 'git status'.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory (defaults to current)" }, stdin: { type: "string" } }, ["cmd"]) do |args|
+    EXEC_TOOL = Tool.build("execute", "Run shell commands. For git: execute({\"cmd\": \"git\", \"args\": [\"log\", \"--oneline\"]}). Returns stdout/stderr/exit_status.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory (defaults to current)" }, stdin: { type: "string" } }, ["cmd"]) do |args|
       Elelem.shell.execute(
         args["cmd"],
         args: args["args"] || [],

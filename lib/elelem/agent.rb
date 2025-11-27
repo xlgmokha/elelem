@@ -65,6 +65,13 @@ module Elelem
       HELP
     end
 
+    def format_tool_call_result(result)
+      return result["stdout"] if result["stdout"]
+      return result["stderr"] if result["stderr"]
+
+      JSON.pretty_generate(result)
+    end
+
     def execute_turn(messages, tools:)
       turn_context = []
 
@@ -96,6 +103,7 @@ module Elelem
 
             puts "Tool> #{name}(#{args})"
             result = toolbox.run_tool(name, args)
+            puts format_tool_call_result(result)
             turn_context << { role: "tool", content: JSON.dump(result) }
           end
 
