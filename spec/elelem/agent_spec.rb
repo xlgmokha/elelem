@@ -28,8 +28,8 @@ RSpec.describe Elelem::Agent do
       read_history = conversation.history_for([:read])
       write_history = conversation.history_for([:write])
 
-      expect(read_history[0][:content]).to include("Read and analyze")
-      expect(write_history[0][:content]).to include("Write clean, thoughtful code")
+      expect(read_history[0][:content]).to include("Focus on EXPLORE and UNDERSTAND")
+      expect(write_history[0][:content]).to include("Write clean code")
       expect(read_history[0][:content]).not_to eq(write_history[0][:content])
     end
   end

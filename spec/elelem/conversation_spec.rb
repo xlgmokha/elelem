@@ -10,13 +10,13 @@ RSpec.describe Elelem::Conversation do
 
         expect(history.length).to eq(1)
         expect(history[0][:role]).to eq("system")
-        expect(history[0][:content]).to include("Read and analyze")
+        expect(history[0][:content]).to include("Focus on EXPLORE and UNDERSTAND")
       end
 
       it "returns history with mode-specific system prompt for write mode" do
         history = conversation.history_for([:write])
 
-        expect(history[0][:content]).to include("Write clean, thoughtful code")
+        expect(history[0][:content]).to include("Write clean code")
       end
 
       it "returns history with mode-specific system prompt for execute mode" do
@@ -28,7 +28,7 @@ RSpec.describe Elelem::Conversation do
       it "returns history with mode-specific system prompt for read+write mode" do
         history = conversation.history_for([:read, :write])
 
-        expect(history[0][:content]).to include("First understand, then build solutions")
+        expect(history[0][:content]).to include("Follow full workflow: EXPLORE → PLAN → EXECUTE")
       end
 
       it "returns history with mode-specific system prompt for read+execute mode" do
@@ -182,7 +182,7 @@ RSpec.describe Elelem::Conversation do
       parsed = JSON.parse(json)
       expect(parsed).to be_an(Array)
       expect(parsed.length).to eq(2)
-      expect(parsed[0]["content"]).to include("Read and analyze")
+      expect(parsed[0]["content"]).to include("Focus on EXPLORE and UNDERSTAND")
     end
   end
 end
