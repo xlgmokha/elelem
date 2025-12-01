@@ -1,9 +1,25 @@
 ## [Unreleased]
 
+## [0.4.2] - 2025-12-01
+
+### Changed
+- Renamed `exec` tool to `bash` for clarity
+- Improved system prompt with iterative refinements
+- Added environment context variables to system prompt
+
 ## [0.4.1] - 2025-11-26
 
 ### Added
-- Updated version to 0.4.1
+- `elelem files` subcommand: generates Claude‑compatible XML file listings.
+- Rake task `files:prompt` to output a ready‑to‑copy list of files for prompts.
+
+### Changed
+- Refactor tool‑call formatting to a more compact JSON payload for better LLM parsing.
+- Updated CI and documentation to use GitHub instead of previous hosting.
+- Runtime validation of command‑line parameters against a JSON schema.
+
+### Fixed
+- Minor documentation and CI workflow adjustments.
 
 ## [0.4.0] - 2025-11-10
 
@@ -122,16 +138,3 @@
 
 - Initial release
 
-## [0.4.2] - 2025-11-27
-
-### Added
-- `elelem files` subcommand: generates Claude‑compatible XML file listings.
-- Rake task `files:prompt` to output a ready‑to‑copy list of files for prompts.
-
-### Changed
-- Refactor tool‑call formatting to a more compact JSON payload for better LLM parsing.
-- Updated CI and documentation to use GitHub instead of previous hosting.
-- Runtime validation of command‑line parameters against a JSON schema.
-
-### Fixed
-- Minor documentation and CI workflow adjustments.

@@ -10,43 +10,43 @@ RSpec.describe Elelem::Conversation do
 
         expect(history.length).to eq(1)
         expect(history[0][:role]).to eq("system")
-        expect(history[0][:content]).to include("Focus on EXPLORE and UNDERSTAND")
+        expect(history[0][:content]).to include("You may read files on the system")
       end
 
       it "returns history with mode-specific system prompt for write mode" do
         history = conversation.history_for([:write])
 
-        expect(history[0][:content]).to include("Write clean code")
+        expect(history[0][:content]).to include("You may write files on the system")
       end
 
       it "returns history with mode-specific system prompt for execute mode" do
         history = conversation.history_for([:execute])
 
-        expect(history[0][:content]).to include("Use shell commands creatively")
+        expect(history[0][:content]).to include("You may execute shell commands on the system")
       end
 
       it "returns history with mode-specific system prompt for read+write mode" do
         history = conversation.history_for([:read, :write])
 
-        expect(history[0][:content]).to include("Follow full workflow: EXPLORE → PLAN → EXECUTE")
+        expect(history[0][:content]).to include("You may read and write files on the system")
       end
 
       it "returns history with mode-specific system prompt for read+execute mode" do
         history = conversation.history_for([:read, :execute])
 
-        expect(history[0][:content]).to include("Use commands to deeply understand")
+        expect(history[0][:content]).to include("You may execute shell commands and read files on the system")
       end
 
       it "returns history with mode-specific system prompt for write+execute mode" do
         history = conversation.history_for([:write, :execute])
 
-        expect(history[0][:content]).to include("Create and execute freely")
+        expect(history[0][:content]).to include("You may execute shell commands and write files on the system")
       end
 
       it "returns history with mode-specific system prompt for all tools mode" do
         history = conversation.history_for([:read, :write, :execute])
 
-        expect(history[0][:content]).to include("You have all tools")
+        expect(history[0][:content]).to include("You may read files, write files and execute shell commands on the system")
       end
 
       it "returns base system prompt for unknown mode" do
@@ -182,7 +182,7 @@ RSpec.describe Elelem::Conversation do
       parsed = JSON.parse(json)
       expect(parsed).to be_an(Array)
       expect(parsed.length).to eq(2)
-      expect(parsed[0]["content"]).to include("Focus on EXPLORE and UNDERSTAND")
+      expect(parsed[0]["content"]).to include("You may read files on the system")
     end
   end
 end
