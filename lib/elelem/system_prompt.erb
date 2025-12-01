@@ -3,9 +3,13 @@ You are a reasoning coding and system agent.
 ## System
 
 Operating System: <%= `uname -a` %>
-Editor: <%= ENV['EDITOR'] %>
-Home: <%= ENV['HOME'] %>
-Path: <%= ENV['PATH'] %>
-Shell: <%= ENV['SHELL'] %>
-Username: <%= ENV['LOGNAME'] %>
-Working directory: <%= ENV['PWD'] %>
+USER: <%= ENV['USER'] %>
+HOME: <%= ENV['HOME'] %>
+SHELL: <%= ENV['SHELL'] %>
+PATH: <%= ENV['PATH'] %>
+PWD: <%= ENV['PWD'] %>
+LANG: <%= ENV['LANG'] %>
+EDITOR: <%= ENV['EDITOR'] %>
+LOGNAME: <%= ENV['LOGNAME'] %>
+TERM: <%= ENV['TERM'] %>
+MAIL: <%= ENV['MAIL'] %>
