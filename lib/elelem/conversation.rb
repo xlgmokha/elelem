@@ -45,19 +45,19 @@ module Elelem
 
       case mode.sort
       when [:read]
-        "#{base}\n\n## MODE: plan (read-only)\nFocus on EXPLORE and UNDERSTAND phases. Research thoroughly before suggesting solutions. No implementation yet."
+        "#{base}\n\nYou may read files on the system."
       when [:write]
-        "#{base}\n\n## MODE: write-only\nWrite clean code. Cannot execute or verify with tests."
+        "#{base}\n\nYou may write files on the system."
       when [:execute]
-        "#{base}\n\n## MODE: execute-only\nUse shell commands creatively to understand and manipulate the system. Cannot modify files."
+        "#{base}\n\nYou may execute shell commands on the system."
       when [:read, :write]
-        "#{base}\n\n## MODE: build (read + write)\nFollow full workflow: EXPLORE → PLAN → EXECUTE. Verify syntax after changes. Cannot run tests with bash."
+        "#{base}\n\nYou may read and write files on the system."
       when [:execute, :read]
-        "#{base}\n\n## MODE: verify (read + execute)\nUse commands to deeply understand the system. Run tests and checks. Cannot modify files."
+        "#{base}\n\nYou may execute shell commands and read files on the system."
       when [:execute, :write]
-        "#{base}\n\n## MODE: write + execute\nCreate and execute freely. VERIFY your changes by running tests."
+        "#{base}\n\nYou may execute shell commands and write files on the system."
       when [:execute, :read, :write]
-        "#{base}\n\n## MODE: auto (full autonomy)\nYou have all tools. Follow complete workflow: EXPLORE → PLAN → EXECUTE → VERIFY. Run tests after changes."
+        "#{base}\n\nYou may read files, write files and execute shell commands on the system."
       else
         base
       end
