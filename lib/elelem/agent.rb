@@ -81,21 +81,18 @@ module Elelem
         content = ""
         tool_calls = []
 
-        print "Assistant> Thinking..."
+        print "Thinking> "
         client.chat(messages + turn_context, tools) do |chunk|
           msg = chunk["message"]
           if msg
-            if msg["content"] && !msg["content"].empty?
-              print "\r\e[K" if content.empty?
-              print msg["content"]
-              content += msg["content"]
-            end
+            print msg["thinking"] if msg["thinking"]
+            content += msg["content"] if msg["content"]
 
             tool_calls += msg["tool_calls"] if msg["tool_calls"]
           end
         end
 
-        puts
+        puts "\nAssistant> #{content}" unless content.empty?
         turn_context << { role: "assistant", content: content, tool_calls: tool_calls }.compact
 
         if tool_calls.any?
@@ -103,7 +100,7 @@ module Elelem
             name = call.dig("function", "name")
             args = call.dig("function", "arguments")
 
-            puts "Tool> #{name}(#{args})"
+            puts "\nTool> #{name}(#{args})"
             result = toolbox.run_tool(name, args)
             puts format_tool_call_result(result)
             turn_context << { role: "tool", content: JSON.dump(result) }
