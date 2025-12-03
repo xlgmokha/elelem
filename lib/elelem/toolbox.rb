@@ -2,6 +2,7 @@
 
 module Elelem
   class Toolbox
+
     READ_TOOL = Tool.build("read", "Read complete contents of a file. Requires exact file path.", { path: { type: "string" } }, ["path"]) do |args|
       path = args["path"]
       full_path = Pathname.new(path).expand_path
@@ -36,6 +37,13 @@ module Elelem
       { bytes_written: full_path.write(args["content"]) }
     end
 
+    TOOL_ALIASES = {
+      "exec" => "bash",
+      "execute" => "bash",
+      "open" => "read",
+      "search" => "grep",
+    }
+
     attr_reader :tools
 
     def initialize
@@ -64,7 +72,8 @@ module Elelem
     end
 
     def run_tool(name, args)
-      @tools_by_name[name]&.call(args) || { error: "Unknown tool", name: name, args: args }
+      resolved_name = TOOL_ALIASES.fetch(name, name)
+      @tools_by_name[resolved_name]&.call(args) || { error: "Unknown tool", name: name, args: args }
     rescue => error
       { error: error.message, name: name, args: args, backtrace: error.backtrace.first(5) }
     end
