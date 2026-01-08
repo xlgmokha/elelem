@@ -7,7 +7,7 @@ PATH
       json (~> 2.0)
       json-schema (~> 6.0)
       logger (~> 1.0)
-      net-llm (>= 0.5.0)
+      net-llm (~> 0.5, >= 0.5.0)
       open3 (~> 0.1)
       pathname (~> 0.1)
       reline (~> 0.6)
