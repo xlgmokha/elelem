@@ -63,7 +63,7 @@ gem install elelem
 
 ## Usage
 
-Start an interactive chat session with an Ollama model:
+Start an interactive chat session:
 
 ```bash
 elelem chat
@@ -71,19 +71,35 @@ elelem chat
 
 ### Options
 
-* `--host` – Ollama host (default: `localhost:11434`).
-* `--model` – Ollama model (default: `gpt-oss`).
-* `--token` – Authentication token.
+* `--provider` – LLM provider: `ollama`, `anthropic`, `openai`, or `vertex-ai` (default: `ollama`).
+* `--model` – Override the default model for the selected provider.
 
 ### Examples
 
 ```bash
-# Default model
+# Default (Ollama)
 elelem chat
 
-# Specific model and host
-elelem chat --model llama2 --host remote-host:11434
+# Anthropic Claude
+ANTHROPIC_API_KEY=sk-... elelem chat --provider anthropic
+
+# OpenAI
+OPENAI_API_KEY=sk-... elelem chat --provider openai
+
+# VertexAI (uses gcloud ADC)
+elelem chat --provider vertex-ai --model claude-sonnet-4@20250514
 ```
+
+### Provider Configuration
+
+Each provider reads its configuration from environment variables:
+
+| Provider    | Environment Variables                              |
+|-------------|---------------------------------------------------|
+| ollama      | `OLLAMA_HOST` (default: localhost:11434)          |
+| anthropic   | `ANTHROPIC_API_KEY`                               |
+| openai      | `OPENAI_API_KEY`, `OPENAI_BASE_URL`               |
+| vertex-ai   | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_REGION`     |
 
 ## Mode System
 
@@ -148,8 +164,7 @@ arguments as a hash.
 
 ## Contributing
 
-Feel free to open issues or pull requests. The repository follows the
-GitHub Flow.
+Send me an email. For instructions see https://git-send-email.io/.
 
 ## License
 

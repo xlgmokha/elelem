@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+## [0.5.0] - 2025-01-07
+
+### Added
+- Multi-provider support: Ollama, Anthropic, OpenAI, and VertexAI
+- `--provider` CLI option to select LLM provider (default: ollama)
+- `--model` CLI option to override default model
+- Tool aliases (`bash` also accepts `exec`, `shell`, `command`, `terminal`, `run`)
+- Thinking text output for models that support extended thinking
+
+### Changed
+- Requires net-llm >= 0.5.0 with unified fetch interface
+- Updated gem description to reflect multi-provider support
+
 ## [0.4.2] - 2025-12-01
 
 ### Changed

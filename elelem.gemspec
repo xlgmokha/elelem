@@ -8,25 +8,17 @@ Gem::Specification.new do |spec|
   spec.authors = ["mo khan"]
   spec.email = ["mo@mokhan.ca"]
 
-  spec.summary = "A REPL for Ollama."
-  spec.description = "A REPL for Ollama."
-  spec.homepage = "https://github.com/xlgmokha/elelem"
+  spec.summary = "A minimal coding agent for LLMs."
+  spec.description = "A minimal coding agent supporting Ollama, Anthropic, OpenAI, and VertexAI."
+  spec.homepage = "https://src.mokhan.ca/xlgmokha/elelem"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.4.0"
   spec.required_rubygems_version = ">= 3.3.11"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/xlgmokha/elelem"
-  spec.metadata["changelog_uri"] = "https://github.com/xlgmokha/elelem/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://src.mokhan.ca/xlgmokha/elelem"
+  spec.metadata["changelog_uri"] = "https://src.mokhan.ca/xlgmokha/elelem/blob/main/CHANGELOG.md.html"
 
-  # Specify which files should be added to the gem when it is released.
-  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
-  # gemspec = File.basename(__FILE__)
-  # spec.files = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL) do |ls|
-  #   ls.readlines("\x0", chomp: true).reject do |f|
-  #     (f == gemspec) || f.start_with?(*%w[bin/ test/ spec/ features/ .git Gemfile])
-  #   end
-  # end
   spec.files = [
     "CHANGELOG.md",
     "LICENSE.txt",
@@ -46,16 +38,16 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "erb"
-  spec.add_dependency "fileutils"
-  spec.add_dependency "json"
-  spec.add_dependency "json-schema"
-  spec.add_dependency "logger"
-  spec.add_dependency "net-llm"
-  spec.add_dependency "open3"
-  spec.add_dependency "pathname"
-  spec.add_dependency "reline"
-  spec.add_dependency "set"
-  spec.add_dependency "thor"
-  spec.add_dependency "timeout"
+  spec.add_dependency "erb", "~> 6.0"
+  spec.add_dependency "fileutils", "~> 1.0"
+  spec.add_dependency "json", "~> 2.0"
+  spec.add_dependency "json-schema", "~> 6.0"
+  spec.add_dependency "logger", "~> 1.0"
+  spec.add_dependency "net-llm", ">= 0.5.0"
+  spec.add_dependency "open3", "~> 0.1"
+  spec.add_dependency "pathname", "~> 0.1"
+  spec.add_dependency "reline", "~> 0.6"
+  spec.add_dependency "set", "~> 1.0"
+  spec.add_dependency "thor", "~> 1.0"
+  spec.add_dependency "timeout", "~> 0.1"
 end
