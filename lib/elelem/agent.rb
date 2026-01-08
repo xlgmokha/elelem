@@ -179,7 +179,7 @@ module Elelem
         content = ""
         tool_calls = []
 
-        print "Thinking> "
+        print "Thinking... "
         begin
           client.fetch(messages + turn_context, tools) do |chunk|
             case chunk[:type]
