@@ -2,25 +2,38 @@
 
 module Elelem
   class Application < Thor
+    PROVIDERS = %w[ollama anthropic openai vertex-ai].freeze
+
     desc "chat", "Start the REPL"
-    method_option :host,
-                  aliases: "--host",
+    method_option :provider,
+                  aliases: "-p",
                   type: :string,
-                  desc: "Ollama host",
-                  default: ENV.fetch("OLLAMA_HOST", "localhost:11434")
+                  desc: "LLM provider (#{PROVIDERS.join(', ')})",
+                  default: ENV.fetch("ELELEM_PROVIDER", "ollama")
     method_option :model,
-                  aliases: "--model",
+                  aliases: "-m",
                   type: :string,
-                  desc: "Ollama model",
-                  default: ENV.fetch("OLLAMA_MODEL", "gpt-oss")
+                  desc: "Model name (uses provider default if not specified)"
     def chat(*)
-      client = Net::Llm::Ollama.new(
-        host: options[:host],
-        model: options[:model],
-      )
-      say "Agent (#{options[:model]})", :green
+      client = build_client
+      say "Agent (#{options[:provider]}/#{client.model})", :green
       agent = Agent.new(client, Toolbox.new)
       agent.repl
+    end
+
+    private
+
+    def build_client
+      model_opts = options[:model] ? { model: options[:model] } : {}
+
+      case options[:provider]
+      when "ollama"     then Net::Llm::Ollama.new(**model_opts)
+      when "anthropic"  then Net::Llm::Anthropic.new(**model_opts)
+      when "openai"     then Net::Llm::OpenAI.new(**model_opts)
+      when "vertex-ai"  then Net::Llm::VertexAI.new(**model_opts)
+      else
+        raise Error, "Unknown provider: #{options[:provider]}. Use: #{PROVIDERS.join(', ')}"
+      end
     end
 
     desc "files", "Generate CXML of the files"

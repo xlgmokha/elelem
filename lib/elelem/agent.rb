@@ -74,6 +74,21 @@ module Elelem
       ""
     end
 
+    def format_tool_calls_for_api(tool_calls)
+      tool_calls.map do |tc|
+        args = openai_client? ? JSON.dump(tc[:arguments]) : tc[:arguments]
+        {
+          id: tc[:id],
+          type: "function",
+          function: { name: tc[:name], arguments: args }
+        }
+      end
+    end
+
+    def openai_client?
+      client.is_a?(Net::Llm::OpenAI)
+    end
+
     def execute_turn(messages, tools:)
       turn_context = []
 
@@ -82,28 +97,30 @@ module Elelem
         tool_calls = []
 
         print "Thinking> "
-        client.chat(messages + turn_context, tools) do |chunk|
-          msg = chunk["message"]
-          if msg
-            print msg["thinking"] if msg["thinking"]
-            content += msg["content"] if msg["content"]
-
-            tool_calls += msg["tool_calls"] if msg["tool_calls"]
+        client.fetch(messages + turn_context, tools) do |chunk|
+          case chunk[:type]
+          when :delta
+            print chunk[:thinking] if chunk[:thinking]
+            content += chunk[:content] if chunk[:content]
+          when :complete
+            content = chunk[:content] if chunk[:content]
+            tool_calls = chunk[:tool_calls] || []
           end
         end
 
-        puts "\nAssistant> #{content}" unless content.empty?
-        turn_context << { role: "assistant", content: content, tool_calls: tool_calls }.compact
+        puts "\nAssistant> #{content}" unless content.to_s.empty?
+        api_tool_calls = tool_calls.any? ? format_tool_calls_for_api(tool_calls) : nil
+        turn_context << { role: "assistant", content: content, tool_calls: api_tool_calls }.compact
 
         if tool_calls.any?
           tool_calls.each do |call|
-            name = call.dig("function", "name")
-            args = call.dig("function", "arguments")
+            name = call[:name]
+            args = call[:arguments]
 
             puts "\nTool> #{name}(#{args})"
             result = toolbox.run_tool(name, args)
             puts format_tool_call_result(result)
-            turn_context << { role: "tool", content: JSON.dump(result) }
+            turn_context << { role: "tool", tool_call_id: call[:id], content: JSON.dump(result) }
           end
 
           tool_calls = []
