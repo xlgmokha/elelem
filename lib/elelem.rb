@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "cli/ui"
 require "erb"
 require "fileutils"
 require "json"

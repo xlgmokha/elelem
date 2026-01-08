@@ -15,25 +15,11 @@ module Elelem
                   type: :string,
                   desc: "Model name (uses provider default if not specified)"
     def chat(*)
-      client = build_client
-      say "Agent (#{options[:provider]}/#{client.model})", :green
-      agent = Agent.new(client, Toolbox.new)
+      provider = options[:provider]
+      model = options[:model]
+      say "Agent (#{provider})", :green
+      agent = Agent.new(provider, model, Toolbox.new)
       agent.repl
-    end
-
-    private
-
-    def build_client
-      model_opts = options[:model] ? { model: options[:model] } : {}
-
-      case options[:provider]
-      when "ollama"     then Net::Llm::Ollama.new(**model_opts)
-      when "anthropic"  then Net::Llm::Anthropic.new(**model_opts)
-      when "openai"     then Net::Llm::OpenAI.new(**model_opts)
-      when "vertex-ai"  then Net::Llm::VertexAI.new(**model_opts)
-      else
-        raise Error, "Unknown provider: #{options[:provider]}. Use: #{PROVIDERS.join(', ')}"
-      end
     end
 
     desc "files", "Generate CXML of the files"

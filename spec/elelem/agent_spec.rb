@@ -1,8 +1,15 @@
 # frozen_string_literal: true
 
 RSpec.describe Elelem::Agent do
-  let(:mock_client) { double("client") }
-  let(:agent) { described_class.new(mock_client, Elelem::Toolbox.new) }
+  let(:mock_client) { double("client", model: "test-model") }
+  let(:agent) do
+    agent = described_class.allocate
+    agent.instance_variable_set(:@conversation, Elelem::Conversation.new)
+    agent.instance_variable_set(:@provider, "ollama")
+    agent.instance_variable_set(:@toolbox, Elelem::Toolbox.new)
+    agent.instance_variable_set(:@client, mock_client)
+    agent
+  end
 
   describe "#initialize" do
     it "creates a new conversation" do
