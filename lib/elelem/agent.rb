@@ -5,6 +5,8 @@ module Elelem
     PROVIDERS = %w[ollama anthropic openai vertex-ai].freeze
     ANTHROPIC_MODELS = %w[claude-sonnet-4-20250514 claude-opus-4-20250514 claude-haiku-3-5-20241022].freeze
     VERTEX_MODELS = %w[claude-sonnet-4@20250514 claude-opus-4-5@20251101].freeze
+    COMMANDS = %w[/env /mode /provider /model /shell /clear /context /exit /help].freeze
+    MODES = %w[auto build plan verify].freeze
 
     attr_reader :conversation, :client, :toolbox, :provider
 
@@ -16,6 +18,8 @@ module Elelem
     end
 
     def repl
+      Reline.autocompletion = true
+      Reline.completion_proc = ->(target, preposing) { complete(target, preposing) }
       mode = Set.new([:read])
 
       loop do
@@ -106,6 +110,23 @@ module Elelem
 
     def ask?(text)
       Reline.readline(text, true)&.strip
+    end
+
+    def complete(target, preposing)
+      line = "#{preposing}#{target}"
+
+      if line.start_with?('/') && !preposing.include?(' ')
+        return COMMANDS.select { |c| c.start_with?(line) }
+      end
+
+      case preposing.strip
+      when '/mode'
+        MODES.select { |m| m.start_with?(target) }
+      when '/provider'
+        PROVIDERS.select { |p| p.start_with?(target) }
+      else
+        []
+      end
     end
 
     def strip_ansi(text)
