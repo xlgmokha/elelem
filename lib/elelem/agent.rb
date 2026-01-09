@@ -256,6 +256,17 @@ module Elelem
       ""
     end
 
+    def truncate_output(text, max_lines: 30)
+      return text if text.nil? || text.empty?
+
+      lines = text.to_s.lines
+      if lines.size > max_lines
+        lines.first(max_lines).join + "\n... (#{lines.size - max_lines} more lines)"
+      else
+        text
+      end
+    end
+
     def format_tool_calls_for_api(tool_calls)
       tool_calls.map do |tc|
         args = openai_client? ? JSON.dump(tc[:arguments]) : tc[:arguments]
@@ -273,6 +284,7 @@ module Elelem
 
     def execute_turn(messages, tools:)
       turn_context = []
+      errors = 0
 
       loop do
         content = ""
@@ -301,16 +313,14 @@ module Elelem
 
         if tool_calls.any?
           tool_calls.each do |call|
-            name = call[:name]
-            args = call[:arguments]
-
+            name, args = call[:name], call[:arguments]
             puts "\nTool> #{name}(#{args})"
             result = toolbox.run_tool(name, args)
-            puts format_tool_call_result(result)
+            puts truncate_output(format_tool_call_result(result))
             turn_context << { role: "tool", tool_call_id: call[:id], content: JSON.dump(result) }
+            errors += 1 if result[:error]
           end
-
-          tool_calls = []
+          return { role: "assistant", content: "[Stopped: too many errors]" } if errors >= 3
           next
         end
 
