@@ -44,6 +44,10 @@ module Elelem
             conversation.clear
             puts "  → Conversation cleared"
           when "/context" then puts conversation.dump(mode)
+          when "/shell"
+            transcript = start_shell
+            conversation.add(role: :user, content: transcript) unless transcript.strip.empty?
+            puts "  → Shell session captured"
           when "/provider"
             CLI::UI::Prompt.ask("Provider?") do |handler|
               PROVIDERS.each do |name|
@@ -89,11 +93,28 @@ module Elelem
       Reline.readline(text, true)&.strip
     end
 
+    def strip_ansi(text)
+      text.gsub(/^Script started.*?\n/, '')
+          .gsub(/\nScript done.*$/, '')
+          .gsub(/\e\[[0-9;]*[a-zA-Z]/, '')
+          .gsub(/\e\[\?[0-9]+[hl]/, '')
+          .gsub(/[\b]/, '')
+          .gsub(/\r/, '')
+    end
+
+    def start_shell
+      Tempfile.create do |file|
+        system("script -q #{file.path}", chdir: Dir.pwd)
+        strip_ansi(File.read(file.path))
+      end
+    end
+
     def help_banner
       <<~HELP
   /mode auto build plan verify
   /provider
   /model
+  /shell
   /clear
   /context
   /exit
