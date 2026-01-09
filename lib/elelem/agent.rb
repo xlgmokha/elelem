@@ -76,6 +76,21 @@ module Elelem
                 end
               end
             end
+          when %r{^/env\s+(\w+)\s+(.+)$}
+            var_name = $1
+            command = $2
+            result = Elelem.shell.execute("sh", args: ["-c", command])
+            if result["exit_status"].zero?
+              value = result["stdout"].lines.first&.strip
+              if value && !value.empty?
+                ENV[var_name] = value
+                puts "  → Set #{var_name}"
+              else
+                puts "  ⚠ Command produced no output"
+              end
+            else
+              puts "  ⚠ Command failed: #{result['stderr']}"
+            end
           else
             puts help_banner
           end
@@ -111,6 +126,7 @@ module Elelem
 
     def help_banner
       <<~HELP
+  /env VAR cmd...
   /mode auto build plan verify
   /provider
   /model
