@@ -81,6 +81,18 @@ module Elelem
                 end
               end
             end
+          when "/env"
+            puts "  Usage: /env VAR cmd..."
+            puts ""
+            ENV_VARS.each do |var|
+              value = ENV[var]
+              if value
+                masked = value.length > 8 ? "#{value[0..3]}...#{value[-4..]}" : "****"
+                puts "  #{var}=#{masked}"
+              else
+                puts "  #{var}=(not set)"
+              end
+            end
           when %r{^/env\s+(\w+)\s+(.+)$}
             var_name = $1
             command = $2
@@ -127,9 +139,33 @@ module Elelem
         PROVIDERS.select { |p| p.start_with?(target) }
       when '/env'
         ENV_VARS.select { |v| v.start_with?(target) }
+      when %r{^/env\s+\w+\s+pass\s+show\s*$}
+        complete_pass_entries(target)
+      when %r{^/env\s+\w+\s+pass\s*$}
+        %w[show ls insert generate edit rm].select { |c| c.start_with?(target) }
+      when %r{^/env\s+\w+$}
+        complete_commands(target)
       else
-        []
+        complete_files(target)
       end
+    end
+
+    def complete_commands(target)
+      result = Elelem.shell.execute("bash", args: ["-c", "compgen -c #{target}"])
+      result["stdout"].lines.map(&:strip).first(20)
+    end
+
+    def complete_files(target)
+      result = Elelem.shell.execute("bash", args: ["-c", "compgen -f #{target}"])
+      result["stdout"].lines.map(&:strip).first(20)
+    end
+
+    def complete_pass_entries(target)
+      store = ENV.fetch("PASSWORD_STORE_DIR", File.expand_path("~/.password-store"))
+      result = Elelem.shell.execute("find", args: [store, "-name", "*.gpg"])
+      result["stdout"].lines.map { |l|
+        l.strip.sub("#{store}/", "").sub(/\.gpg$/, "")
+      }.select { |e| e.start_with?(target) }.first(20)
     end
 
     def strip_ansi(text)
