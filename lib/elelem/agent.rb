@@ -7,6 +7,7 @@ module Elelem
     VERTEX_MODELS = %w[claude-sonnet-4@20250514 claude-opus-4-5@20251101].freeze
     COMMANDS = %w[/env /mode /provider /model /shell /clear /context /exit /help].freeze
     MODES = %w[auto build plan verify].freeze
+    ENV_VARS = %w[ANTHROPIC_API_KEY OPENAI_API_KEY OPENAI_BASE_URL OLLAMA_HOST GOOGLE_CLOUD_PROJECT GOOGLE_CLOUD_REGION].freeze
 
     attr_reader :conversation, :client, :toolbox, :provider
 
@@ -124,6 +125,8 @@ module Elelem
         MODES.select { |m| m.start_with?(target) }
       when '/provider'
         PROVIDERS.select { |p| p.start_with?(target) }
+      when '/env'
+        ENV_VARS.select { |v| v.start_with?(target) }
       else
         []
       end
