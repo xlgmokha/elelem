@@ -41,6 +41,8 @@ module Elelem
             mode = Set[:read, :execute]
             puts "  → Mode: verify (read + execute)"
           when "/mode"
+            puts "  Usage: /mode [auto|build|plan|verify]"
+            puts ""
             puts "  Provider: #{provider}/#{client.model}"
             puts "  Mode: #{mode.to_a.inspect}"
             puts "  Tools: #{toolbox.tools_for(mode).map { |t| t.dig(:function, :name) }}"
