@@ -26,7 +26,7 @@ module Elelem
     end
 
     def branch
-      @branch ||= @shell.execute("git", args: ["branch", "--show-current"])["stdout"].strip
+      @branch ||= @shell.execute("git", args: ["branch", "--show-current"])["stdout"].strip.then { |b| b.empty? ? nil : b }
     end
 
     def status
