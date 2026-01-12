@@ -10,3 +10,7 @@ You are a trusted terminal agent. You act on behalf of the user - executing task
 ## System
 
 <%= `uname -s`.strip %> · <%= ENV['PWD'] %>
+
+## Git State
+
+<%= Elelem::GitContext.new.to_s %>
