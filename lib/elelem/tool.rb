@@ -12,7 +12,9 @@ module Elelem
 
     def call(args)
       unless valid?(args)
-        return { error: "Invalid args for #{@name}", received: args.keys, expected: @schema.dig(:function, :parameters, :required) }
+        actual = args.keys
+        expected = @schema.dig(:function, :parameters)
+        return { error: "Invalid args for #{@name}.", actual: actual, expected: expected }
       end
 
       @block.call(args)
