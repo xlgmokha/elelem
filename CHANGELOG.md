@@ -1,5 +1,21 @@
 ## [Unreleased]
 
+### Added
+- `/env` slash command to capture environment variables for provider connections
+- `/shell` slash command
+- `/provider` and `/model` slash commands
+- Tab completion for commands
+- Help output for `/mode` and `/env` commands
+
+### Changed
+- Tuned system prompt
+- Changed thinking prompt to ellipsis
+- Removed username from system prompt
+- Use pessimistic constraint on net-llm dependency
+
+### Fixed
+- Prevent infinite looping errors
+
 ## [0.5.0] - 2025-01-07
 
 ### Added
