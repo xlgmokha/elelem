@@ -30,7 +30,7 @@ module Elelem
     end
 
     def status
-      @status ||= @shell.execute("git", args: ["status", "--porcelain"])["stdout"].lines.map(&:strip)
+      @status ||= @shell.execute("git", args: ["status", "--porcelain"])["stdout"].lines.map(&:chomp)
     end
 
     def staged_diff
@@ -46,9 +46,9 @@ module Elelem
     end
 
     def status_section
-      modified = status.select { |l| l.start_with?(" M", "M ") }.map { |l| l[3..] }
-      added = status.select { |l| l.start_with?("A ", "??") }.map { |l| l[3..] }
-      deleted = status.select { |l| l.start_with?(" D", "D ") }.map { |l| l[3..] }
+      modified = status.select { |l| l[0] == "M" || l[1] == "M" }.map { |l| l[3..] }
+      added = status.select { |l| l[0] == "A" || l.start_with?("??") }.map { |l| l[3..] }
+      deleted = status.select { |l| l[0] == "D" || l[1] == "D" }.map { |l| l[3..] }
 
       lines = []
       lines << "Modified: #{modified.join(', ')}" if modified.any?
