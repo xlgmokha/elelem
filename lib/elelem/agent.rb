@@ -9,110 +9,29 @@ module Elelem
     MODES = %w[auto build plan verify].freeze
     ENV_VARS = %w[ANTHROPIC_API_KEY OPENAI_API_KEY OPENAI_BASE_URL OLLAMA_HOST GOOGLE_CLOUD_PROJECT GOOGLE_CLOUD_REGION].freeze
 
-    attr_reader :conversation, :client, :toolbox, :provider
+    attr_reader :conversation, :client, :toolbox, :provider, :terminal
 
-    def initialize(provider, model, toolbox)
+    def initialize(provider, model, toolbox, terminal: nil)
       @conversation = Conversation.new
       @provider = provider
       @toolbox = toolbox
       @client = build_client(provider, model)
+      @terminal = terminal || Terminal.new(
+        commands: COMMANDS,
+        modes: MODES,
+        providers: PROVIDERS,
+        env_vars: ENV_VARS
+      )
     end
 
     def repl
-      Reline.autocompletion = true
-      Reline.completion_proc = ->(target, preposing) { complete(target, preposing) }
       mode = Set.new([:read])
 
       loop do
-        input = ask?("User> ")
+        input = terminal.ask("User> ")
         break if input.nil?
         if input.start_with?("/")
-          case input
-          when "/mode auto"
-            mode = Set[:read, :write, :execute]
-            puts "  → Mode: auto (all tools enabled)"
-          when "/mode build"
-            mode = Set[:read, :write]
-            puts "  → Mode: build (read + write)"
-          when "/mode plan"
-            mode = Set[:read]
-            puts "  → Mode: plan (read-only)"
-          when "/mode verify"
-            mode = Set[:read, :execute]
-            puts "  → Mode: verify (read + execute)"
-          when "/mode"
-            puts "  Usage: /mode [auto|build|plan|verify]"
-            puts ""
-            puts "  Provider: #{provider}/#{client.model}"
-            puts "  Mode: #{mode.to_a.inspect}"
-            puts "  Tools: #{toolbox.tools_for(mode).map { |t| t.dig(:function, :name) }}"
-          when "/exit" then exit
-          when "/clear"
-            conversation.clear
-            puts "  → Conversation cleared"
-          when "/context" then puts conversation.dump(mode)
-          when "/shell"
-            transcript = start_shell
-            conversation.add(role: :user, content: transcript) unless transcript.strip.empty?
-            puts "  → Shell session captured"
-          when "/provider"
-            CLI::UI::Prompt.ask("Provider?") do |handler|
-              PROVIDERS.each do |name|
-                handler.option(name) do |selected_provider|
-                  models = models_for(selected_provider)
-                  if models.empty?
-                    puts "  ✗ No models available for #{selected_provider}"
-                  else
-                    CLI::UI::Prompt.ask("Model?") do |h|
-                      models.each do |model|
-                        h.option(model) { |m| switch_client(selected_provider, m) }
-                      end
-                    end
-                  end
-                end
-              end
-            end
-          when "/model"
-            models = models_for(provider)
-            if models.empty?
-              puts "  ✗ No models available for #{provider}"
-            else
-              CLI::UI::Prompt.ask("Model?") do |handler|
-                models.each do |model|
-                  handler.option(model) { |m| switch_model(m) }
-                end
-              end
-            end
-          when "/env"
-            puts "  Usage: /env VAR cmd..."
-            puts ""
-            ENV_VARS.each do |var|
-              value = ENV[var]
-              if value
-                masked = value.length > 8 ? "#{value[0..3]}...#{value[-4..]}" : "****"
-                puts "  #{var}=#{masked}"
-              else
-                puts "  #{var}=(not set)"
-              end
-            end
-          when %r{^/env\s+(\w+)\s+(.+)$}
-            var_name = $1
-            command = $2
-            result = Elelem.shell.execute("sh", args: ["-c", command])
-            if result["exit_status"].zero?
-              value = result["stdout"].lines.first&.strip
-              if value && !value.empty?
-                ENV[var_name] = value
-                puts "  → Set #{var_name}"
-              else
-                puts "  ⚠ Command produced no output"
-              end
-            else
-              puts "  ⚠ Command failed: #{result['stderr']}"
-            end
-          else
-            puts help_banner
-          end
+          handle_command(input, mode)
         else
           conversation.add(role: :user, content: input)
           result = execute_turn(conversation.history_for(mode), tools: toolbox.tools_for(mode))
@@ -123,51 +42,86 @@ module Elelem
 
     private
 
-    def ask?(text)
-      Reline.readline(text, true)&.strip
-    end
-
-    def complete(target, preposing)
-      line = "#{preposing}#{target}"
-
-      if line.start_with?('/') && !preposing.include?(' ')
-        return COMMANDS.select { |c| c.start_with?(line) }
-      end
-
-      case preposing.strip
-      when '/mode'
-        MODES.select { |m| m.start_with?(target) }
-      when '/provider'
-        PROVIDERS.select { |p| p.start_with?(target) }
-      when '/env'
-        ENV_VARS.select { |v| v.start_with?(target) }
-      when %r{^/env\s+\w+\s+pass(\s+show)?\s*$}
-        subcommands = %w[show ls insert generate edit rm]
-        matches = subcommands.select { |c| c.start_with?(target) }
-        matches.any? ? matches : complete_pass_entries(target)
-      when %r{^/env\s+\w+$}
-        complete_commands(target)
+    def handle_command(input, mode)
+      case input
+      when "/mode auto"
+        mode.replace([:read, :write, :execute])
+        terminal.say "  → Mode: auto (all tools enabled)"
+      when "/mode build"
+        mode.replace([:read, :write])
+        terminal.say "  → Mode: build (read + write)"
+      when "/mode plan"
+        mode.replace([:read])
+        terminal.say "  → Mode: plan (read-only)"
+      when "/mode verify"
+        mode.replace([:read, :execute])
+        terminal.say "  → Mode: verify (read + execute)"
+      when "/mode"
+        terminal.say "  Usage: /mode [auto|build|plan|verify]"
+        terminal.say ""
+        terminal.say "  Provider: #{provider}/#{client.model}"
+        terminal.say "  Mode: #{mode.to_a.inspect}"
+        terminal.say "  Tools: #{toolbox.tools_for(mode).map { |t| t.dig(:function, :name) }}"
+      when "/exit" then exit
+      when "/clear"
+        conversation.clear
+        terminal.say "  → Conversation cleared"
+      when "/context"
+        terminal.say conversation.dump(mode)
+      when "/shell"
+        transcript = start_shell
+        conversation.add(role: :user, content: transcript) unless transcript.strip.empty?
+        terminal.say "  → Shell session captured"
+      when "/provider"
+        terminal.select("Provider?", PROVIDERS) do |selected_provider|
+          models = models_for(selected_provider)
+          if models.empty?
+            terminal.say "  ✗ No models available for #{selected_provider}"
+          else
+            terminal.select("Model?", models) do |m|
+              switch_client(selected_provider, m)
+            end
+          end
+        end
+      when "/model"
+        models = models_for(provider)
+        if models.empty?
+          terminal.say "  ✗ No models available for #{provider}"
+        else
+          terminal.select("Model?", models) do |m|
+            switch_model(m)
+          end
+        end
+      when "/env"
+        terminal.say "  Usage: /env VAR cmd..."
+        terminal.say ""
+        ENV_VARS.each do |var|
+          value = ENV[var]
+          if value
+            masked = value.length > 8 ? "#{value[0..3]}...#{value[-4..]}" : "****"
+            terminal.say "  #{var}=#{masked}"
+          else
+            terminal.say "  #{var}=(not set)"
+          end
+        end
+      when %r{^/env\s+(\w+)\s+(.+)$}
+        var_name = $1
+        command = $2
+        result = Elelem.shell.execute("sh", args: ["-c", command])
+        if result["exit_status"].zero?
+          value = result["stdout"].lines.first&.strip
+          if value && !value.empty?
+            ENV[var_name] = value
+            terminal.say "  → Set #{var_name}"
+          else
+            terminal.say "  ⚠ Command produced no output"
+          end
+        else
+          terminal.say "  ⚠ Command failed: #{result['stderr']}"
+        end
       else
-        complete_files(target)
+        terminal.say help_banner
       end
-    end
-
-    def complete_commands(target)
-      result = Elelem.shell.execute("bash", args: ["-c", "compgen -c #{target}"])
-      result["stdout"].lines.map(&:strip).first(20)
-    end
-
-    def complete_files(target)
-      result = Elelem.shell.execute("bash", args: ["-c", "compgen -f #{target}"])
-      result["stdout"].lines.map(&:strip).first(20)
-    end
-
-    def complete_pass_entries(target)
-      store = ENV.fetch("PASSWORD_STORE_DIR", File.expand_path("~/.password-store"))
-      result = Elelem.shell.execute("find", args: ["-L", store, "-name", "*.gpg"])
-      result["stdout"].lines.map { |l|
-        l.strip.sub("#{store}/", "").sub(/\.gpg$/, "")
-      }.select { |e| e.start_with?(target) }.first(20)
     end
 
     def strip_ansi(text)
@@ -229,22 +183,22 @@ module Elelem
         []
       end
     rescue KeyError => e
-      puts "  ⚠ Missing credentials: #{e.message}"
+      terminal.say "  ⚠ Missing credentials: #{e.message}"
       []
     rescue => e
-      puts "  ⚠ Could not fetch models: #{e.message}"
+      terminal.say "  ⚠ Could not fetch models: #{e.message}"
       []
     end
 
     def switch_client(new_provider, model)
       @provider = new_provider
       @client = build_client(new_provider, model)
-      puts "  → Switched to #{new_provider}/#{client.model}"
+      terminal.say "  → Switched to #{new_provider}/#{client.model}"
     end
 
     def switch_model(model)
       @client = build_client(provider, model)
-      puts "  → Switched to #{provider}/#{client.model}"
+      terminal.say "  → Switched to #{provider}/#{client.model}"
     end
 
     def format_tool_call_result(result)
@@ -290,12 +244,12 @@ module Elelem
         content = ""
         tool_calls = []
 
-        print "Thinking... "
+        terminal.write "Thinking... "
         begin
           client.fetch(messages + turn_context, tools) do |chunk|
             case chunk[:type]
             when :delta
-              print chunk[:thinking] if chunk[:thinking]
+              terminal.write chunk[:thinking] if chunk[:thinking]
               content += chunk[:content] if chunk[:content]
             when :complete
               content = chunk[:content] if chunk[:content]
@@ -303,20 +257,20 @@ module Elelem
             end
           end
         rescue => e
-          puts "\n  ✗ API Error: #{e.message}"
+          terminal.say "\n  ✗ API Error: #{e.message}"
           return { role: "assistant", content: "[Error: #{e.message}]" }
         end
 
-        puts "\nAssistant> #{content}" unless content.to_s.empty?
+        terminal.say "\nAssistant> #{content}" unless content.to_s.empty?
         api_tool_calls = tool_calls.any? ? format_tool_calls_for_api(tool_calls) : nil
         turn_context << { role: "assistant", content: content, tool_calls: api_tool_calls }.compact
 
         if tool_calls.any?
           tool_calls.each do |call|
             name, args = call[:name], call[:arguments]
-            puts "\nTool> #{name}(#{args})"
+            terminal.say "\nTool> #{name}(#{args})"
             result = toolbox.run_tool(name, args)
-            puts truncate_output(format_tool_call_result(result))
+            terminal.say truncate_output(format_tool_call_result(result))
             turn_context << { role: "tool", tool_call_id: call[:id], content: JSON.dump(result) }
             errors += 1 if result[:error]
           end

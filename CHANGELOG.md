@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [0.6.0] - 2026-01-12
+
 ### Added
 - `/env` slash command to capture environment variables for provider connections
 - `/shell` slash command
@@ -8,13 +10,18 @@
 - Help output for `/mode` and `/env` commands
 
 ### Changed
+- Renamed `bash` tool to `exec`
 - Tuned system prompt
 - Changed thinking prompt to ellipsis
 - Removed username from system prompt
 - Use pessimistic constraint on net-llm dependency
+- Extracted Terminal class for IO abstraction (enables E2E testing)
 
 ### Fixed
 - Prevent infinite looping errors
+- Provide function schema when tool is called with invalid arguments
+- Tab completion for `pass` entries without requiring `show` subcommand
+- Password store symlink support in tab completion
 
 ## [0.5.0] - 2025-01-07
 
