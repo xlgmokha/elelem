@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    elelem (0.5.0)
+    elelem (0.6.0)
       cli-ui (~> 2.0)
       erb (~> 6.0)
       fileutils (~> 1.0)
