@@ -141,10 +141,10 @@ module Elelem
         PROVIDERS.select { |p| p.start_with?(target) }
       when '/env'
         ENV_VARS.select { |v| v.start_with?(target) }
-      when %r{^/env\s+\w+\s+pass\s+show\s*$}
-        complete_pass_entries(target)
-      when %r{^/env\s+\w+\s+pass\s*$}
-        %w[show ls insert generate edit rm].select { |c| c.start_with?(target) }
+      when %r{^/env\s+\w+\s+pass(\s+show)?\s*$}
+        subcommands = %w[show ls insert generate edit rm]
+        matches = subcommands.select { |c| c.start_with?(target) }
+        matches.any? ? matches : complete_pass_entries(target)
       when %r{^/env\s+\w+$}
         complete_commands(target)
       else
@@ -164,7 +164,7 @@ module Elelem
 
     def complete_pass_entries(target)
       store = ENV.fetch("PASSWORD_STORE_DIR", File.expand_path("~/.password-store"))
-      result = Elelem.shell.execute("find", args: [store, "-name", "*.gpg"])
+      result = Elelem.shell.execute("find", args: ["-L", store, "-name", "*.gpg"])
       result["stdout"].lines.map { |l|
         l.strip.sub("#{store}/", "").sub(/\.gpg$/, "")
       }.select { |e| e.start_with?(target) }.first(20)
