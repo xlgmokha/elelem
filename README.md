@@ -141,7 +141,7 @@ seven tools, each represented by a JSON schema that the LLM can call.
 
 | Tool      | Purpose                              | Parameters                           |
 | ----      | -------                              | ----------                           |
-| `bash`    | Run shell commands                   | `cmd`, `args`, `env`, `cwd`, `stdin` |
+| `exec`    | Run shell commands                   | `cmd`, `args`, `env`, `cwd`, `stdin` |
 | `eval`    | Dynamically create new tools         | `code`                               |
 | `grep`    | Search Git‑tracked files             | `query`                              |
 | `list`    | List tracked files                   | `path` (optional)                    |

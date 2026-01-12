@@ -9,7 +9,7 @@ module Elelem
       full_path.exist? ? { content: full_path.read } : { error: "File not found: #{path}" }
     end
 
-    BASH_TOOL = Tool.build("bash", "Run shell commands. For git: bash({\"cmd\": \"git\", \"args\": [\"log\", \"--oneline\"]}). Returns stdout/stderr/exit_status.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory (defaults to current)" }, stdin: { type: "string" } }, ["cmd"]) do |args|
+    EXEC_TOOL = Tool.build("exec", "Run shell commands. Returns stdout/stderr/exit_status.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory (defaults to current)" }, stdin: { type: "string" } }, ["cmd"]) do |args|
       Elelem.shell.execute(
         args["cmd"],
         args: args["args"] || [],
@@ -38,10 +38,11 @@ module Elelem
     end
 
     TOOL_ALIASES = {
-      "exec" => "bash",
-      "execute" => "bash",
+      "bash" => "exec",
+      "execute" => "exec",
       "open" => "read",
       "search" => "grep",
+      "sh" => "exec",
     }
 
     attr_reader :tools
@@ -50,7 +51,7 @@ module Elelem
       @tools_by_name = {}
       @tools = { read: [], write: [], execute: [] }
       add_tool(eval_tool(binding), :execute)
-      add_tool(BASH_TOOL, :execute)
+      add_tool(EXEC_TOOL, :execute)
       add_tool(GREP_TOOL, :read)
       add_tool(LIST_TOOL, :read)
       add_tool(PATCH_TOOL, :write)

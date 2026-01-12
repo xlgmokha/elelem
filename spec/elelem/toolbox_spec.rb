@@ -10,7 +10,7 @@ RSpec.describe Elelem::Toolbox do
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
       expect(tool_names).to include("grep", "list", "read")
-      expect(tool_names).not_to include("write", "patch", "bash")
+      expect(tool_names).not_to include("write", "patch", "exec")
     end
 
     it "returns write tools for write mode" do
@@ -19,7 +19,7 @@ RSpec.describe Elelem::Toolbox do
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
       expect(tool_names).to include("patch", "write")
-      expect(tool_names).not_to include("grep", "bash")
+      expect(tool_names).not_to include("grep", "exec")
     end
 
     it "returns execute tools for execute mode" do
@@ -27,7 +27,7 @@ RSpec.describe Elelem::Toolbox do
       tools = subject.tools_for(mode)
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("bash")
+      expect(tool_names).to include("exec")
       expect(tool_names).not_to include("grep", "write")
     end
 
@@ -36,7 +36,7 @@ RSpec.describe Elelem::Toolbox do
       tools = subject.tools_for(mode)
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read", "patch", "write", "bash")
+      expect(tool_names).to include("grep", "list", "read", "patch", "write", "exec")
     end
 
     it "returns combined tools for build mode" do
@@ -45,7 +45,7 @@ RSpec.describe Elelem::Toolbox do
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
       expect(tool_names).to include("grep", "read", "write", "patch")
-      expect(tool_names).not_to include("bash")
+      expect(tool_names).not_to include("exec")
     end
   end
 
