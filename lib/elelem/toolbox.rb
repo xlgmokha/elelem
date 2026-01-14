@@ -2,7 +2,6 @@
 
 module Elelem
   class Toolbox
-
     READ_TOOL = Tool.build("read", "Read complete contents of a file. Requires exact file path.", { path: { type: "string" } }, ["path"]) do |args|
       path = args["path"]
       full_path = Pathname.new(path).expand_path
@@ -37,12 +36,30 @@ module Elelem
       { bytes_written: full_path.write(args["content"]) }
     end
 
+    FETCH_TOOL = Tool.build("fetch", "Fetch content from a URL. Returns status, headers, and body.", { url: { type: "string", description: "The URL to fetch" } }, ["url"]) do |args|
+      client = Net::Hippie::Client.new
+      response = client.get(args["url"])
+      { status: response.code.to_i, headers: response.each_header.to_h, body: response.body }
+    end
+
+    WEB_SEARCH_TOOL = Tool.build("search_engine", "Search the web using DuckDuckGo. Returns raw API response.", { query: { type: "string", description: "The search query" } }, ["query"]) do |args|
+      query = CGI.escape(args["query"])
+      url = "https://api.duckduckgo.com/?q=#{query}&format=json&no_html=1"
+      client = Net::Hippie::Client.new
+      response = client.get(url)
+      JSON.parse(response.body)
+    end
+
     TOOL_ALIASES = {
       "bash" => "exec",
+      "duckduckgo" => "search_engine",
+      "ddg" => "search_engine",
       "execute" => "exec",
+      "get" => "fetch",
       "open" => "read",
       "search" => "grep",
       "sh" => "exec",
+      "web" => "fetch",
     }
 
     attr_reader :tools
@@ -52,7 +69,9 @@ module Elelem
       @tool_permissions = {}
       @tools = { read: [], write: [], execute: [] }
       add_tool(eval_tool(binding), :execute)
+      add_tool(WEB_SEARCH_TOOL, :read)
       add_tool(EXEC_TOOL, :execute)
+      add_tool(FETCH_TOOL, :read)
       add_tool(GREP_TOOL, :read)
       add_tool(LIST_TOOL, :read)
       add_tool(PATCH_TOOL, :write)

@@ -9,7 +9,7 @@ RSpec.describe Elelem::Toolbox do
       tools = subject.tools_for(mode)
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read")
+      expect(tool_names).to include("grep", "list", "read", "fetch", "search_engine")
       expect(tool_names).not_to include("write", "patch", "exec")
     end
 
@@ -36,7 +36,7 @@ RSpec.describe Elelem::Toolbox do
       tools = subject.tools_for(mode)
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read", "patch", "write", "exec")
+      expect(tool_names).to include("grep", "list", "read", "patch", "write", "exec", "fetch", "search_engine")
     end
 
     it "returns combined tools for build mode" do
@@ -44,8 +44,25 @@ RSpec.describe Elelem::Toolbox do
       tools = subject.tools_for(mode)
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "read", "write", "patch")
+      expect(tool_names).to include("grep", "read", "write", "patch", "fetch", "search_engine")
       expect(tool_names).not_to include("exec")
+    end
+  end
+
+  describe "web tools" do
+    it "includes fetch and search_engine in read permissions" do
+      tools = subject.tools_for([:read])
+      names = tools.map { |t| t.dig(:function, :name) }
+      expect(names).to include("fetch", "search_engine")
+    end
+
+    it "resolves web and get aliases to fetch" do
+      expect(Elelem::Toolbox::TOOL_ALIASES["web"]).to eq("fetch")
+      expect(Elelem::Toolbox::TOOL_ALIASES["get"]).to eq("fetch")
+    end
+
+    it "resolves duckduckgo alias to search_engine" do
+      expect(Elelem::Toolbox::TOOL_ALIASES["duckduckgo"]).to eq("search_engine")
     end
   end
 

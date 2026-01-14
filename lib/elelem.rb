@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
+require "cgi"
 require "cli/ui"
 require "erb"
 require "fileutils"
 require "json"
 require "json-schema"
 require "logger"
+require "net/hippie"
 require "net/llm"
 require "open3"
 require "pathname"
