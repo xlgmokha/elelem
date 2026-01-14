@@ -1,5 +1,22 @@
 ## [Unreleased]
 
+## [0.7.0] - 2026-01-14
+
+### Added
+- ASCII spinner animation while waiting for LLM responses
+- `Terminal#waiting` method with automatic cleanup on next output
+- Decision-making principles in system prompt (prefer reversible actions, ask when uncertain)
+- Mode enforcement tests
+
+### Changed
+- Renamed internal `mode` concept to `permissions` for clarity (read/write/execute are permissions, plan/build/verify are modes)
+- Refactored `Toolbox#run_tool` to accept `permissions:` parameter
+
+### Fixed
+- **Security**: Mode restrictions now enforced at execution time, not just schema time
+  - Previously, LLMs could call tools outside their mode by guessing tool names
+  - Now `run_tool` validates the tool is allowed for the current permission set
+
 ## [0.6.0] - 2026-01-12
 
 ### Added
