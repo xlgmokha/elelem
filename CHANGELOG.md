@@ -1,5 +1,13 @@
 ## [Unreleased]
 
+## [0.8.0] - 2026-01-14
+
+### Added
+- `fetch` tool for HTTP GET requests (returns status and body)
+- `search_engine` tool for DuckDuckGo Instant Answer API searches
+- Tool aliases: `get`/`web` → `fetch`, `ddg`/`duckduckgo` → `search_engine`
+- `net-hippie` and `cgi` dependencies for HTTP requests
+
 ## [0.7.0] - 2026-01-14
 
 ### Added
