@@ -39,7 +39,7 @@ module Elelem
     FETCH_TOOL = Tool.build("fetch", "Fetch content from a URL. Returns status, headers, and body.", { url: { type: "string", description: "The URL to fetch" } }, ["url"]) do |args|
       client = Net::Hippie::Client.new
       response = client.get(args["url"])
-      { status: response.code.to_i, headers: response.each_header.to_h, body: response.body }
+      { status: response.code.to_i, body: response.body }
     end
 
     WEB_SEARCH_TOOL = Tool.build("search_engine", "Search the web using DuckDuckGo. Returns raw API response.", { query: { type: "string", description: "The search query" } }, ["query"]) do |args|
