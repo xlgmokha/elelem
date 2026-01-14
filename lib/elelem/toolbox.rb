@@ -49,6 +49,7 @@ module Elelem
 
     def initialize
       @tools_by_name = {}
+      @tool_permissions = {}
       @tools = { read: [], write: [], execute: [] }
       add_tool(eval_tool(binding), :execute)
       add_tool(EXEC_TOOL, :execute)
@@ -59,22 +60,31 @@ module Elelem
       add_tool(WRITE_TOOL, :write)
     end
 
-    def add_tool(tool, mode)
-      @tools[mode] << tool
+    def add_tool(tool, permission)
+      @tools[permission] << tool
       @tools_by_name[tool.name] = tool
+      @tool_permissions[tool.name] = permission
     end
 
     def register_tool(name, description, properties = {}, required = [], mode: :execute, &block)
       add_tool(Tool.build(name, description, properties, required, &block), mode)
     end
 
-    def tools_for(modes)
-      Array(modes).map { |mode| tools[mode].map(&:to_h) }.flatten
+    def tools_for(permissions)
+      Array(permissions).map { |permission| tools[permission].map(&:to_h) }.flatten
     end
 
-    def run_tool(name, args)
+    def run_tool(name, args, permissions: [])
       resolved_name = TOOL_ALIASES.fetch(name, name)
-      @tools_by_name[resolved_name]&.call(args) || { error: "Unknown tool", name: name, args: args }
+      tool = @tools_by_name[resolved_name]
+      return { error: "Unknown tool", name: name, args: args } unless tool
+
+      tool_permission = @tool_permissions[resolved_name]
+      unless Array(permissions).include?(tool_permission)
+        return { error: "Tool '#{resolved_name}' not available in current mode", name: name }
+      end
+
+      tool.call(args)
     rescue => error
       { error: error.message, name: name, args: args, backtrace: error.backtrace.first(5) }
     end

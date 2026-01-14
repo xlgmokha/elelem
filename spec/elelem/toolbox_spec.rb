@@ -49,6 +49,28 @@ RSpec.describe Elelem::Toolbox do
     end
   end
 
+  describe "#run_tool mode enforcement" do
+    it "allows tool execution when mode matches" do
+      result = subject.run_tool("read", { "path" => __FILE__ }, permissions: [:read])
+      expect(result[:content]).to include("RSpec.describe")
+    end
+
+    it "blocks tool execution when mode does not match" do
+      result = subject.run_tool("exec", { "cmd" => "echo hello" }, permissions: [:read])
+      expect(result[:error]).to include("not available in current mode")
+    end
+
+    it "resolves aliases and enforces mode" do
+      result = subject.run_tool("bash", { "cmd" => "echo hello" }, permissions: [:read])
+      expect(result[:error]).to include("not available in current mode")
+    end
+
+    it "returns unknown tool error for non-existent tools" do
+      result = subject.run_tool("nonexistent", {}, permissions: [:read])
+      expect(result[:error]).to include("Unknown tool")
+    end
+  end
+
   describe "meta-programming with eval tool" do
     it "allows LLM to register new tools dynamically" do
       subject.run_tool("eval", {
@@ -57,7 +79,7 @@ RSpec.describe Elelem::Toolbox do
             { greeting: "Hello, " + args['name']+ "!" }
           end
         RUBY
-      })
+      }, permissions: [:execute])
 
       expect(subject.tools_for(:execute)).to include(hash_including({
         type: "function",
@@ -80,25 +102,25 @@ RSpec.describe Elelem::Toolbox do
             { sum: args["a"] + args["b"] }
           end
         RUBY
-      })
+      }, permissions: [:execute])
 
-      result = subject.run_tool("add", { "a" => 5, "b" => 3 })
+      result = subject.run_tool("add", { "a" => 5, "b" => 3 }, permissions: [:execute])
       expect(result[:sum]).to eq(8)
     end
 
     it "allows LLM to inspect tool schemas" do
-      result = subject.run_tool("eval", { "ruby" => "tool_schema('read')" })
+      result = subject.run_tool("eval", { "ruby" => "tool_schema('read')" }, permissions: [:execute])
       expect(result[:result]).to be_a(Hash)
       expect(result[:result].dig(:function, :name)).to eq("read")
     end
 
     it "executes arbitrary Ruby code" do
-      result = subject.run_tool("eval", { "ruby" => "2 + 2" })
+      result = subject.run_tool("eval", { "ruby" => "2 + 2" }, permissions: [:execute])
       expect(result[:result]).to eq(4)
     end
 
     it "handles errors gracefully" do
-      result = subject.run_tool("eval", { "ruby" => "undefined_variable" })
+      result = subject.run_tool("eval", { "ruby" => "undefined_variable" }, permissions: [:execute])
       expect(result[:error]).to include("undefined")
       expect(result[:backtrace]).to be_an(Array)
     end

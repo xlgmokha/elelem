@@ -8,9 +8,9 @@ module Elelem
       @items = items
     end
 
-    def history_for(mode)
+    def history_for(permissions)
       history = @items.dup
-      history[0] = { role: "system", content: system_prompt_for(mode) }
+      history[0] = { role: "system", content: system_prompt_for(permissions) }
       history
     end
 
@@ -30,8 +30,8 @@ module Elelem
       @items = default_context
     end
 
-    def dump(mode)
-      JSON.pretty_generate(history_for(mode))
+    def dump(permissions)
+      JSON.pretty_generate(history_for(permissions))
     end
 
     private
@@ -40,10 +40,10 @@ module Elelem
       [{ role: "system", content: prompt }]
     end
 
-    def system_prompt_for(mode)
+    def system_prompt_for(permissions)
       base = system_prompt
 
-      case mode.sort
+      case permissions.sort
       when [:read]
         "#{base}\n\nYou may read files on the system."
       when [:write]

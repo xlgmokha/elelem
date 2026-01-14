@@ -9,7 +9,7 @@ module Elelem
     MODES = %w[auto build plan verify].freeze
     ENV_VARS = %w[ANTHROPIC_API_KEY OPENAI_API_KEY OPENAI_BASE_URL OLLAMA_HOST GOOGLE_CLOUD_PROJECT GOOGLE_CLOUD_REGION].freeze
 
-    attr_reader :conversation, :client, :toolbox, :provider, :terminal
+    attr_reader :conversation, :client, :toolbox, :provider, :terminal, :permissions
 
     def initialize(provider, model, toolbox, terminal: nil)
       @conversation = Conversation.new
@@ -22,19 +22,18 @@ module Elelem
         providers: PROVIDERS,
         env_vars: ENV_VARS
       )
+      @permissions = Set.new([:read])
     end
 
     def repl
-      mode = Set.new([:read])
-
       loop do
         input = terminal.ask("User> ")
         break if input.nil?
         if input.start_with?("/")
-          handle_command(input, mode)
+          handle_slash_command(input)
         else
           conversation.add(role: :user, content: input)
-          result = execute_turn(conversation.history_for(mode), tools: toolbox.tools_for(mode))
+          result = execute_turn(conversation.history_for(permissions))
           conversation.add(role: result[:role], content: result[:content])
         end
       end
@@ -42,55 +41,45 @@ module Elelem
 
     private
 
-    def handle_command(input, mode)
+    def handle_slash_command(input)
       case input
       when "/mode auto"
-        mode.replace([:read, :write, :execute])
+        permissions.replace([:read, :write, :execute])
         terminal.say "  → Mode: auto (all tools enabled)"
       when "/mode build"
-        mode.replace([:read, :write])
+        permissions.replace([:read, :write])
         terminal.say "  → Mode: build (read + write)"
       when "/mode plan"
-        mode.replace([:read])
+        permissions.replace([:read])
         terminal.say "  → Mode: plan (read-only)"
       when "/mode verify"
-        mode.replace([:read, :execute])
+        permissions.replace([:read, :execute])
         terminal.say "  → Mode: verify (read + execute)"
       when "/mode"
         terminal.say "  Usage: /mode [auto|build|plan|verify]"
         terminal.say ""
         terminal.say "  Provider: #{provider}/#{client.model}"
-        terminal.say "  Mode: #{mode.to_a.inspect}"
-        terminal.say "  Tools: #{toolbox.tools_for(mode).map { |t| t.dig(:function, :name) }}"
+        terminal.say "  Permissions: #{permissions.to_a.inspect}"
+        terminal.say "  Tools: #{toolbox.tools_for(permissions).map { |t| t.dig(:function, :name) }}"
       when "/exit" then exit
       when "/clear"
         conversation.clear
         terminal.say "  → Conversation cleared"
       when "/context"
-        terminal.say conversation.dump(mode)
+        terminal.say conversation.dump(permissions)
       when "/shell"
         transcript = start_shell
         conversation.add(role: :user, content: transcript) unless transcript.strip.empty?
         terminal.say "  → Shell session captured"
       when "/provider"
         terminal.select("Provider?", PROVIDERS) do |selected_provider|
-          models = models_for(selected_provider)
-          if models.empty?
-            terminal.say "  ✗ No models available for #{selected_provider}"
-          else
-            terminal.select("Model?", models) do |m|
-              switch_client(selected_provider, m)
-            end
+          terminal.select("Model?", models_for(selected_provider)) do |m|
+            switch_client(selected_provider, m)
           end
         end
       when "/model"
-        models = models_for(provider)
-        if models.empty?
-          terminal.say "  ✗ No models available for #{provider}"
-        else
-          terminal.select("Model?", models) do |m|
-            switch_model(m)
-          end
+        terminal.select("Model?", models_for(provider)) do |m|
+          switch_model(m)
         end
       when "/env"
         terminal.say "  Usage: /env VAR cmd..."
@@ -236,7 +225,8 @@ module Elelem
       client.is_a?(Net::Llm::OpenAI)
     end
 
-    def execute_turn(messages, tools:)
+    def execute_turn(messages)
+      tools = toolbox.tools_for(permissions)
       turn_context = []
       errors = 0
 
@@ -269,7 +259,7 @@ module Elelem
           tool_calls.each do |call|
             name, args = call[:name], call[:arguments]
             terminal.say "\nTool> #{name}(#{args})"
-            result = toolbox.run_tool(name, args)
+            result = toolbox.run_tool(name, args, permissions: permissions)
             terminal.say truncate_output(format_tool_call_result(result))
             turn_context << { role: "tool", tool_call_id: call[:id], content: JSON.dump(result) }
             errors += 1 if result[:error]
