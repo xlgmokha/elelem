@@ -7,6 +7,7 @@ module Elelem
       @modes = modes
       @providers = providers
       @env_vars = env_vars
+      @spinner_thread = nil
       setup_completion
     end
 
@@ -15,11 +16,26 @@ module Elelem
     end
 
     def say(message)
+      stop_spinner
       $stdout.puts message
     end
 
     def write(message)
+      stop_spinner
       $stdout.print message
+    end
+
+    def waiting
+      @spinner_thread = Thread.new do
+        frames = %w[| / - \\]
+        i = 0
+        loop do
+          $stdout.print "\r#{frames[i % frames.length]} "
+          $stdout.flush
+          i += 1
+          sleep 0.1
+        end
+      end
     end
 
     def select(question, options, &block)
@@ -31,6 +47,14 @@ module Elelem
     end
 
     private
+
+    def stop_spinner
+      return unless @spinner_thread
+
+      @spinner_thread.kill
+      @spinner_thread = nil
+      $stdout.print "\r  \r"
+    end
 
     def setup_completion
       Reline.autocompletion = true

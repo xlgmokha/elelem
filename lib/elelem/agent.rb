@@ -39,9 +39,9 @@ module Elelem
     def default_terminal
       Terminal.new(
         commands: COMMANDS,
-        env_vars: ENV_VARS
+        env_vars: ENV_VARS,
         modes: MODES,
-        providers: PROVIDERS,
+        providers: PROVIDERS
       )
     end
 
@@ -238,7 +238,7 @@ module Elelem
         content = ""
         tool_calls = []
 
-        terminal.write "Thinking... "
+        terminal.waiting
         begin
           client.fetch(messages + turn_context, tools) do |chunk|
             case chunk[:type]
