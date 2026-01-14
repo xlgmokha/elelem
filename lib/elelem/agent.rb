@@ -16,12 +16,7 @@ module Elelem
       @provider = provider
       @toolbox = toolbox
       @client = build_client(provider, model)
-      @terminal = terminal || Terminal.new(
-        commands: COMMANDS,
-        modes: MODES,
-        providers: PROVIDERS,
-        env_vars: ENV_VARS
-      )
+      @terminal = terminal || default_terminal
       @permissions = Set.new([:read])
     end
 
@@ -40,6 +35,15 @@ module Elelem
     end
 
     private
+
+    def default_terminal
+      Terminal.new(
+        commands: COMMANDS,
+        env_vars: ENV_VARS
+        modes: MODES,
+        providers: PROVIDERS,
+      )
+    end
 
     def handle_slash_command(input)
       case input
