@@ -15,7 +15,6 @@ require "reline"
 require "set"
 require "thor"
 require "timeout"
-require "tty/markdown"
 
 require_relative "elelem/agent"
 require_relative "elelem/application"

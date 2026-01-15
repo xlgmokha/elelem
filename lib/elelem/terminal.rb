@@ -7,6 +7,7 @@ module Elelem
       @providers = providers
       @env_vars = env_vars
       @spinner_thread = nil
+      @glow_available = system("which glow > /dev/null 2>&1")
       setup_completion
     end
 
@@ -16,15 +17,11 @@ module Elelem
 
     def say(message, markdown: false)
       stop_spinner
-      if markdown
-        $stdout.puts TTY::Markdown.parse(message, width: terminal_width)
+      if markdown && @glow_available
+        IO.popen("glow -", "w") { |io| io.puts message }
       else
         $stdout.puts message
       end
-    end
-
-    def terminal_width
-      IO.console&.winsize&.last || 80
     end
 
     def write(message)
