@@ -31,7 +31,9 @@ module Elelem
     end
 
     def dump(permissions)
-      JSON.pretty_generate(history_for(permissions))
+      history_for(permissions).map do |item|
+        "## #{item[:role].to_s.capitalize}\n\n#{item[:content]}"
+      end.join("\n\n---\n\n")
     end
 
     private

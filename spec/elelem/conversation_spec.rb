@@ -175,14 +175,13 @@ RSpec.describe Elelem::Conversation do
   end
 
   describe "#dump" do
-    it "returns JSON representation with mode-specific prompt" do
+    it "returns markdown representation with mode-specific prompt" do
       conversation.add(role: :user, content: "test")
-      json = conversation.dump([:read])
+      result = conversation.dump([:read])
 
-      parsed = JSON.parse(json)
-      expect(parsed).to be_an(Array)
-      expect(parsed.length).to eq(2)
-      expect(parsed[0]["content"]).to include("You may read files on the system")
+      expect(result).to include("## System")
+      expect(result).to include("## User")
+      expect(result).to include("You may read files on the system")
     end
   end
 end

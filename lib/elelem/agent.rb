@@ -70,7 +70,7 @@ module Elelem
         conversation.clear
         terminal.say "  → Conversation cleared"
       when "/context"
-        terminal.say conversation.dump(permissions)
+        terminal.say conversation.dump(permissions), markdown: true
       when "/shell"
         transcript = start_shell
         conversation.add(role: :user, content: transcript) unless transcript.strip.empty?
