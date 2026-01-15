@@ -172,23 +172,66 @@ module Elelem
       terminal.say "  → Switched to #{provider}/#{client.model}"
     end
 
-    def format_tool_call_result(result)
+    def format_tool_display(name, args)
+      display_name = name.split("_").map(&:capitalize).join(" ")
+      formatted_args = case name
+      when "exec"
+        [args["cmd"], *Array(args["args"])].join(" ")
+      when "read", "write"
+        args["path"]
+      when "list"
+        args["path"] || "."
+      when "grep", "web_search"
+        args["query"]
+      when "fetch"
+        args["url"]
+      when "patch"
+        "diff"
+      when "eval"
+        args["ruby"].to_s.lines.first&.strip&.slice(0, 40) || "..."
+      else
+        args.values.first.to_s
+      end
+      "+ #{display_name}(#{formatted_args})"
+    end
+
+    def format_tool_result(name, result)
+      text = extract_result_text(result)
+      return nil if text.nil? || text.strip.empty?
+
+      if result[:error]
+        "  ! #{text.lines.first&.strip}"
+      else
+        format_output(name, text)
+      end
+    end
+
+    def extract_result_text(result)
       return if result.nil?
       return result["stdout"] if result["stdout"]
       return result["stderr"] if result["stderr"]
       return result[:error] if result[:error]
-
+      return result[:content] if result[:content]
       ""
     end
 
-    def truncate_output(text, max_lines: 30)
-      return text if text.nil? || text.empty?
-
+    def format_output(name, text)
       lines = text.to_s.lines
-      if lines.size > max_lines
-        lines.first(max_lines).join + "\n... (#{lines.size - max_lines} more lines)"
+      case name
+      when "read"
+        "  = #{lines.size} lines"
+      when "write"
+        "  = Wrote file"
       else
-        text
+        truncate_lines(lines)
+      end
+    end
+
+    def truncate_lines(lines, max: 10)
+      if lines.size > max
+        lines.first(max).join.rstrip + "\n... (#{lines.size - max} more lines)"
+      else
+        lines.join.rstrip
       end
     end
 
@@ -239,9 +282,9 @@ module Elelem
         if tool_calls.any?
           tool_calls.each do |call|
             name, args = call[:name], call[:arguments]
-            terminal.say "\nTool> #{name}(#{args})"
+            terminal.say "\n#{format_tool_display(name, args)}"
             result = toolbox.run_tool(name, args)
-            terminal.say truncate_output(format_tool_call_result(result))
+            terminal.say format_tool_result(name, result)
             turn_context << { role: "tool", tool_call_id: call[:id], content: JSON.dump(result) }
             errors += 1 if result[:error]
           end
