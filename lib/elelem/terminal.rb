@@ -17,10 +17,14 @@ module Elelem
     def say(message, markdown: false)
       stop_spinner
       if markdown
-        $stdout.puts TTY::Markdown.parse(message)
+        $stdout.puts TTY::Markdown.parse(message, width: terminal_width)
       else
         $stdout.puts message
       end
+    end
+
+    def terminal_width
+      IO.console&.winsize&.last || 80
     end
 
     def write(message)
