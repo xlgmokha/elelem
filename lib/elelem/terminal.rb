@@ -15,9 +15,13 @@ module Elelem
       Reline.readline(prompt, true)&.strip
     end
 
-    def say(message)
+    def say(message, markdown: false)
       stop_spinner
-      $stdout.puts message
+      if markdown
+        $stdout.puts TTY::Markdown.parse(message, symbols: :ascii, mode: 16)
+      else
+        $stdout.puts message
+      end
     end
 
     def write(message)

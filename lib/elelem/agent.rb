@@ -255,7 +255,11 @@ module Elelem
           return { role: "assistant", content: "[Error: #{e.message}]" }
         end
 
-        terminal.say "\nAssistant> #{content}" unless content.to_s.empty?
+        unless content.to_s.empty?
+          terminal.say "\nAssistant>"
+          terminal.say(content, markdown: true)
+        end
+
         api_tool_calls = tool_calls.any? ? format_tool_calls_for_api(tool_calls) : nil
         turn_context << { role: "assistant", content: content, tool_calls: api_tool_calls }.compact
 
