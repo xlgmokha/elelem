@@ -9,7 +9,7 @@ RSpec.describe Elelem::Toolbox do
       tools = subject.tools_for(mode)
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read", "fetch", "search_engine")
+      expect(tool_names).to include("grep", "list", "read", "fetch", "web_search")
       expect(tool_names).not_to include("write", "patch", "exec")
     end
 
@@ -36,7 +36,7 @@ RSpec.describe Elelem::Toolbox do
       tools = subject.tools_for(mode)
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read", "patch", "write", "exec", "fetch", "search_engine")
+      expect(tool_names).to include("grep", "list", "read", "patch", "write", "exec", "fetch", "web_search")
     end
 
     it "returns combined tools for build mode" do
@@ -44,16 +44,16 @@ RSpec.describe Elelem::Toolbox do
       tools = subject.tools_for(mode)
 
       tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "read", "write", "patch", "fetch", "search_engine")
+      expect(tool_names).to include("grep", "read", "write", "patch", "fetch", "web_search")
       expect(tool_names).not_to include("exec")
     end
   end
 
   describe "web tools" do
-    it "includes fetch and search_engine in read permissions" do
+    it "includes fetch and web_search in read permissions" do
       tools = subject.tools_for([:read])
       names = tools.map { |t| t.dig(:function, :name) }
-      expect(names).to include("fetch", "search_engine")
+      expect(names).to include("fetch", "web_search")
     end
 
     it "resolves web and get aliases to fetch" do
@@ -61,8 +61,8 @@ RSpec.describe Elelem::Toolbox do
       expect(Elelem::Toolbox::TOOL_ALIASES["get"]).to eq("fetch")
     end
 
-    it "resolves duckduckgo alias to search_engine" do
-      expect(Elelem::Toolbox::TOOL_ALIASES["duckduckgo"]).to eq("search_engine")
+    it "resolves duckduckgo alias to web_search" do
+      expect(Elelem::Toolbox::TOOL_ALIASES["duckduckgo"]).to eq("web_search")
     end
   end
 

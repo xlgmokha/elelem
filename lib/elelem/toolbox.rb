@@ -42,7 +42,7 @@ module Elelem
       { status: response.code.to_i, body: response.body }
     end
 
-    WEB_SEARCH_TOOL = Tool.build("search_engine", "Search the web using DuckDuckGo. Returns raw API response.", { query: { type: "string", description: "The search query" } }, ["query"]) do |args|
+    WEB_SEARCH_TOOL = Tool.build("web_search", "Search the web using DuckDuckGo. Returns raw API response.", { query: { type: "string", description: "The search query" } }, ["query"]) do |args|
       query = CGI.escape(args["query"])
       url = "https://api.duckduckgo.com/?q=#{query}&format=json&no_html=1"
       client = Net::Hippie::Client.new
@@ -52,8 +52,9 @@ module Elelem
 
     TOOL_ALIASES = {
       "bash" => "exec",
-      "duckduckgo" => "search_engine",
-      "ddg" => "search_engine",
+      "duckduckgo" => "web_search",
+      "ddg" => "web_search",
+      "search_engine" => "web_search",
       "execute" => "exec",
       "get" => "fetch",
       "open" => "read",
