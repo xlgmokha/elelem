@@ -9,53 +9,6 @@ RSpec.describe Elelem::Agent do
   end
 
   describe "slash commands" do
-    describe "/mode" do
-      it "shows help when called without arguments" do
-        terminal = Elelem::FakeTerminal.new(inputs: ["/mode", nil])
-        agent = described_class.new("ollama", nil, toolbox, terminal: terminal)
-
-        agent.repl
-
-        expect(terminal.output).to include("  Usage: /mode [auto|build|plan|verify]")
-      end
-
-      it "switches to auto mode" do
-        terminal = Elelem::FakeTerminal.new(inputs: ["/mode auto", nil])
-        agent = described_class.new("ollama", nil, toolbox, terminal: terminal)
-
-        agent.repl
-
-        expect(terminal.output).to include("  → Mode: auto (all tools enabled)")
-      end
-
-      it "switches to build mode" do
-        terminal = Elelem::FakeTerminal.new(inputs: ["/mode build", nil])
-        agent = described_class.new("ollama", nil, toolbox, terminal: terminal)
-
-        agent.repl
-
-        expect(terminal.output).to include("  → Mode: build (read + write)")
-      end
-
-      it "switches to plan mode" do
-        terminal = Elelem::FakeTerminal.new(inputs: ["/mode plan", nil])
-        agent = described_class.new("ollama", nil, toolbox, terminal: terminal)
-
-        agent.repl
-
-        expect(terminal.output).to include("  → Mode: plan (read-only)")
-      end
-
-      it "switches to verify mode" do
-        terminal = Elelem::FakeTerminal.new(inputs: ["/mode verify", nil])
-        agent = described_class.new("ollama", nil, toolbox, terminal: terminal)
-
-        agent.repl
-
-        expect(terminal.output).to include("  → Mode: verify (read + execute)")
-      end
-    end
-
     describe "/clear" do
       it "clears the conversation" do
         terminal = Elelem::FakeTerminal.new(inputs: ["/clear", nil])
@@ -98,7 +51,8 @@ RSpec.describe Elelem::Agent do
         agent.repl
 
         expect(terminal.output.join).to include("/env VAR cmd...")
-        expect(terminal.output.join).to include("/mode auto build plan verify")
+        expect(terminal.output.join).to include("/provider")
+        expect(terminal.output.join).to include("/clear")
       end
     end
   end

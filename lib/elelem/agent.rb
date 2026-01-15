@@ -5,11 +5,10 @@ module Elelem
     PROVIDERS = %w[ollama anthropic openai vertex-ai].freeze
     ANTHROPIC_MODELS = %w[claude-sonnet-4-20250514 claude-opus-4-20250514 claude-haiku-3-5-20241022].freeze
     VERTEX_MODELS = %w[claude-sonnet-4@20250514 claude-opus-4-5@20251101].freeze
-    COMMANDS = %w[/env /mode /provider /model /shell /clear /context /exit /help].freeze
-    MODES = %w[auto build plan verify].freeze
+    COMMANDS = %w[/env /provider /model /shell /clear /context /exit /help].freeze
     ENV_VARS = %w[ANTHROPIC_API_KEY OPENAI_API_KEY OPENAI_BASE_URL OLLAMA_HOST GOOGLE_CLOUD_PROJECT GOOGLE_CLOUD_REGION].freeze
 
-    attr_reader :conversation, :client, :toolbox, :provider, :terminal, :permissions
+    attr_reader :conversation, :client, :toolbox, :provider, :terminal
 
     def initialize(provider, model, toolbox, terminal: nil)
       @conversation = Conversation.new
@@ -17,18 +16,17 @@ module Elelem
       @toolbox = toolbox
       @client = build_client(provider, model)
       @terminal = terminal || default_terminal
-      @permissions = Set.new([:read])
     end
 
     def repl
       loop do
-        input = terminal.ask("User> ")
+        input = terminal.ask("> ")
         break if input.nil?
         if input.start_with?("/")
           handle_slash_command(input)
         else
           conversation.add(role: :user, content: input)
-          result = execute_turn(conversation.history_for(permissions))
+          result = execute_turn(conversation.history)
           conversation.add(role: result[:role], content: result[:content])
         end
       end
@@ -40,37 +38,18 @@ module Elelem
       Terminal.new(
         commands: COMMANDS,
         env_vars: ENV_VARS,
-        modes: MODES,
         providers: PROVIDERS
       )
     end
 
     def handle_slash_command(input)
       case input
-      when "/mode auto"
-        permissions.replace([:read, :write, :execute])
-        terminal.say "  → Mode: auto (all tools enabled)"
-      when "/mode build"
-        permissions.replace([:read, :write])
-        terminal.say "  → Mode: build (read + write)"
-      when "/mode plan"
-        permissions.replace([:read])
-        terminal.say "  → Mode: plan (read-only)"
-      when "/mode verify"
-        permissions.replace([:read, :execute])
-        terminal.say "  → Mode: verify (read + execute)"
-      when "/mode"
-        terminal.say "  Usage: /mode [auto|build|plan|verify]"
-        terminal.say ""
-        terminal.say "  Provider: #{provider}/#{client.model}"
-        terminal.say "  Permissions: #{permissions.to_a.inspect}"
-        terminal.say "  Tools: #{toolbox.tools_for(permissions).map { |t| t.dig(:function, :name) }}"
       when "/exit" then exit
       when "/clear"
         conversation.clear
         terminal.say "  → Conversation cleared"
       when "/context"
-        terminal.say conversation.dump(permissions), markdown: true
+        terminal.say conversation.dump, markdown: true
       when "/shell"
         transcript = start_shell
         conversation.add(role: :user, content: transcript) unless transcript.strip.empty?
@@ -136,7 +115,6 @@ module Elelem
     def help_banner
       <<~HELP
   /env VAR cmd...
-  /mode auto build plan verify
   /provider
   /model
   /shell
@@ -230,7 +208,7 @@ module Elelem
     end
 
     def execute_turn(messages)
-      tools = toolbox.tools_for(permissions)
+      tools = toolbox.tools
       turn_context = []
       errors = 0
 
@@ -243,7 +221,6 @@ module Elelem
           client.fetch(messages + turn_context, tools) do |chunk|
             case chunk[:type]
             when :delta
-              terminal.write chunk[:thinking] if chunk[:thinking]
               content += chunk[:content] if chunk[:content]
             when :complete
               content = chunk[:content] if chunk[:content]
@@ -255,7 +232,7 @@ module Elelem
           return { role: "assistant", content: "[Error: #{e.message}]" }
         end
 
-        terminal.say("\nAssistant> #{content}", markdown: true) unless content.to_s.empty?
+        terminal.say("\n#{content}", markdown: true) unless content.to_s.empty?
         api_tool_calls = tool_calls.any? ? format_tool_calls_for_api(tool_calls) : nil
         turn_context << { role: "assistant", content: content, tool_calls: api_tool_calls }.compact
 
@@ -263,7 +240,7 @@ module Elelem
           tool_calls.each do |call|
             name, args = call[:name], call[:arguments]
             terminal.say "\nTool> #{name}(#{args})"
-            result = toolbox.run_tool(name, args, permissions: permissions)
+            result = toolbox.run_tool(name, args)
             terminal.say truncate_output(format_tool_call_result(result))
             turn_context << { role: "tool", tool_call_id: call[:id], content: JSON.dump(result) }
             errors += 1 if result[:error]

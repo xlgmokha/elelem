@@ -29,7 +29,6 @@ Gem::Specification.new do |spec|
     "lib/elelem/agent.rb",
     "lib/elelem/application.rb",
     "lib/elelem/conversation.rb",
-    "lib/elelem/git_context.rb",
     "lib/elelem/system_prompt.erb",
     "lib/elelem/terminal.rb",
     "lib/elelem/tool.rb",

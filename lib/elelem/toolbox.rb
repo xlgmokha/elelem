@@ -26,7 +26,7 @@ module Elelem
       Elelem.shell.execute("git", args: args["path"] ? ["ls-files", "--", args["path"]] : ["ls-files"])
     end
 
-    PATCH_TOOL = Tool.build( "patch", "Apply a unified diff patch via 'git apply'. Use for surgical edits to existing files.", { diff: { type: "string" } }, ["diff"]) do |args|
+    PATCH_TOOL = Tool.build("patch", "Apply a unified diff patch via 'git apply'. Use for surgical edits to existing files.", { diff: { type: "string" } }, ["diff"]) do |args|
       Elelem.shell.execute("git", args: ["apply", "--index", "--whitespace=nowarn", "-p1"], stdin: args["diff"])
     end
 
@@ -63,46 +63,35 @@ module Elelem
       "web" => "fetch",
     }
 
-    attr_reader :tools
-
     def initialize
       @tools_by_name = {}
-      @tool_permissions = {}
-      @tools = { read: [], write: [], execute: [] }
-      add_tool(eval_tool(binding), :execute)
-      add_tool(WEB_SEARCH_TOOL, :read)
-      add_tool(EXEC_TOOL, :execute)
-      add_tool(FETCH_TOOL, :read)
-      add_tool(GREP_TOOL, :read)
-      add_tool(LIST_TOOL, :read)
-      add_tool(PATCH_TOOL, :write)
-      add_tool(READ_TOOL, :read)
-      add_tool(WRITE_TOOL, :write)
+      add_tool(eval_tool(binding))
+      add_tool(EXEC_TOOL)
+      add_tool(FETCH_TOOL)
+      add_tool(GREP_TOOL)
+      add_tool(LIST_TOOL)
+      add_tool(PATCH_TOOL)
+      add_tool(READ_TOOL)
+      add_tool(WEB_SEARCH_TOOL)
+      add_tool(WRITE_TOOL)
     end
 
-    def add_tool(tool, permission)
-      @tools[permission] << tool
+    def add_tool(tool)
       @tools_by_name[tool.name] = tool
-      @tool_permissions[tool.name] = permission
     end
 
-    def register_tool(name, description, properties = {}, required = [], mode: :execute, &block)
-      add_tool(Tool.build(name, description, properties, required, &block), mode)
+    def register_tool(name, description, properties = {}, required = [], &block)
+      add_tool(Tool.build(name, description, properties, required, &block))
     end
 
-    def tools_for(permissions)
-      Array(permissions).map { |permission| tools[permission].map(&:to_h) }.flatten
+    def tools
+      @tools_by_name.values.map(&:to_h)
     end
 
-    def run_tool(name, args, permissions: [])
+    def run_tool(name, args)
       resolved_name = TOOL_ALIASES.fetch(name, name)
       tool = @tools_by_name[resolved_name]
       return { error: "Unknown tool", name: name, args: args } unless tool
-
-      tool_permission = @tool_permissions[resolved_name]
-      unless Array(permissions).include?(tool_permission)
-        return { error: "Tool '#{resolved_name}' not available in current mode", name: name }
-      end
 
       tool.call(args)
     rescue => error
@@ -116,7 +105,7 @@ module Elelem
     private
 
     def eval_tool(target_binding)
-      Tool.build("eval", "Evaluates Ruby code with full access to register new tools via the `register_tool(name, desc, properties, required, mode: :execute) { |args| ... }` method.", { ruby: { type: "string" } }, ["ruby"]) do |args|
+      Tool.build("eval", "Evaluates Ruby code with full access to register new tools via the `register_tool(name, desc, properties, required) { |args| ... }` method.", { ruby: { type: "string" } }, ["ruby"]) do |args|
         { result: target_binding.eval(args["ruby"]) }
       end
     end

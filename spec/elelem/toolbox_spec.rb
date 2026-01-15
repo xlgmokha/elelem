@@ -1,61 +1,16 @@
 # frozen_string_literal: true
-#
+
 RSpec.describe Elelem::Toolbox do
   subject { described_class.new }
 
-  describe "#tools_for" do
-    it "returns read tools for read mode" do
-      mode = Set[:read]
-      tools = subject.tools_for(mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read", "fetch", "web_search")
-      expect(tool_names).not_to include("write", "patch", "exec")
-    end
-
-    it "returns write tools for write mode" do
-      mode = Set[:write]
-      tools = subject.tools_for(mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("patch", "write")
-      expect(tool_names).not_to include("grep", "exec")
-    end
-
-    it "returns execute tools for execute mode" do
-      mode = Set[:execute]
-      tools = subject.tools_for(mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("exec")
-      expect(tool_names).not_to include("grep", "write")
-    end
-
-    it "returns all tools for auto mode" do
-      mode = Set[:read, :write, :execute]
-      tools = subject.tools_for(mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "list", "read", "patch", "write", "exec", "fetch", "web_search")
-    end
-
-    it "returns combined tools for build mode" do
-      mode = Set[:read, :write]
-      tools = subject.tools_for(mode)
-
-      tool_names = tools.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("grep", "read", "write", "patch", "fetch", "web_search")
-      expect(tool_names).not_to include("exec")
+  describe "#tools" do
+    it "returns all tools" do
+      tool_names = subject.tools.map { |t| t.dig(:function, :name) }
+      expect(tool_names).to include("grep", "list", "read", "patch", "write", "exec", "fetch", "web_search", "eval")
     end
   end
 
-  describe "web tools" do
-    it "includes fetch and web_search in read permissions" do
-      tools = subject.tools_for([:read])
-      names = tools.map { |t| t.dig(:function, :name) }
-      expect(names).to include("fetch", "web_search")
-    end
-
+  describe "aliases" do
     it "resolves web and get aliases to fetch" do
       expect(Elelem::Toolbox::TOOL_ALIASES["web"]).to eq("fetch")
       expect(Elelem::Toolbox::TOOL_ALIASES["get"]).to eq("fetch")
@@ -64,26 +19,25 @@ RSpec.describe Elelem::Toolbox do
     it "resolves duckduckgo alias to web_search" do
       expect(Elelem::Toolbox::TOOL_ALIASES["duckduckgo"]).to eq("web_search")
     end
+
+    it "resolves bash alias to exec" do
+      expect(Elelem::Toolbox::TOOL_ALIASES["bash"]).to eq("exec")
+    end
   end
 
-  describe "#run_tool mode enforcement" do
-    it "allows tool execution when mode matches" do
-      result = subject.run_tool("read", { "path" => __FILE__ }, permissions: [:read])
+  describe "#run_tool" do
+    it "executes tools" do
+      result = subject.run_tool("read", { "path" => __FILE__ })
       expect(result[:content]).to include("RSpec.describe")
     end
 
-    it "blocks tool execution when mode does not match" do
-      result = subject.run_tool("exec", { "cmd" => "echo hello" }, permissions: [:read])
-      expect(result[:error]).to include("not available in current mode")
-    end
-
-    it "resolves aliases and enforces mode" do
-      result = subject.run_tool("bash", { "cmd" => "echo hello" }, permissions: [:read])
-      expect(result[:error]).to include("not available in current mode")
+    it "resolves aliases" do
+      result = subject.run_tool("open", { "path" => __FILE__ })
+      expect(result[:content]).to include("RSpec.describe")
     end
 
     it "returns unknown tool error for non-existent tools" do
-      result = subject.run_tool("nonexistent", {}, permissions: [:read])
+      result = subject.run_tool("nonexistent", {})
       expect(result[:error]).to include("Unknown tool")
     end
   end
@@ -96,9 +50,9 @@ RSpec.describe Elelem::Toolbox do
             { greeting: "Hello, " + args['name']+ "!" }
           end
         RUBY
-      }, permissions: [:execute])
+      })
 
-      expect(subject.tools_for(:execute)).to include(hash_including({
+      expect(subject.tools).to include(hash_including({
         type: "function",
         function: {
           name: "hello",
@@ -119,25 +73,25 @@ RSpec.describe Elelem::Toolbox do
             { sum: args["a"] + args["b"] }
           end
         RUBY
-      }, permissions: [:execute])
+      })
 
-      result = subject.run_tool("add", { "a" => 5, "b" => 3 }, permissions: [:execute])
+      result = subject.run_tool("add", { "a" => 5, "b" => 3 })
       expect(result[:sum]).to eq(8)
     end
 
     it "allows LLM to inspect tool schemas" do
-      result = subject.run_tool("eval", { "ruby" => "tool_schema('read')" }, permissions: [:execute])
+      result = subject.run_tool("eval", { "ruby" => "tool_schema('read')" })
       expect(result[:result]).to be_a(Hash)
       expect(result[:result].dig(:function, :name)).to eq("read")
     end
 
     it "executes arbitrary Ruby code" do
-      result = subject.run_tool("eval", { "ruby" => "2 + 2" }, permissions: [:execute])
+      result = subject.run_tool("eval", { "ruby" => "2 + 2" })
       expect(result[:result]).to eq(4)
     end
 
     it "handles errors gracefully" do
-      result = subject.run_tool("eval", { "ruby" => "undefined_variable" }, permissions: [:execute])
+      result = subject.run_tool("eval", { "ruby" => "undefined_variable" })
       expect(result[:error]).to include("undefined")
       expect(result[:backtrace]).to be_an(Array)
     end

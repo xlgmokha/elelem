@@ -2,9 +2,8 @@
 
 module Elelem
   class Terminal
-    def initialize(commands: [], modes: [], providers: [], env_vars: [])
+    def initialize(commands: [], providers: [], env_vars: [])
       @commands = commands
-      @modes = modes
       @providers = providers
       @env_vars = env_vars
       @spinner_thread = nil
@@ -73,8 +72,6 @@ module Elelem
       end
 
       case preposing.strip
-      when '/mode'
-        @modes.select { |m| m.start_with?(target) }
       when '/provider'
         @providers.select { |p| p.start_with?(target) }
       when '/env'

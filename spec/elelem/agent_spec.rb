@@ -20,24 +20,9 @@ RSpec.describe Elelem::Agent do
       expect(agent.client).to eq(mock_client)
     end
 
-    it "initializes tools for all modes" do
-      expect(agent.toolbox.tools[:read]).to be_an(Array)
-      expect(agent.toolbox.tools[:write]).to be_an(Array)
-      expect(agent.toolbox.tools[:execute]).to be_an(Array)
-    end
-  end
-
-  describe "integration with conversation" do
-    it "conversation uses mode-aware prompts" do
-      conversation = agent.conversation
-      conversation.add(role: :user, content: "test message")
-
-      read_history = conversation.history_for([:read])
-      write_history = conversation.history_for([:write])
-
-      expect(read_history[0][:content]).to include("You may read files on the system")
-      expect(write_history[0][:content]).to include("You may write files on the system")
-      expect(read_history[0][:content]).not_to eq(write_history[0][:content])
+    it "initializes toolbox with all tools" do
+      tool_names = agent.toolbox.tools.map { |t| t.dig(:function, :name) }
+      expect(tool_names).to include("read", "write", "exec", "grep", "list")
     end
   end
 end

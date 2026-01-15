@@ -8,10 +8,8 @@ module Elelem
       @items = items
     end
 
-    def history_for(permissions)
-      history = @items.dup
-      history[0] = { role: "system", content: system_prompt_for(permissions) }
-      history
+    def history
+      @items.dup
     end
 
     def add(role: :user, content: "")
@@ -30,39 +28,16 @@ module Elelem
       @items = default_context
     end
 
-    def dump(permissions)
-      history_for(permissions).map do |item|
+    def dump
+      history.map do |item|
         "## #{item[:role].to_s.capitalize}\n\n#{item[:content]}"
       end.join("\n\n---\n\n")
     end
 
     private
 
-    def default_context(prompt = system_prompt_for([]))
-      [{ role: "system", content: prompt }]
-    end
-
-    def system_prompt_for(permissions)
-      base = system_prompt
-
-      case permissions.sort
-      when [:read]
-        "#{base}\n\nYou may read files on the system."
-      when [:write]
-        "#{base}\n\nYou may write files on the system."
-      when [:execute]
-        "#{base}\n\nYou may execute shell commands on the system."
-      when [:read, :write]
-        "#{base}\n\nYou may read and write files on the system."
-      when [:execute, :read]
-        "#{base}\n\nYou may execute shell commands and read files on the system."
-      when [:execute, :write]
-        "#{base}\n\nYou may execute shell commands and write files on the system."
-      when [:execute, :read, :write]
-        "#{base}\n\nYou may read files, write files and execute shell commands on the system."
-      else
-        base
-      end
+    def default_context
+      [{ role: "system", content: system_prompt }]
     end
 
     def system_prompt
