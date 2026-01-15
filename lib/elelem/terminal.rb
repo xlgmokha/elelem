@@ -18,7 +18,7 @@ module Elelem
     def say(message, markdown: false)
       stop_spinner
       if markdown
-        $stdout.puts TTY::Markdown.parse(message, symbols: :ascii, mode: 16)
+        $stdout.puts TTY::Markdown.parse(message)
       else
         $stdout.puts message
       end
