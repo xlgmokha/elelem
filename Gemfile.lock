@@ -49,7 +49,7 @@ GEM
       openssl (~> 3.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-llm (0.6.0)
+    net-llm (0.6.1)
       json (~> 2.0)
       net-hippie (~> 1.0)
       uri (~> 1.0)
