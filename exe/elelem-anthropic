@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+ENV["ANTHROPIC_API_KEY"] || abort("ANTHROPIC_API_KEY not set")
+require "elelem"
+Signal.trap("INT") { exit 1 }
+Elelem.start(Net::Llm::Anthropic.new(model: "claude-sonnet-4-20250514"))

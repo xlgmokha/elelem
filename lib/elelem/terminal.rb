@@ -2,12 +2,9 @@
 
 module Elelem
   class Terminal
-    def initialize(commands: [], providers: [], env_vars: [])
+    def initialize(commands: [])
       @commands = commands
-      @providers = providers
-      @env_vars = env_vars
-      @spinner_thread = nil
-      @glow_available = system("which glow > /dev/null 2>&1")
+      @dots_thread = nil
       setup_completion
     end
 
@@ -15,49 +12,53 @@ module Elelem
       Reline.readline(prompt, true)&.strip
     end
 
-    def say(message, markdown: false)
-      stop_spinner
-      if markdown && @glow_available
-        IO.popen("glow -", "w") { |io| io.puts message }
-      else
-        $stdout.puts message
-      end
+    def dim(text)
+      "\e[2m#{text}\e[0m"
     end
 
-    def write(message)
-      stop_spinner
+    def markdown(text)
+      width = $stdout.winsize[1] rescue 80
+      IO.popen(["glow", "-s", "dark", "-w", width.to_s, "-"], "r+") do |io|
+        io.write(text)
+        io.close_write
+        io.read
+      end
+    rescue Errno::ENOENT
+      text
+    end
+
+    def print(message)
+      stop_dots
       $stdout.print message
     end
 
-    def waiting
-      @spinner_thread = Thread.new do
-        frames = %w[| / - \\]
-        i = 0
-        loop do
-          $stdout.print "\r#{frames[i % frames.length]} "
-          $stdout.flush
-          i += 1
-          sleep 0.1
-        end
-      end
+    def say(message)
+      stop_dots
+      $stdout.puts message
     end
 
-    def select(question, options, &block)
-      CLI::UI::Prompt.ask(question) do |handler|
-        options.each do |option|
-          handler.option(option) { |selected| block.call(selected) }
+    def newline
+      say("")
+    end
+
+    def waiting
+      @dots_thread = Thread.new do
+        loop do
+          $stdout.print "."
+          $stdout.flush
+          sleep 0.1
         end
       end
     end
 
     private
 
-    def stop_spinner
-      return unless @spinner_thread
+    def stop_dots
+      return unless @dots_thread
 
-      @spinner_thread.kill
-      @spinner_thread = nil
-      $stdout.print "\r  \r"
+      @dots_thread.kill
+      @dots_thread = nil
+      newline
     end
 
     def setup_completion
@@ -67,43 +68,13 @@ module Elelem
 
     def complete(target, preposing)
       line = "#{preposing}#{target}"
-
-      if line.start_with?('/') && !preposing.include?(' ')
-        return @commands.select { |c| c.start_with?(line) }
-      end
-
-      case preposing.strip
-      when '/provider'
-        @providers.select { |p| p.start_with?(target) }
-      when '/env'
-        @env_vars.select { |v| v.start_with?(target) }
-      when %r{^/env\s+\w+\s+pass(\s+show)?\s*$}
-        subcommands = %w[show ls insert generate edit rm]
-        matches = subcommands.select { |c| c.start_with?(target) }
-        matches.any? ? matches : complete_pass_entries(target)
-      when %r{^/env\s+\w+$}
-        complete_commands(target)
-      else
-        complete_files(target)
-      end
-    end
-
-    def complete_commands(target)
-      result = Elelem.shell.execute("bash", args: ["-c", "compgen -c #{target}"])
-      result["stdout"].lines.map(&:strip).first(20)
+      return @commands.select { |c| c.start_with?(line) } if line.start_with?("/") && !preposing.include?(" ")
+      complete_files(target)
     end
 
     def complete_files(target)
-      result = Elelem.shell.execute("bash", args: ["-c", "compgen -f #{target}"])
+      result = Elelem.sh("bash", args: ["-c", "compgen -f #{target}"])
       result["stdout"].lines.map(&:strip).first(20)
-    end
-
-    def complete_pass_entries(target)
-      store = ENV.fetch("PASSWORD_STORE_DIR", File.expand_path("~/.password-store"))
-      result = Elelem.shell.execute("find", args: ["-L", store, "-name", "*.gpg"])
-      result["stdout"].lines.map { |l|
-        l.strip.sub("#{store}/", "").sub(/\.gpg$/, "")
-      }.select { |e| e.start_with?(target) }.first(20)
     end
   end
 end

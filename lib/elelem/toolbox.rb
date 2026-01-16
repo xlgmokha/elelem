@@ -2,112 +2,79 @@
 
 module Elelem
   class Toolbox
-    READ_TOOL = Tool.build("read", "Read complete contents of a file. Requires exact file path.", { path: { type: "string" } }, ["path"]) do |args|
-      path = args["path"]
-      full_path = Pathname.new(path).expand_path
-      full_path.exist? ? { content: full_path.read } : { error: "File not found: #{path}" }
+    TOOLS = {
+      "read" => {
+        desc: "Read file contents",
+        params: { path: { type: "string" } },
+        required: ["path"],
+        fn: ->(a) { p = Pathname.new(a["path"]).expand_path; p.exist? ? { content: p.read } : { error: "not found" } }
+      },
+      "write" => {
+        desc: "Write file",
+        params: { path: { type: "string" }, content: { type: "string" } },
+        required: ["path", "content"],
+        fn: ->(a) { p = Pathname.new(a["path"]).expand_path; FileUtils.mkdir_p(p.dirname); { bytes: p.write(a["content"]) } }
+      },
+      "exec" => {
+        desc: "Run shell command",
+        params: { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, stdin: { type: "string" } },
+        required: ["cmd"],
+        fn: ->(a) { Elelem.sh(a["cmd"], args: a["args"] || [], stdin: a["stdin"]) }
+      },
+      "web_fetch" => {
+        desc: "Fetch URL content",
+        params: { url: { type: "string" } },
+        required: ["url"],
+        fn: ->(a) { r = Net::Hippie::Client.new.get(a["url"]); { status: r.code.to_i, body: r.body } }
+      },
+      "web_search" => {
+        desc: "Search web via DuckDuckGo",
+        params: { query: { type: "string" } },
+        required: ["query"],
+        fn: ->(a) { q = CGI.escape(a["query"]); JSON.parse(Net::Hippie::Client.new.get("https://api.duckduckgo.com/?q=#{q}&format=json&no_html=1").body) }
+      },
+      "eval" => {
+        desc: "Execute Ruby code",
+        params: { ruby: { type: "string" } },
+        required: ["ruby"],
+        fn: nil
+      }
+    }.freeze
+
+    ALIASES = { "bash" => "exec", "sh" => "exec", "open" => "read" }.freeze
+
+    attr_reader :tools
+
+    def initialize(tools = TOOLS.dup)
+      @tools = tools
     end
 
-    EXEC_TOOL = Tool.build("exec", "Run shell commands. Returns stdout/stderr/exit_status.", { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, env: { type: "object", additionalProperties: { type: "string" } }, cwd: { type: "string", description: "Working directory (defaults to current)" }, stdin: { type: "string" } }, ["cmd"]) do |args|
-      Elelem.shell.execute(
-        args["cmd"],
-        args: args["args"] || [],
-        env: args["env"] || {},
-        cwd: args["cwd"].to_s.empty? ? Dir.pwd : args["cwd"],
-        stdin: args["stdin"]
-      )
-    end
-
-    GREP_TOOL = Tool.build("grep", "Search all git-tracked files using git grep. Returns file paths with matching line numbers.", { query: { type: "string" } }, ["query"]) do |args|
-      Elelem.shell.execute("git", args: ["grep", "-nI", args["query"]])
-    end
-
-    LIST_TOOL = Tool.build("list", "List all git-tracked files in the repository, optionally filtered by path.", { path: { type: "string" } }) do |args|
-      Elelem.shell.execute("git", args: args["path"] ? ["ls-files", "--", args["path"]] : ["ls-files"])
-    end
-
-    PATCH_TOOL = Tool.build("patch", "Apply a unified diff patch via 'git apply'. Use for surgical edits to existing files.", { diff: { type: "string" } }, ["diff"]) do |args|
-      Elelem.shell.execute("git", args: ["apply", "--index", "--whitespace=nowarn", "-p1"], stdin: args["diff"])
-    end
-
-    WRITE_TOOL = Tool.build("write", "Write complete file contents (overwrites existing files). Creates parent directories automatically.", { path: { type: "string" }, content: { type: "string" } }, ["path", "content"]) do |args|
-      full_path = Pathname.new(args["path"]).expand_path
-      FileUtils.mkdir_p(full_path.dirname)
-      { bytes_written: full_path.write(args["content"]) }
-    end
-
-    FETCH_TOOL = Tool.build("fetch", "Fetch content from a URL. Returns status, headers, and body.", { url: { type: "string", description: "The URL to fetch" } }, ["url"]) do |args|
-      client = Net::Hippie::Client.new
-      response = client.get(args["url"])
-      { status: response.code.to_i, body: response.body }
-    end
-
-    WEB_SEARCH_TOOL = Tool.build("web_search", "Search the web using DuckDuckGo. Returns raw API response.", { query: { type: "string", description: "The search query" } }, ["query"]) do |args|
-      query = CGI.escape(args["query"])
-      url = "https://api.duckduckgo.com/?q=#{query}&format=json&no_html=1"
-      client = Net::Hippie::Client.new
-      response = client.get(url)
-      JSON.parse(response.body)
-    end
-
-    TOOL_ALIASES = {
-      "bash" => "exec",
-      "duckduckgo" => "web_search",
-      "ddg" => "web_search",
-      "search_engine" => "web_search",
-      "execute" => "exec",
-      "get" => "fetch",
-      "open" => "read",
-      "search" => "grep",
-      "sh" => "exec",
-      "web" => "fetch",
-    }
-
-    def initialize
-      @tools_by_name = {}
-      add_tool(eval_tool(binding))
-      add_tool(EXEC_TOOL)
-      add_tool(FETCH_TOOL)
-      add_tool(GREP_TOOL)
-      add_tool(LIST_TOOL)
-      add_tool(PATCH_TOOL)
-      add_tool(READ_TOOL)
-      add_tool(WEB_SEARCH_TOOL)
-      add_tool(WRITE_TOOL)
-    end
-
-    def add_tool(tool)
-      @tools_by_name[tool.name] = tool
-    end
-
-    def register_tool(name, description, properties = {}, required = [], &block)
-      add_tool(Tool.build(name, description, properties, required, &block))
-    end
-
-    def tools
-      @tools_by_name.values.map(&:to_h)
-    end
-
-    def run_tool(name, args)
-      resolved_name = TOOL_ALIASES.fetch(name, name)
-      tool = @tools_by_name[resolved_name]
-      return { error: "Unknown tool", name: name, args: args } unless tool
-
-      tool.call(args)
-    rescue => error
-      { error: error.message, name: name, args: args, backtrace: error.backtrace.first(5) }
-    end
-
-    def tool_schema(name)
-      @tools_by_name[name]&.to_h
-    end
-
-    private
-
-    def eval_tool(target_binding)
-      Tool.build("eval", "Evaluates Ruby code with full access to register new tools via the `register_tool(name, desc, properties, required) { |args| ... }` method.", { ruby: { type: "string" } }, ["ruby"]) do |args|
-        { result: target_binding.eval(args["ruby"]) }
+    def to_h
+      tools.map do |name, t|
+        {
+          type: "function",
+          function: {
+            name: name,
+            description: t[:desc],
+            parameters: {
+              type: "object",
+              properties: t[:params],
+              required: t[:required]
+            }
+          }
+        }
       end
+    end
+
+    def run(name, args)
+      name = ALIASES.fetch(name, name)
+      tool = tools[name]
+      return { error: "unknown tool: #{name}" } unless tool
+      return { result: binding.eval(args["ruby"]) } if name == "eval"
+
+      tool[:fn].call(args)
+    rescue => e
+      { error: e.message }
     end
   end
 end

@@ -2,298 +2,104 @@
 
 module Elelem
   class Agent
-    PROVIDERS = %w[ollama anthropic openai vertex-ai].freeze
-    ANTHROPIC_MODELS = %w[claude-sonnet-4-20250514 claude-opus-4-20250514 claude-haiku-3-5-20241022].freeze
-    VERTEX_MODELS = %w[claude-sonnet-4@20250514 claude-opus-4-5@20251101].freeze
-    COMMANDS = %w[/env /provider /model /shell /clear /context /exit /help].freeze
-    ENV_VARS = %w[ANTHROPIC_API_KEY OPENAI_API_KEY OPENAI_BASE_URL OLLAMA_HOST GOOGLE_CLOUD_PROJECT GOOGLE_CLOUD_REGION].freeze
+    COMMANDS = %w[/clear /context /exit /help].freeze
 
-    attr_reader :conversation, :client, :toolbox, :provider, :terminal
+    attr_reader :history, :client, :toolbox, :terminal
 
-    def initialize(provider, model, toolbox, terminal: nil)
-      @conversation = Conversation.new
-      @provider = provider
+    def initialize(client, toolbox, terminal: nil)
+      @client = client
       @toolbox = toolbox
-      @client = build_client(provider, model)
-      @terminal = terminal || default_terminal
+      @history = [{ role: "system", content: system_prompt }]
+      @terminal = terminal || Terminal.new(commands: COMMANDS)
     end
 
     def repl
+      terminal.say "elelem v#{VERSION}"
       loop do
         input = terminal.ask("> ")
         break if input.nil?
-        if input.start_with?("/")
-          handle_slash_command(input)
-        else
-          conversation.add(role: :user, content: input)
-          result = execute_turn(conversation.history)
-          conversation.add(role: result[:role], content: result[:content])
-        end
+        next if input.empty?
+        input.start_with?("/") ? command(input) : turn(input)
       end
     end
 
     private
 
-    def default_terminal
-      Terminal.new(
-        commands: COMMANDS,
-        env_vars: ENV_VARS,
-        providers: PROVIDERS
-      )
-    end
-
-    def handle_slash_command(input)
+    def command(input)
       case input
-      when "/exit" then exit
+      when "/exit" then exit(0)
       when "/clear"
-        conversation.clear
-        terminal.say "  → Conversation cleared"
+        @history = [{ role: "system", content: system_prompt }]
+        terminal.say "  → context cleared"
       when "/context"
-        terminal.say conversation.dump, markdown: true
-      when "/shell"
-        transcript = start_shell
-        conversation.add(role: :user, content: transcript) unless transcript.strip.empty?
-        terminal.say "  → Shell session captured"
-      when "/provider"
-        terminal.select("Provider?", PROVIDERS) do |selected_provider|
-          terminal.select("Model?", models_for(selected_provider)) do |m|
-            switch_client(selected_provider, m)
-          end
-        end
-      when "/model"
-        terminal.select("Model?", models_for(provider)) do |m|
-          switch_model(m)
-        end
-      when "/env"
-        terminal.say "  Usage: /env VAR cmd..."
-        terminal.say ""
-        ENV_VARS.each do |var|
-          value = ENV[var]
-          if value
-            masked = value.length > 8 ? "#{value[0..3]}...#{value[-4..]}" : "****"
-            terminal.say "  #{var}=#{masked}"
-          else
-            terminal.say "  #{var}=(not set)"
-          end
-        end
-      when %r{^/env\s+(\w+)\s+(.+)$}
-        var_name = $1
-        command = $2
-        result = Elelem.shell.execute("sh", args: ["-c", command])
-        if result["exit_status"].zero?
-          value = result["stdout"].lines.first&.strip
-          if value && !value.empty?
-            ENV[var_name] = value
-            terminal.say "  → Set #{var_name}"
-          else
-            terminal.say "  ⚠ Command produced no output"
-          end
-        else
-          terminal.say "  ⚠ Command failed: #{result['stderr']}"
-        end
+        terminal.say JSON.pretty_generate(history)
       else
-        terminal.say help_banner
+        terminal.say "/clear /context /exit"
       end
     end
 
-    def strip_ansi(text)
-      text.gsub(/^Script started.*?\n/, '')
-          .gsub(/\nScript done.*$/, '')
-          .gsub(/\e\[[0-9;]*[a-zA-Z]/, '')
-          .gsub(/\e\[\?[0-9]+[hl]/, '')
-          .gsub(/[\b]/, '')
-          .gsub(/\r/, '')
-    end
+    def turn(input)
+      history << { role: "user", content: input }
+      ctx, errors = [], 0
 
-    def start_shell
-      Tempfile.create do |file|
-        system("script -q #{file.path}", chdir: Dir.pwd)
-        strip_ansi(File.read(file.path))
+      loop do
+        terminal.waiting
+        content, tool_calls = fetch_response(ctx)
+        terminal.newline
+        return if content.nil?
+
+        terminal.say(terminal.markdown(content)) unless content.empty?
+        ctx << { role: "assistant", content: content, tool_calls: tool_calls.empty? ? nil : tool_calls }.compact
+
+        break if tool_calls.empty?
+
+        tool_calls.each do |tc|
+          name, args = tc[:name], tc[:arguments]
+          terminal.say "\n#{format_tool_display(name, args)}"
+          result = toolbox.run(name, args)
+          terminal.say format_tool_result(name, result)
+          ctx << { role: "tool", tool_call_id: tc[:id], content: result.to_json }
+          errors += 1 if result[:error]
+        end
+
+        break if errors >= 3
       end
+
+      history << { role: "assistant", content: ctx.map { |c| c[:content] }.join("\n") }
     end
 
-    def help_banner
-      <<~HELP
-  /env VAR cmd...
-  /provider
-  /model
-  /shell
-  /clear
-  /context
-  /exit
-  /help
-      HELP
-    end
+    def fetch_response(ctx)
+      content, tool_calls = "", []
+      client.fetch(history + ctx, toolbox.to_h) do |chunk|
+        terminal.print(terminal.dim(chunk[:thinking])) if chunk[:thinking]
 
-    def build_client(provider_name, model = nil)
-      model_opts = model ? { model: model } : {}
-
-      case provider_name
-      when "ollama"     then Net::Llm::Ollama.new(**model_opts)
-      when "anthropic"  then Net::Llm::Anthropic.new(**model_opts)
-      when "openai"     then Net::Llm::OpenAI.new(**model_opts)
-      when "vertex-ai"  then Net::Llm::VertexAI.new(**model_opts)
-      else
-        raise Error, "Unknown provider: #{provider_name}"
+        case chunk[:type]
+        when :delta then content += chunk[:content].to_s
+        when :complete then content, tool_calls = chunk[:content].to_s, chunk[:tool_calls] || []
+        end
       end
-    end
-
-    def models_for(provider_name)
-      case provider_name
-      when "ollama"
-        client_for_models = provider_name == provider ? client : build_client(provider_name)
-        client_for_models.tags["models"]&.map { |m| m["name"] } || []
-      when "openai"
-        client_for_models = provider_name == provider ? client : build_client(provider_name)
-        client_for_models.models["data"]&.map { |m| m["id"] } || []
-      when "anthropic"
-        ANTHROPIC_MODELS
-      when "vertex-ai"
-        VERTEX_MODELS
-      else
-        []
-      end
-    rescue KeyError => e
-      terminal.say "  ⚠ Missing credentials: #{e.message}"
-      []
+      [content, tool_calls]
     rescue => e
-      terminal.say "  ⚠ Could not fetch models: #{e.message}"
-      []
-    end
-
-    def switch_client(new_provider, model)
-      @provider = new_provider
-      @client = build_client(new_provider, model)
-      terminal.say "  → Switched to #{new_provider}/#{client.model}"
-    end
-
-    def switch_model(model)
-      @client = build_client(provider, model)
-      terminal.say "  → Switched to #{provider}/#{client.model}"
+      terminal.say "\n  ✗ #{e.message}"
+      [nil, []]
     end
 
     def format_tool_display(name, args)
-      display_name = name.split("_").map(&:capitalize).join(" ")
-      formatted_args = case name
-      when "exec"
-        [args["cmd"], *Array(args["args"])].join(" ")
-      when "read", "write"
-        args["path"]
-      when "list"
-        args["path"] || "."
-      when "grep", "web_search"
-        args["query"]
-      when "fetch"
-        args["url"]
-      when "patch"
-        "diff"
-      when "eval"
-        args["ruby"].to_s.lines.first&.strip&.slice(0, 40) || "..."
-      else
-        args.values.first.to_s
-      end
-      "+ #{display_name}(#{formatted_args})"
+      "+ #{name}(#{args})"
     end
 
     def format_tool_result(name, result)
-      text = extract_result_text(result)
-      return nil if text.nil? || text.strip.empty?
+      text = result["stdout"] || result["stderr"] || result[:content] || result[:error] || ""
+      return nil if text.strip.empty?
 
-      if result[:error]
-        "  ! #{text.lines.first&.strip}"
-      else
-        format_output(name, text)
-      end
+      result[:error] ? "  ! #{text.lines.first&.strip}" : text
     end
 
-    def extract_result_text(result)
-      return if result.nil?
-      return result["stdout"] if result["stdout"]
-      return result["stderr"] if result["stderr"]
-      return result[:error] if result[:error]
-      return result[:content] if result[:content]
-      ""
-    end
-
-    def format_output(name, text)
-      lines = text.to_s.lines
-      case name
-      when "read"
-        "  = #{lines.size} lines"
-      when "write"
-        "  = Wrote file"
-      else
-        truncate_lines(lines)
-      end
-    end
-
-    def truncate_lines(lines, max: 10)
-      if lines.size > max
-        lines.first(max).join.rstrip + "\n... (#{lines.size - max} more lines)"
-      else
-        lines.join.rstrip
-      end
-    end
-
-    def format_tool_calls_for_api(tool_calls)
-      tool_calls.map do |tc|
-        args = openai_client? ? JSON.dump(tc[:arguments]) : tc[:arguments]
-        {
-          id: tc[:id],
-          type: "function",
-          function: { name: tc[:name], arguments: args }
-        }
-      end
-    end
-
-    def openai_client?
-      client.is_a?(Net::Llm::OpenAI)
-    end
-
-    def execute_turn(messages)
-      tools = toolbox.tools
-      turn_context = []
-      errors = 0
-
-      loop do
-        content = ""
-        tool_calls = []
-
-        terminal.waiting
-        begin
-          client.fetch(messages + turn_context, tools) do |chunk|
-            case chunk[:type]
-            when :delta
-              content += chunk[:content] if chunk[:content]
-            when :complete
-              content = chunk[:content] if chunk[:content]
-              tool_calls = chunk[:tool_calls] || []
-            end
-          end
-        rescue => e
-          terminal.say "\n  ✗ API Error: #{e.message}"
-          return { role: "assistant", content: "[Error: #{e.message}]" }
-        end
-
-        terminal.say("\n#{content}", markdown: true) unless content.to_s.empty?
-        api_tool_calls = tool_calls.any? ? format_tool_calls_for_api(tool_calls) : nil
-        turn_context << { role: "assistant", content: content, tool_calls: api_tool_calls }.compact
-
-        if tool_calls.any?
-          tool_calls.each do |call|
-            name, args = call[:name], call[:arguments]
-            terminal.say "\n#{format_tool_display(name, args)}"
-            result = toolbox.run_tool(name, args)
-            terminal.say format_tool_result(name, result)
-            turn_context << { role: "tool", tool_call_id: call[:id], content: JSON.dump(result) }
-            errors += 1 if result[:error]
-          end
-          return { role: "assistant", content: "[Stopped: too many errors]" } if errors >= 3
-          next
-        end
-
-        return { role: "assistant", content: content }
-      end
+    def system_prompt
+      <<~PROMPT.strip
+        Terminal agent. Act directly, verify your work. Stay grounded - only respond to what is asked.
+        pwd: #{Dir.pwd}
+      PROMPT
     end
   end
 end

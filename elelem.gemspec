@@ -25,13 +25,14 @@ Gem::Specification.new do |spec|
     "README.md",
     "Rakefile",
     "exe/elelem",
+    "exe/elelem-anthropic",
+    "exe/elelem-files",
+    "exe/elelem-ollama",
+    "exe/elelem-openai",
+    "exe/elelem-vertex-ai",
     "lib/elelem.rb",
     "lib/elelem/agent.rb",
-    "lib/elelem/application.rb",
-    "lib/elelem/conversation.rb",
-    "lib/elelem/system_prompt.erb",
     "lib/elelem/terminal.rb",
-    "lib/elelem/tool.rb",
     "lib/elelem/toolbox.rb",
     "lib/elelem/version.rb",
   ]
@@ -40,18 +41,11 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "cgi", "~> 0.1"
-  spec.add_dependency "cli-ui", "~> 2.0"
-  spec.add_dependency "erb", "~> 6.0"
   spec.add_dependency "fileutils", "~> 1.0"
   spec.add_dependency "json", "~> 2.0"
-  spec.add_dependency "json-schema", "~> 6.0"
-  spec.add_dependency "logger", "~> 1.0"
   spec.add_dependency "net-hippie", "~> 1.0"
   spec.add_dependency "net-llm", "~> 0.5", ">= 0.5.0"
   spec.add_dependency "open3", "~> 0.1"
   spec.add_dependency "pathname", "~> 0.1"
   spec.add_dependency "reline", "~> 0.6"
-  spec.add_dependency "set", "~> 1.0"
-  spec.add_dependency "thor", "~> 1.0"
-  spec.add_dependency "timeout", "~> 0.1"
 end

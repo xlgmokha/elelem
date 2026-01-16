@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+puts "<documents>"
+$stdin.each_line.with_index(1) do |line, i|
+  path = line.strip
+  next if path.empty? || !File.file?(path)
+  content = File.read(path)
+  puts %Q{<document index="#{i}">}
+  puts %Q{<source>#{path}</source>}
+  puts %Q{<content><![CDATA[#{content}]]></content>}
+  puts "</document>"
+end
+puts "</documents>"
