@@ -14,9 +14,9 @@ require_relative "elelem/toolbox"
 require_relative "elelem/version"
 
 module Elelem
-  def self.sh(cmd, args: [], cwd: Dir.pwd)
+  def self.sh(cmd, args: [], cwd: Dir.pwd, env: {})
     output = StringIO.new
-    Open3.popen2e(cmd, *args, chdir: cwd) do |stdin, out, wait_thr|
+    Open3.popen2e(env, cmd, *args, chdir: cwd) do |stdin, out, wait_thr|
       stdin.close
       out.each_line do |l|
         yield l if block_given?
