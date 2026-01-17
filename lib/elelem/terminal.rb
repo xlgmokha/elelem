@@ -74,7 +74,7 @@ module Elelem
 
     def complete_files(target)
       result = Elelem.sh("bash", args: ["-c", "compgen -f #{target}"])
-      result["stdout"].lines.map(&:strip).first(20)
+      result[:output].lines.map(&:strip).first(20)
     end
   end
 end

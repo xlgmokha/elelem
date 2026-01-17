@@ -91,24 +91,24 @@ module Elelem
     end
 
     def format_tool_result(name, result)
-      text = result["stdout"] || result["stderr"] || result[:content] || result[:error] || ""
+      text = result[:output] || result[:content] || result[:error] || ""
       return nil if text.strip.empty?
 
       result[:error] ? "  ! #{text.lines.first&.strip}" : text
     end
 
     def truncate(result)
-      %w[stdout stderr].each do |k|
-        next unless result[k].is_a?(String) && result[k].lines.size > MAX_LINES
-        result[k] = result[k].lines.first(MAX_LINES).join + "… (truncated)"
-      end
+      return result unless result[:output].is_a?(String) && result[:output].lines.size > MAX_LINES
+
+      result[:output] = result[:output].lines.first(MAX_LINES).join + "… (truncated)"
       result
     end
 
     def system_prompt
       <<~PROMPT.strip
-        Terminal agent. Be concise. Act directly, verify your work. Stay grounded - only respond to what is asked.
+        Terminal agent. Be concise. Act directly, verify your work.
         pwd: #{Dir.pwd}
+        Use `which` or `compgen -c | grep` to discover available tools.
       PROMPT
     end
   end

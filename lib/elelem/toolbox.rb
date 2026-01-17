@@ -15,27 +15,15 @@ module Elelem
         required: ["path", "content"],
         fn: ->(a) { p = Pathname.new(a["path"]).expand_path; FileUtils.mkdir_p(p.dirname); { bytes: p.write(a["content"]) } }
       },
-      "exec" => {
-        desc: "Run shell command",
-        params: { cmd: { type: "string" }, args: { type: "array", items: { type: "string" } }, stdin: { type: "string" } },
-        required: ["cmd"],
-        fn: ->(a) { Elelem.sh(a["cmd"], args: a["args"] || [], stdin: a["stdin"]) }
-      },
-      "grep" => {
-        desc: "Search git-tracked files",
-        params: { query: { type: "string" } },
-        required: ["query"],
-        fn: ->(a) { Elelem.sh("git", args: ["grep", "-nI", a["query"]]) }
-      },
-      "list" => {
-        desc: "List git-tracked files",
-        params: { path: { type: "string" } },
-        required: [],
-        fn: ->(a) { Elelem.sh("git", args: a["path"] ? ["ls-files", "--", a["path"]] : ["ls-files"]) }
+      "execute" => {
+        desc: "Run shell command (supports pipes and redirections)",
+        params: { command: { type: "string" } },
+        required: ["command"],
+        fn: ->(a) { Elelem.sh("bash", args: ["-c", a["command"]]) { |x| $stdout.print(x) } }
       }
     }.freeze
 
-    ALIASES = { "bash" => "exec", "sh" => "exec", "open" => "read" }.freeze
+    ALIASES = { "bash" => "execute", "sh" => "execute", "exec" => "execute", "open" => "read" }.freeze
 
     attr_reader :tools
 

@@ -5,6 +5,7 @@ require "json"
 require "net/llm"
 require "open3"
 require "pathname"
+require "stringio"
 require "reline"
 
 require_relative "elelem/agent"
@@ -12,15 +13,17 @@ require_relative "elelem/terminal"
 require_relative "elelem/toolbox"
 require_relative "elelem/version"
 
-Reline.input = $stdin
-Reline.output = $stdout
-
 module Elelem
-  class Error < StandardError; end
-
-  def self.sh(cmd, args: [], env: {}, cwd: Dir.pwd, stdin: nil)
-    stdout, stderr, status = Open3.capture3(env, cmd, *args, chdir: cwd, stdin_data: stdin)
-    { "exit_status" => status.exitstatus, "stdout" => stdout, "stderr" => stderr }
+  def self.sh(cmd, args: [], cwd: Dir.pwd)
+    output = StringIO.new
+    Open3.popen2e(cmd, *args, chdir: cwd) do |stdin, out, wait_thr|
+      stdin.close
+      out.each_line do |l|
+        yield l if block_given?
+        output.write(l)
+      end
+      { exit_status: wait_thr.value.exitstatus, output: output.string }
+    end
   end
 
   def self.start(client)

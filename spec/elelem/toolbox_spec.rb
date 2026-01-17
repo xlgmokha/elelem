@@ -6,7 +6,7 @@ RSpec.describe Elelem::Toolbox do
   describe "#to_h" do
     it "returns all tools in API format" do
       tool_names = subject.to_h.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("read", "write", "exec", "grep", "list")
+      expect(tool_names).to include("read", "write", "execute")
     end
   end
 
@@ -24,11 +24,6 @@ RSpec.describe Elelem::Toolbox do
     it "returns error for unknown tools" do
       result = subject.run("nonexistent", {})
       expect(result[:error]).to include("unknown tool")
-    end
-
-    it "executes grep tool" do
-      result = subject.run("grep", { "query" => "RSpec.describe" })
-      expect(result["stdout"]).to include("toolbox_spec.rb")
     end
   end
 end
