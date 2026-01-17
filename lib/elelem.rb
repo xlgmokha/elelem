@@ -22,7 +22,7 @@ module Elelem
         yield l if block_given?
         output.write(l)
       end
-      { exit_status: wait_thr.value.exitstatus, output: output.string }
+      { exit_status: wait_thr.value.exitstatus, content: output.string }
     end
   end
 

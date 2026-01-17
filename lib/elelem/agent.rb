@@ -91,16 +91,18 @@ module Elelem
     end
 
     def format_tool_result(name, result)
-      text = result[:output] || result[:content] || result[:error] || ""
+      return nil if result[:exit_status]
+
+      text = result[:content] || result[:error] || ""
       return nil if text.strip.empty?
 
       result[:error] ? "  ! #{text.lines.first&.strip}" : text
     end
 
     def truncate(result)
-      return result unless result[:output].is_a?(String) && result[:output].lines.size > MAX_LINES
+      return result unless result[:content].is_a?(String) && result[:content].lines.size > MAX_LINES
 
-      result[:output] = result[:output].lines.first(MAX_LINES).join + "… (truncated)"
+      result[:content] = result[:content].lines.first(MAX_LINES).join + "… (truncated)"
       result
     end
 
