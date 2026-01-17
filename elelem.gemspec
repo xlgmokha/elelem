@@ -40,10 +40,8 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "cgi", "~> 0.1"
   spec.add_dependency "fileutils", "~> 1.0"
   spec.add_dependency "json", "~> 2.0"
-  spec.add_dependency "net-hippie", "~> 1.0"
   spec.add_dependency "net-llm", "~> 0.5", ">= 0.5.0"
   spec.add_dependency "open3", "~> 0.1"
   spec.add_dependency "pathname", "~> 0.1"

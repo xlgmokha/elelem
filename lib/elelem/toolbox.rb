@@ -21,23 +21,17 @@ module Elelem
         required: ["cmd"],
         fn: ->(a) { Elelem.sh(a["cmd"], args: a["args"] || [], stdin: a["stdin"]) }
       },
-      "web_fetch" => {
-        desc: "Fetch URL content",
-        params: { url: { type: "string" } },
-        required: ["url"],
-        fn: ->(a) { r = Net::Hippie::Client.new.get(a["url"]); { status: r.code.to_i, body: r.body } }
-      },
-      "web_search" => {
-        desc: "Search web via DuckDuckGo",
+      "grep" => {
+        desc: "Search git-tracked files",
         params: { query: { type: "string" } },
         required: ["query"],
-        fn: ->(a) { q = CGI.escape(a["query"]); JSON.parse(Net::Hippie::Client.new.get("https://api.duckduckgo.com/?q=#{q}&format=json&no_html=1").body) }
+        fn: ->(a) { Elelem.sh("git", args: ["grep", "-nI", a["query"]]) }
       },
-      "eval" => {
-        desc: "Execute Ruby code",
-        params: { ruby: { type: "string" } },
-        required: ["ruby"],
-        fn: nil
+      "list" => {
+        desc: "List git-tracked files",
+        params: { path: { type: "string" } },
+        required: [],
+        fn: ->(a) { Elelem.sh("git", args: a["path"] ? ["ls-files", "--", a["path"]] : ["ls-files"]) }
       }
     }.freeze
 
@@ -70,7 +64,6 @@ module Elelem
       name = ALIASES.fetch(name, name)
       tool = tools[name]
       return { error: "unknown tool: #{name}" } unless tool
-      return { result: binding.eval(args["ruby"]) } if name == "eval"
 
       tool[:fn].call(args)
     rescue => e

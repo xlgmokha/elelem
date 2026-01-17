@@ -3,6 +3,7 @@
 module Elelem
   class Agent
     COMMANDS = %w[/clear /context /exit /help].freeze
+    MAX_LINES = 30
 
     attr_reader :history, :client, :toolbox, :terminal
 
@@ -56,7 +57,7 @@ module Elelem
         tool_calls.each do |tc|
           name, args = tc[:name], tc[:arguments]
           terminal.say "\n#{format_tool_display(name, args)}"
-          result = toolbox.run(name, args)
+          result = truncate(toolbox.run(name, args))
           terminal.say format_tool_result(name, result)
           ctx << { role: "tool", tool_call_id: tc[:id], content: result.to_json }
           errors += 1 if result[:error]
@@ -95,10 +96,21 @@ module Elelem
       result[:error] ? "  ! #{text.lines.first&.strip}" : text
     end
 
+    def truncate(result)
+      %w[stdout stderr].each do |k|
+        next unless result[k].is_a?(String) && result[k].lines.size > MAX_LINES
+        result[k] = result[k].lines.first(MAX_LINES).join + "… (truncated)"
+      end
+      result
+    end
+
     def system_prompt
+      branch = `git branch --show-current 2>/dev/null`.strip
+      dirty = `git status --porcelain 2>/dev/null`.lines.first(5).map(&:strip).join(", ")
       <<~PROMPT.strip
         Terminal agent. Act directly, verify your work. Stay grounded - only respond to what is asked.
         pwd: #{Dir.pwd}
+        #{"git: #{branch}" + (dirty.empty? ? "" : " [#{dirty}]") unless branch.empty?}
       PROMPT
     end
   end

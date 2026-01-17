@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
-require "cgi"
 require "fileutils"
 require "json"
-require "net/hippie"
 require "net/llm"
 require "open3"
 require "pathname"

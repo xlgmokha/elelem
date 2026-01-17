@@ -2,10 +2,8 @@ PATH
   remote: .
   specs:
     elelem (0.8.0)
-      cgi (~> 0.1)
       fileutils (~> 1.0)
       json (~> 2.0)
-      net-hippie (~> 1.0)
       net-llm (~> 0.5, >= 0.5.0)
       open3 (~> 0.1)
       pathname (~> 0.1)
@@ -15,7 +13,6 @@ GEM
   remote: https://rubygems.org/
   specs:
     base64 (0.3.0)
-    cgi (0.5.1)
     date (3.5.1)
     diff-lcs (1.6.2)
     erb (6.0.1)
