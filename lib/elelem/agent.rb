@@ -54,12 +54,12 @@ module Elelem
 
         break if tool_calls.empty?
 
-        tool_calls.each do |tc|
-          name, args = tc[:name], tc[:arguments]
+        tool_calls.each do |tool_call|
+          name, args = tool_call[:name], tool_call[:arguments]
           terminal.say "\n#{format_tool_display(name, args)}"
           result = truncate(toolbox.run(name, args))
           terminal.say format_tool_result(name, result)
-          ctx << { role: "tool", tool_call_id: tc[:id], content: result.to_json }
+          ctx << { role: "tool", tool_call_id: tool_call[:id], content: result.to_json }
           errors += 1 if result[:error]
         end
 
