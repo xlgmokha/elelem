@@ -101,7 +101,7 @@ module Elelem
 
     def system_prompt
       <<~PROMPT.strip
-        Terminal agent. Be concise. Act directly, verify your work.
+        Terminal agent. Be concise. Act directly, verify your work. Use markdown.
         pwd: #{Dir.pwd}
       PROMPT
     end
