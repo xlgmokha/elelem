@@ -48,10 +48,11 @@ module Elelem
       end
     end
 
-    def run(name, args)
+    def run(tool_call)
+      name, args = tool_call[:name], tool_call[:arguments]
       name = ALIASES.fetch(name, name)
       tool = tools[name]
-      return { error: "unknown tool: #{name}" } unless tool
+      return { error: "unknown tool: #{tool_call}" } unless tool
 
       tool[:fn].call(args)
     rescue => e

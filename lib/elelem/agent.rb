@@ -57,7 +57,7 @@ module Elelem
         tool_calls.each do |tool_call|
           name, args = tool_call[:name], tool_call[:arguments]
           terminal.say "\n#{format_tool_display(name, args)}"
-          result = truncate(toolbox.run(name, args))
+          result = toolbox.run(tool_call)
           terminal.say format_tool_result(name, result)
           ctx << { role: "tool", tool_call_id: tool_call[:id], content: result.to_json }
           errors += 1 if result[:error]
@@ -91,19 +91,12 @@ module Elelem
     end
 
     def format_tool_result(name, result)
-      return nil if result[:exit_status]
+      return if result[:exit_status]
 
       text = result[:content] || result[:error] || ""
       return nil if text.strip.empty?
 
       result[:error] ? "  ! #{text.lines.first&.strip}" : text
-    end
-
-    def truncate(result)
-      return result unless result[:content].is_a?(String) && result[:content].lines.size > MAX_LINES
-
-      result[:content] = result[:content].lines.first(MAX_LINES).join + "… (truncated)"
-      result
     end
 
     def system_prompt
