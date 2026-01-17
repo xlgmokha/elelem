@@ -100,10 +100,9 @@ module Elelem
     end
 
     def system_prompt
-      <<~PROMPT.strip
-        Terminal agent. Be concise. Act directly, verify your work. Use markdown.
-        pwd: #{Dir.pwd}
-      PROMPT
+      prompt = "Terminal agent. Be concise. Act directly, verify your work. Use markdown.\npwd: #{Dir.pwd}"
+      prompt += "\n\n#{File.read("AGENTS.md")}" if File.exist?("AGENTS.md")
+      prompt
     end
   end
 end
