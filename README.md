@@ -7,8 +7,7 @@ Fast, correct, autonomous – pick two.
 Elelem is a minimal coding agent written in Ruby. It is designed to help
 you write, edit, and manage code and plain-text files from the command line
 by delegating work to an LLM. The agent exposes a simple text-based UI and a
-set of built-in tools that give the LLM access to the local file system
-and Git.
+set of built-in tools that give the LLM access to the local file system.
 
 ## Design Principles
 
@@ -101,35 +100,10 @@ Each provider reads its configuration from environment variables:
 | openai      | `OPENAI_API_KEY`, `OPENAI_BASE_URL`               |
 | vertex-ai   | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_REGION`     |
 
-## Mode System
-
-The agent exposes seven built‑in tools. You can switch which ones are
-available by changing the *mode*:
-
-| Mode    | Enabled Tools                            |
-|---------|------------------------------------------|
-| plan    | `grep`, `list`, `read`                   |
-| build   | `grep`, `list`, `read`, `patch`, `write` |
-| verify  | `grep`, `list`, `read`, `execute`        |
-| auto    | All tools                                |
-
-Use the following commands inside the REPL:
-
-```text
-/mode plan    # Read‑only
-/mode build   # Read + Write
-/mode verify  # Read + Execute
-/mode auto    # All tools
-/mode         # Show current mode
-```
-
-The system prompt is adjusted per mode so the LLM knows which actions
-are permissible.
-
 ## Features
 
 * **Interactive REPL** – clean, streaming chat.
-* **Toolbox** – file I/O, Git, shell execution.
+* **Toolbox** – file I/O and shell execution.
 * **Streaming Responses** – output appears in real time.
 * **Conversation History** – persists across turns; can be cleared.
 * **Context Dump** – `/context` shows the current conversation state.
@@ -137,24 +111,15 @@ are permissible.
 ## Toolbox Overview
 
 The `Toolbox` class is defined in `lib/elelem/toolbox.rb`. It supplies
-seven tools, each represented by a JSON schema that the LLM can call.
+three tools, each represented by a JSON schema that the LLM can call.
 
-| Tool      | Purpose                              | Parameters                           |
-| ----      | -------                              | ----------                           |
-| `exec`    | Run shell commands                   | `cmd`, `args`, `env`, `cwd`, `stdin` |
-| `eval`    | Dynamically create new tools         | `code`                               |
-| `grep`    | Search Git‑tracked files             | `query`                              |
-| `list`    | List tracked files                   | `path` (optional)                    |
-| `patch`   | Apply a unified diff via `git apply` | `diff`                               |
-| `read`    | Read file contents                   | `path`                               |
-| `write`   | Overwrite a file                     | `path`, `content`                    |
+| Tool      | Purpose            | Parameters         |
+| --------- | ------------------ | ------------------ |
+| `read`    | Read file contents | `path`             |
+| `write`   | Write file         | `path`, `content`  |
+| `execute` | Run shell command  | `command`          |
 
-## Tool Definition
-
-The core `Tool` wrapper is defined in `lib/elelem/tool.rb`. Each tool is
-created with a name, description, JSON schema for arguments, and a block
-that performs the operation. The LLM calls a tool by name and passes the
-arguments as a hash.
+Aliases: `bash`, `sh`, `exec` → `execute`; `open` → `read`
 
 ## Known Limitations
 
