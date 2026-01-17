@@ -110,7 +110,6 @@ module Elelem
       <<~PROMPT.strip
         Terminal agent. Be concise. Act directly, verify your work.
         pwd: #{Dir.pwd}
-        Use `which` or `compgen -c | grep` to discover available tools.
       PROMPT
     end
   end
