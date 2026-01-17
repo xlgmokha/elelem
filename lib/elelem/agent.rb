@@ -57,7 +57,7 @@ module Elelem
         tool_calls.each do |tool_call|
           name, args = tool_call[:name], tool_call[:arguments]
           terminal.say "\n#{format_tool_display(name, args)}"
-          result = toolbox.run(tool_call)
+          result = toolbox.run(name, args)
           terminal.say format_tool_result(name, result)
           ctx << { role: "tool", tool_call_id: tool_call[:id], content: result.to_json }
           errors += 1 if result[:error]

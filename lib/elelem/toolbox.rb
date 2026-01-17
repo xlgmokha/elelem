@@ -4,7 +4,7 @@ module Elelem
   class Toolbox
     TOOLS = {
       "read" => {
-        desc: "Read file contents",
+        desc: "Read file",
         params: { path: { type: "string" } },
         required: ["path"],
         fn: ->(a) { p = Pathname.new(a["path"]).expand_path; p.exist? ? { content: p.read } : { error: "not found" } }
@@ -48,11 +48,10 @@ module Elelem
       end
     end
 
-    def run(tool_call)
-      name, args = tool_call[:name], tool_call[:arguments]
+    def run(name, args)
       name = ALIASES.fetch(name, name)
       tool = tools[name]
-      return { error: "unknown tool: #{tool_call}" } unless tool
+      return { error: "unknown tool: #{name}" } unless tool
 
       tool[:fn].call(args)
     rescue => e

@@ -18,7 +18,7 @@ module Elelem
 
     def markdown(text)
       width = $stdout.winsize[1] rescue 80
-      IO.popen(["glow", "-s", "dark", "-w", width.to_s, "-"], "r+") do |io|
+      IO.popen(["bat", "--squeeze-blank", "--style=plain", "--paging=never", "--color=always", "--language", "markdown", "--terminal-width", width, "-"], "r+") do |io|
         io.write(text)
         io.close_write
         io.read
@@ -39,6 +39,10 @@ module Elelem
 
     def newline
       say("")
+    end
+
+    def file(path)
+      Elelem.sh("bat", args: ["--style=plain", "--paging=never", "--color=always", path]) { |x| $stdout.print(x) }
     end
 
     def waiting
