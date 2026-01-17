@@ -106,12 +106,9 @@ module Elelem
     end
 
     def system_prompt
-      branch = `git branch --show-current 2>/dev/null`.strip
-      dirty = `git status --porcelain 2>/dev/null`.lines.first(5).map(&:strip).join(", ")
       <<~PROMPT.strip
-        Terminal agent. Act directly, verify your work. Stay grounded - only respond to what is asked.
+        Terminal agent. Be concise. Act directly, verify your work. Stay grounded - only respond to what is asked.
         pwd: #{Dir.pwd}
-        #{"git: #{branch}" + (dirty.empty? ? "" : " [#{dirty}]") unless branch.empty?}
       PROMPT
     end
   end
