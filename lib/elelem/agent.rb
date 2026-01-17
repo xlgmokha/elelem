@@ -66,7 +66,8 @@ module Elelem
         break if errors >= 3
       end
 
-      history << { role: "assistant", content: ctx.map { |c| c[:content] }.join("\n") }
+      final_content = ctx.reverse.find { |m| m[:role] == "assistant" }&.[](:content) || ""
+      history << { role: "assistant", content: final_content }
     end
 
     def fetch_response(ctx)
