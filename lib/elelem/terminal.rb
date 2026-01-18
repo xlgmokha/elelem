@@ -13,20 +13,25 @@ module Elelem
     end
 
     def dim(text)
+      return if blank?(text)
+
       "\e[2m#{text}\e[0m"
     end
 
     def markdown(text)
+      return if blank?(text)
+
+      newline
       width = $stdout.winsize[1] rescue 80
       IO.popen([
         "bat",
         "--squeeze-blank",
         "--style=plain",
         "--paging=never",
-        "--color=always",
-        "--language",
-        "markdown",
-        "--terminal-width", width.to_s,
+        "--force-colorization",
+        "--language=markdown",
+        "--theme=auto:always",
+        "--terminal-width=#{width}",
         "-"
       ], "r+") do |io|
         io.write(text)
@@ -37,18 +42,22 @@ module Elelem
       text
     end
 
-    def print(message)
+    def print(text)
+      return if blank?(text)
+
       stop_dots
-      $stdout.print message
+      $stdout.print text
     end
 
-    def say(message)
+    def say(text)
+      return if blank?(text)
+
       stop_dots
-      $stdout.puts message
+      $stdout.puts text
     end
 
     def newline
-      say("")
+      $stdout.puts("")
     end
 
     def file(path)
@@ -71,6 +80,10 @@ module Elelem
     end
 
     private
+
+    def blank?(text)
+      text.nil? || text.strip.empty?
+    end
 
     def stop_dots
       return unless @dots_thread

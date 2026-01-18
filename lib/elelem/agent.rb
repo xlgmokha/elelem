@@ -40,33 +40,33 @@ module Elelem
 
     def turn(input)
       history << { role: "user", content: input }
-      ctx, errors = [], 0
+      ctx = []
 
       loop do
         terminal.waiting
         content, tool_calls = fetch_response(ctx)
-        terminal.newline
-        return if content.nil?
-
-        terminal.say(terminal.markdown(content)) unless content.empty?
-        ctx << { role: "assistant", content: content, tool_calls: tool_calls.empty? ? nil : tool_calls }.compact
-
+        terminal.say(terminal.markdown(content))
         break if tool_calls.empty?
 
+        ctx << { role: "assistant", content: content, tool_calls: tool_calls }.compact
         tool_calls.each do |tool_call|
-          name, args = tool_call[:name], tool_call[:arguments]
-          terminal.say "\n#{format_tool_display(name, args)}"
-          result = toolbox.run(name.to_s, args)
-          terminal.say format_tool_result(name, result)
-          ctx << { role: "tool", tool_call_id: tool_call[:id], content: result.to_json }
-          errors += 1 if result[:error]
+          ctx << { role: "tool", tool_call_id: tool_call[:id], content: process(tool_call).to_json }
         end
-
-        break if errors >= 3
       end
 
-      final_content = ctx.reverse.find { |m| m[:role] == "assistant" }&.[](:content) || ""
-      history << { role: "assistant", content: final_content }
+      history << { role: "assistant", content: summarize(ctx) }
+    end
+
+    def summarize(ctx)
+      ctx.reverse.find { |m| m[:role] == "assistant" }&.[](:content) || ""
+    end
+
+    def process(tool_call)
+      name, args = tool_call[:name], tool_call[:arguments]
+      terminal.say format_tool_display(name, args)
+      toolbox.run(name.to_s, args).tap do |result|
+        terminal.say format_tool_result(name, result)
+      end
     end
 
     def fetch_response(ctx)
@@ -86,14 +86,14 @@ module Elelem
     end
 
     def format_tool_display(name, args)
-      "+ #{name.to_s.then { _1.empty? ? "?" : _1 }}(#{args})"
+      "\n+ #{name.to_s.then { _1.empty? ? "?" : _1 }}(#{args})"
     end
 
     def format_tool_result(name, result)
       return if result[:exit_status]
 
       text = result[:content] || result[:error] || ""
-      return nil if text.strip.empty?
+      return if text.strip.empty?
 
       result[:error] ? "  ! #{text.lines.first&.strip}" : text
     end
