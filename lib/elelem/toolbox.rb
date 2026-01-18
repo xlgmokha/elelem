@@ -48,6 +48,10 @@ module Elelem
       end
     end
 
+    def header(name, args)
+      "\n+ #{name.to_s.then { _1.empty? ? "?" : _1 }}(#{args})"
+    end
+
     def run(name, args)
       name = ALIASES.fetch(name, name)
       tool = tools[name]
@@ -56,6 +60,15 @@ module Elelem
       tool[:fn].call(args)
     rescue => e
       { error: e.message }
+    end
+
+    def format_result(name, result)
+      return if result[:exit_status]
+
+      text = result[:content] || result[:error] || ""
+      return if text.strip.empty?
+
+      result[:error] ? "  ! #{text.lines.first&.strip}" : text
     end
   end
 end

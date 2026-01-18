@@ -63,9 +63,9 @@ module Elelem
 
     def process(tool_call)
       name, args = tool_call[:name], tool_call[:arguments]
-      terminal.say format_tool_display(name, args)
+      terminal.say toolbox.header(name, args)
       toolbox.run(name.to_s, args).tap do |result|
-        terminal.say format_tool_result(name, result)
+        terminal.say toolbox.format_result(name, result)
       end
     end
 
@@ -83,19 +83,6 @@ module Elelem
     rescue => e
       terminal.say "\n  ✗ #{e.message}"
       [nil, []]
-    end
-
-    def format_tool_display(name, args)
-      "\n+ #{name.to_s.then { _1.empty? ? "?" : _1 }}(#{args})"
-    end
-
-    def format_tool_result(name, result)
-      return if result[:exit_status]
-
-      text = result[:content] || result[:error] || ""
-      return if text.strip.empty?
-
-      result[:error] ? "  ! #{text.lines.first&.strip}" : text
     end
 
     def system_prompt
