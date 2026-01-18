@@ -16,12 +16,14 @@ require_relative "elelem/version"
 module Elelem
   def self.sh(cmd, args: [], cwd: Dir.pwd, env: {})
     output = StringIO.new
+
     Open3.popen2e(env, cmd, *args, chdir: cwd) do |stdin, out, wait_thr|
       stdin.close
-      out.each_line do |l|
-        yield l if block_given?
-        output.write(l)
+      out.each_line do |line|
+        yield line if block_given?
+        output.write(line)
       end
+
       { exit_status: wait_thr.value.exitstatus, content: output.string }
     end
   end

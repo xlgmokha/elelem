@@ -3,7 +3,6 @@
 module Elelem
   class Agent
     COMMANDS = %w[/clear /context /exit /help].freeze
-    MAX_LINES = 30
 
     attr_reader :history, :client, :toolbox, :terminal
 

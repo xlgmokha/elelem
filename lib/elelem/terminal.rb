@@ -18,7 +18,17 @@ module Elelem
 
     def markdown(text)
       width = $stdout.winsize[1] rescue 80
-      IO.popen(["bat", "--squeeze-blank", "--style=plain", "--paging=never", "--color=always", "--language", "markdown", "--terminal-width", width.to_s, "-"], "r+") do |io|
+      IO.popen([
+        "bat",
+        "--squeeze-blank",
+        "--style=plain",
+        "--paging=never",
+        "--color=always",
+        "--language",
+        "markdown",
+        "--terminal-width", width.to_s,
+        "-"
+      ], "r+") do |io|
         io.write(text)
         io.close_write
         io.read
@@ -42,7 +52,12 @@ module Elelem
     end
 
     def file(path)
-      Elelem.sh("bat", args: ["--style=plain", "--paging=never", "--color=always", path]) { |x| $stdout.print(x) }
+      Elelem.sh("bat", args: [
+        "--style=plain",
+        "--paging=never",
+        "--color=always",
+        path
+      ]) { |x| $stdout.print(x) }
     end
 
     def waiting
@@ -73,6 +88,7 @@ module Elelem
     def complete(target, preposing)
       line = "#{preposing}#{target}"
       return @commands.select { |c| c.start_with?(line) } if line.start_with?("/") && !preposing.include?(" ")
+
       complete_files(target)
     end
 
