@@ -72,7 +72,7 @@ module Elelem
     def fetch_response(ctx)
       content, tool_calls = "", []
       client.fetch(history + ctx, toolbox.to_h) do |chunk|
-        terminal.print(terminal.dim(chunk[:thinking])) if chunk[:thinking]
+        terminal.print(terminal.think(chunk[:thinking])) if chunk[:thinking]
 
         case chunk[:type]
         when :delta then content += chunk[:content].to_s

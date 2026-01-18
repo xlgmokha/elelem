@@ -12,28 +12,18 @@ module Elelem
       Reline.readline(prompt, true)&.strip
     end
 
-    def dim(text)
+    def think(text)
       return if blank?(text)
 
-      "\e[2m#{text}\e[0m"
+      "\e[2;3m#{text}\e[0m"
     end
 
     def markdown(text)
       return if blank?(text)
 
-      newline
+      newline(n: 2)
       width = $stdout.winsize[1] rescue 80
-      IO.popen([
-        "bat",
-        "--squeeze-blank",
-        "--style=plain",
-        "--paging=never",
-        "--force-colorization",
-        "--language=markdown",
-        "--theme=auto:always",
-        "--terminal-width=#{width}",
-        "-"
-      ], "r+") do |io|
+      IO.popen(["glow", "-s", "dark", "-w", width.to_s, "-"], "r+") do |io|
         io.write(text)
         io.close_write
         io.read
@@ -56,17 +46,8 @@ module Elelem
       $stdout.puts text
     end
 
-    def newline
-      $stdout.puts("")
-    end
-
-    def file(path)
-      Elelem.sh("bat", args: [
-        "--style=plain",
-        "--paging=never",
-        "--color=always",
-        path
-      ]) { |x| $stdout.print(x) }
+    def newline(n: 1)
+      n.times { $stdout.puts("") }
     end
 
     def waiting
