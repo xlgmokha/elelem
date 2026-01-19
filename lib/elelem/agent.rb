@@ -99,6 +99,12 @@ module Elelem
         Escape: / & \\ [ ] . *
         Multi-line: use write
 
+        # Task Management
+        For complex tasks:
+        1. State plan before acting
+        2. Work through steps one at a time
+        3. Summarize what was done
+
         # Policy
         - Explain before non-trivial commands
         - Verify changes (read file, run tests)
