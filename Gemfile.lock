@@ -10,6 +10,7 @@ PATH
       pathname (~> 0.1)
       reline (~> 0.6)
       stringio (~> 3.0)
+      tempfile (~> 0.3)
 
 GEM
   remote: https://rubygems.org/
@@ -68,6 +69,7 @@ GEM
       rspec-support (~> 3.13.0)
     rspec-support (3.13.6)
     stringio (3.2.0)
+    tempfile (0.3.1)
     tsort (0.2.0)
     uri (1.1.1)
 

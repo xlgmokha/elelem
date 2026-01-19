@@ -8,6 +8,7 @@ require "open3"
 require "pathname"
 require "reline"
 require "stringio"
+require "tempfile"
 
 require_relative "elelem/agent"
 require_relative "elelem/mcp"

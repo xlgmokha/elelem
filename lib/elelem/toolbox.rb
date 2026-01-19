@@ -27,6 +27,18 @@ module Elelem
         params: { command: { type: "string" } },
         required: ["command"],
         fn: ->(a) { Elelem.sh("bash", args: ["-c", a["command"]]) { |x| $stdout.print(x) } }
+      },
+      "patch" => {
+        desc: "Apply unified diff",
+        params: { diff: { type: "string", description: "Unified diff content" } },
+        required: ["diff"],
+        fn: lambda do |a|
+          Tempfile.create("patch") do |f|
+            f.write(a["diff"])
+            f.flush
+            Elelem.sh("patch", args: ["-p0", "-i", f.path])
+          end
+        end
       }
     }.freeze
 

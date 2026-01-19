@@ -48,4 +48,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "pathname", "~> 0.1"
   spec.add_dependency "reline", "~> 0.6"
   spec.add_dependency "stringio", "~> 3.0"
+  spec.add_dependency "tempfile", "~> 0.3"
 end

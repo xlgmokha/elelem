@@ -113,9 +113,9 @@ module Elelem
         - execute: shell command
 
         # Editing
-        Use sed: `sed -i'' 's/old/new/' file`
-        Escape: / & \\ [ ] . *
-        Multi-line: use write
+        Use `patch` tool for multi-line changes (unified diff format)
+        Use sed for single-line changes: `sed -i'' 's/old/new/' file`
+        Use write for new files or full rewrites
 
         # Search
         Use `rg` for text search: `rg -n "pattern" .`
