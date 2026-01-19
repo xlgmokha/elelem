@@ -9,6 +9,7 @@ PATH
       open3 (~> 0.1)
       pathname (~> 0.1)
       reline (~> 0.6)
+      stringio (~> 3.0)
 
 GEM
   remote: https://rubygems.org/
