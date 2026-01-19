@@ -13,7 +13,7 @@ module Elelem
         desc: "Write file",
         params: { path: { type: "string" }, content: { type: "string" } },
         required: ["path", "content"],
-        fn: ->(a) { p = Pathname.new(a["path"]).expand_path; FileUtils.mkdir_p(p.dirname); { bytes: p.write(a["content"]) } }
+        fn: ->(a) { p = Pathname.new(a["path"]).expand_path; FileUtils.mkdir_p(p.dirname); { bytes: p.write(a["content"]), path: a["path"] } }
       },
       "execute" => {
         desc: "Run shell command (supports pipes and redirections)",
@@ -25,14 +25,23 @@ module Elelem
 
     ALIASES = { "bash" => "execute", "sh" => "execute", "exec" => "execute", "open" => "read" }.freeze
 
-    attr_reader :tools
+    attr_reader :tools, :hooks
 
     def initialize(tools = TOOLS.dup)
       @tools = tools
+      @hooks = { before: Hash.new { |h, k| h[k] = [] }, after: Hash.new { |h, k| h[k] = [] } }
     end
 
     def add(name, tool)
       @tools[name] = tool
+    end
+
+    def before(tool_name, &block)
+      @hooks[:before][tool_name] << block
+    end
+
+    def after(tool_name, &block)
+      @hooks[:after][tool_name] << block
     end
 
     def header(name, args)
@@ -44,7 +53,10 @@ module Elelem
       tool = tools[name]
       return { error: "unknown tool: #{name}" } unless tool
 
-      tool[:fn].call(args)
+      @hooks[:before][name].each { |h| h.call(args) }
+      result = tool[:fn].call(args)
+      @hooks[:after][name].each { |h| h.call(args, result) }
+      result
     rescue => e
       { error: e.message }
     end
