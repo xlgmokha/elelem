@@ -157,26 +157,13 @@ module Elelem
     end
 
     def repo_map
-      exts = %w[.rb .js .ts .py .go .rs]
-      patterns = {
-        ".rb" => /^\s*(class |module |def )/,
-        ".js" => /^\s*(function |class |const \w+ = (?:async )?\(|export )/,
-        ".ts" => /^\s*(function |class |const |export |interface )/,
-        ".py" => /^\s*(class |def |async def )/,
-        ".go" => /^\s*(func |type )/,
-        ".rs" => /^\s*(fn |struct |impl |pub fn )/
-      }
-
-      Dir.glob("**/*.{rb,js,ts,py,go,rs}").reject { |f| f.start_with?("vendor/", "node_modules/") }
-        .flat_map do |path|
-          pattern = patterns[File.extname(path)]
-          next [] unless pattern
-          File.readlines(path).filter_map.with_index do |line, i|
-            "#{path}:#{i + 1}: #{line.strip}" if line.match?(pattern)
-          end
-        rescue
-          []
-        end.first(100).join("\n")
+      `ctags -x --sort=no --languages=Ruby,Python,JavaScript,TypeScript,Go,Rust -R . 2>/dev/null`
+        .lines
+        .reject { |l| l.include?("vendor/") || l.include?("node_modules/") || l.include?("spec/") }
+        .first(100)
+        .join
+    rescue
+      ""
     end
   end
 end
