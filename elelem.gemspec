@@ -12,8 +12,8 @@ Gem::Specification.new do |spec|
   spec.description = "A minimal coding agent supporting Ollama, Anthropic, OpenAI, and VertexAI."
   spec.homepage = "https://src.mokhan.ca/xlgmokha/elelem"
   spec.license = "MIT"
-  spec.required_ruby_version = ">= 3.4.0"
-  spec.required_rubygems_version = ">= 3.3.11"
+  spec.required_ruby_version = ">= 4.0.0"
+  spec.required_rubygems_version = ">= 4.0.0"
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://src.mokhan.ca/xlgmokha/elelem"
@@ -40,10 +40,12 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "date", "~> 3.0"
   spec.add_dependency "fileutils", "~> 1.0"
   spec.add_dependency "json", "~> 2.0"
   spec.add_dependency "net-llm", "~> 0.5", ">= 0.5.0"
   spec.add_dependency "open3", "~> 0.1"
   spec.add_dependency "pathname", "~> 0.1"
   spec.add_dependency "reline", "~> 0.6"
+  spec.add_dependency "stringio", "~> 3.0"
 end

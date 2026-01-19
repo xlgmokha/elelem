@@ -87,17 +87,64 @@ module Elelem
 
     def system_prompt
       prompt = <<~PROMPT
-        Terminal coding agent. Be concise. Act directly, Verify your work. Use markdown.
+        Terminal coding agent. Be concise. Verify your work.
 
-        # Editing files
-        Use sed for changes: `sed -i'' 's/search/replace/' file`
-        Escape special chars: / & \\ [ ] . *
-        For multi-line or complex edits, use write.
+        # Tools
+        - read: file contents
+        - write: create/overwrite file
+        - execute: shell command
 
+        # Editing
+        Use sed: `sed -i'' 's/old/new/' file`
+        Escape: / & \\ [ ] . *
+        Multi-line: use write
+
+        # Policy
+        - Explain before non-trivial commands
+        - Verify changes (read file, run tests)
+        - No interactive flags (-i, -p)
+
+        # Environment
         pwd: #{Dir.pwd}
+        platform: #{RUBY_PLATFORM.split("-").last}
+        date: #{Date.today}
+        #{git_branch}
+
+        # Codebase
+        #{repo_map}
       PROMPT
       prompt += "\n\n#{IO.read("AGENTS.md")}" if File.exist?("AGENTS.md")
       prompt
+    end
+
+    def git_branch
+      return unless File.exist?(".git")
+      "branch: #{`git branch --show-current`.strip}"
+    rescue
+      nil
+    end
+
+    def repo_map
+      exts = %w[.rb .js .ts .py .go .rs]
+      patterns = {
+        ".rb" => /^\s*(class |module |def )/,
+        ".js" => /^\s*(function |class |const \w+ = (?:async )?\(|export )/,
+        ".ts" => /^\s*(function |class |const |export |interface )/,
+        ".py" => /^\s*(class |def |async def )/,
+        ".go" => /^\s*(func |type )/,
+        ".rs" => /^\s*(fn |struct |impl |pub fn )/
+      }
+
+      Dir.glob("**/*.{rb,js,ts,py,go,rs}").reject { |f| f.start_with?("vendor/", "node_modules/") }
+        .flat_map do |path|
+          pattern = patterns[File.extname(path)]
+          next [] unless pattern
+          File.readlines(path).filter_map.with_index do |line, i|
+            "#{path}:#{i + 1}: #{line.strip}" if line.match?(pattern)
+          end
+        rescue
+          []
+        end.first(100).join("\n")
     end
   end
 end

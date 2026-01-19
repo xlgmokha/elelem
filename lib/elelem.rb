@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
+require "date"
 require "fileutils"
 require "json"
 require "net/llm"
 require "open3"
 require "pathname"
-require "stringio"
 require "reline"
+require "stringio"
 
 require_relative "elelem/agent"
 require_relative "elelem/terminal"
