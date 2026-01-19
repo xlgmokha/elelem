@@ -36,7 +36,7 @@ module Elelem
           Tempfile.create("patch") do |f|
             f.write(a["diff"])
             f.flush
-            Elelem.sh("patch", args: ["-p0", "-i", f.path])
+            Elelem.sh("patch", args: ["-p1", "-i", f.path])
           end
         end
       }
