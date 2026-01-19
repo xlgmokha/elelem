@@ -118,7 +118,9 @@ module Elelem
         Multi-line: use write
 
         # Search
-        Use `rg` (ripgrep) for code search: `rg -n "pattern" .`
+        Use `rg` for text search: `rg -n "pattern" .`
+        Use `fd` for file discovery: `fd -e rb .`
+        Use `sg` (ast-grep) for structural search: `sg -p 'def $NAME' -l ruby`
 
         # Task Management
         For complex tasks:
