@@ -117,6 +117,9 @@ module Elelem
         Escape: / & \\ [ ] . *
         Multi-line: use write
 
+        # Search
+        Use `rg` (ripgrep) for code search: `rg -n "pattern" .`
+
         # Task Management
         For complex tasks:
         1. State plan before acting
