@@ -86,8 +86,17 @@ module Elelem
     end
 
     def system_prompt
-      prompt = "Terminal agent. Be concise. Act directly, verify your work. Use markdown.\npwd: #{Dir.pwd}"
-      prompt += "\n\n#{File.read("AGENTS.md")}" if File.exist?("AGENTS.md")
+      prompt = <<~PROMPT
+        Terminal coding agent. Be concise. Act directly, Verify your work. Use markdown.
+
+        # Editing files
+        Use sed for changes: `sed -i'' 's/search/replace/' file`
+        Escape special chars: / & \\ [ ] . *
+        For multi-line or complex edits, use write.
+
+        pwd: #{Dir.pwd}
+      PROMPT
+      prompt += "\n\n#{IO.read("AGENTS.md")}" if File.exist?("AGENTS.md")
       prompt
     end
   end
