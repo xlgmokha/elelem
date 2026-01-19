@@ -24,8 +24,6 @@ module Elelem
       end
     end
 
-    private
-
     def command(input)
       case input
       when "/exit" then exit(0)
@@ -57,6 +55,8 @@ module Elelem
 
       history << { role: "assistant", content: summarize(ctx) }
     end
+
+    private
 
     def summarize(ctx)
       ctx.reverse.find { |m| m[:role] == "assistant" }&.[](:content) || ""
