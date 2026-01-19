@@ -10,6 +10,7 @@ require "reline"
 require "stringio"
 
 require_relative "elelem/agent"
+require_relative "elelem/mcp"
 require_relative "elelem/terminal"
 require_relative "elelem/toolbox"
 require_relative "elelem/version"

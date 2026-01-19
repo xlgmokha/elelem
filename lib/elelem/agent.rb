@@ -12,6 +12,8 @@ module Elelem
       @terminal = terminal || Terminal.new(commands: COMMANDS)
       @history = history || [{ role: "system", content: system_prompt }]
       @toolbox.add("task", task_tool)
+      @mcp = MCP.new
+      @mcp.tools.each { |name, tool| @toolbox.add(name, tool) }
     end
 
     def repl
