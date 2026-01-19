@@ -11,6 +11,7 @@ module Elelem
       @toolbox = toolbox
       @terminal = terminal || Terminal.new(commands: COMMANDS)
       @history = history || [{ role: "system", content: system_prompt }]
+      @toolbox.add("task", task_tool)
     end
 
     def repl
@@ -67,6 +68,21 @@ module Elelem
       toolbox.run(name.to_s, args).tap do |result|
         terminal.say toolbox.format_result(name, result)
       end
+    end
+
+    def task_tool
+      {
+        desc: "Delegate subtask to focused agent (complex searches, multi-file analysis)",
+        params: { prompt: { type: "string" } },
+        required: ["prompt"],
+        fn: ->(a) {
+          sub = Agent.new(client, toolbox, terminal: terminal, history: [
+            { role: "system", content: "Research agent. Search, analyze, report. Be concise." }
+          ])
+          sub.turn(a["prompt"])
+          { result: sub.history.last[:content] }
+        }
+      }
     end
 
     def fetch_response(ctx)

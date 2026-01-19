@@ -31,6 +31,10 @@ module Elelem
       @tools = tools
     end
 
+    def add(name, tool)
+      @tools[name] = tool
+    end
+
     def header(name, args)
       "\n+ #{name.to_s.then { _1.empty? ? "?" : _1 }}(#{args})"
     end
