@@ -7,13 +7,20 @@ module Elelem
         desc: "Read file",
         params: { path: { type: "string" } },
         required: ["path"],
-        fn: ->(a) { p = Pathname.new(a["path"]).expand_path; p.exist? ? { content: p.read } : { error: "not found" } }
+        fn: lambda do |a|
+          path = Pathname.new(a["path"]).expand_path
+          path.exist? ? { content: path.read } : { error: "not found" }
+        end
       },
       "write" => {
         desc: "Write file",
         params: { path: { type: "string" }, content: { type: "string" } },
         required: ["path", "content"],
-        fn: ->(a) { p = Pathname.new(a["path"]).expand_path; FileUtils.mkdir_p(p.dirname); { bytes: p.write(a["content"]), path: a["path"] } }
+        fn: lambda do |a|
+          path = Pathname.new(a["path"]).expand_path
+          FileUtils.mkdir_p(path.dirname)
+          { bytes: path.write(a["content"]), path: a["path"] }
+        end
       },
       "execute" => {
         desc: "Run shell command (supports pipes and redirections)",
@@ -23,7 +30,12 @@ module Elelem
       }
     }.freeze
 
-    ALIASES = { "bash" => "execute", "sh" => "execute", "exec" => "execute", "open" => "read" }.freeze
+    ALIASES = {
+      "bash" => "execute",
+      "sh" => "execute",
+      "exec" => "execute",
+      "open" => "read"
+    }.freeze
 
     attr_reader :tools, :hooks
 
@@ -46,7 +58,8 @@ module Elelem
     end
 
     def header(name, args)
-      "\n+ #{name.to_s.then { _1.empty? ? "?" : _1 }}(#{args})"
+      name = name.to_s.empty? ? "?" : name
+      "\n+ #{name}(#{args})"
     end
 
     def run(name, args)
@@ -83,20 +96,29 @@ module Elelem
       return if result[:exit_status] && !result[:verify]
 
       parts = []
-      if result[:verify]
-        result[:verify].each do |cmd, v|
-          status = v[:exit_status] == 0 ? "✓" : "✗"
-          parts << "  #{status} #{cmd}"
-          parts << v[:content].lines.first(5).map { |l| "    #{l}" }.join if v[:exit_status] != 0
-        end
-      end
-
-      text = result[:content] || result[:error] || ""
-      parts << (result[:error] ? "  ! #{text.lines.first&.strip}" : text) unless text.strip.empty?
+      format_verify_results(parts, result[:verify]) if result[:verify]
+      format_content(parts, result)
       parts.join("\n") unless parts.empty?
     end
 
     private
+
+    def format_verify_results(parts, verify)
+      verify.each do |cmd, v|
+        status = v[:exit_status] == 0 ? "✓" : "✗"
+        parts << "  #{status} #{cmd}"
+        next if v[:exit_status] == 0
+
+        parts << v[:content].lines.first(5).map { |l| "    #{l}" }.join
+      end
+    end
+
+    def format_content(parts, result)
+      text = result[:content] || result[:error] || ""
+      return if text.strip.empty?
+
+      parts << (result[:error] ? "  ! #{text.lines.first&.strip}" : text)
+    end
 
     def test_commands_for(path)
       commands = []
