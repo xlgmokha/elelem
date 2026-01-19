@@ -6,11 +6,11 @@ module Elelem
 
     attr_reader :history, :client, :toolbox, :terminal
 
-    def initialize(client, toolbox, terminal: nil)
+    def initialize(client, toolbox, terminal: nil, history: nil)
       @client = client
       @toolbox = toolbox
-      @history = [{ role: "system", content: system_prompt }]
       @terminal = terminal || Terminal.new(commands: COMMANDS)
+      @history = history || [{ role: "system", content: system_prompt }]
     end
 
     def repl
