@@ -137,8 +137,16 @@ module Elelem
         # Codebase
         #{repo_map}
       PROMPT
-      prompt += "\n\n#{IO.read("AGENTS.md")}" if File.exist?("AGENTS.md")
+      prompt += "\n\n# Project Instructions\n#{agents_md}" if agents_md
       prompt
+    end
+
+    def agents_md
+      Pathname.pwd.ascend.each do |dir|
+        file = dir / "AGENTS.md"
+        return file.read if file.exist?
+      end
+      nil
     end
 
     def git_branch
