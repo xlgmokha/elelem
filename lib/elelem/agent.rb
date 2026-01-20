@@ -98,14 +98,10 @@ module Elelem
     end
 
     def fetch_response(ctx)
-      content, tool_calls = "", []
-      client.fetch(history + ctx, toolbox.to_h) do |chunk|
-        terminal.print(terminal.think(chunk[:thinking])) if chunk[:thinking]
-
-        case chunk[:type]
-        when :delta then content += chunk[:content].to_s
-        when :complete then content, tool_calls = chunk[:content].to_s, chunk[:tool_calls] || []
-        end
+      content = ""
+      tool_calls = client.fetch(history + ctx, toolbox.to_h) do |delta|
+        content += delta[:content].to_s
+        terminal.print(terminal.think(delta[:thinking])) if delta[:thinking]
       end
       [content, tool_calls]
     rescue => e

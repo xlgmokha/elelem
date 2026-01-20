@@ -3,36 +3,29 @@
 module Elelem
   module Net
     class OpenAI
-      def initialize(model:, api_key: ENV.fetch("OPENAI_API_KEY"), base_url: ENV.fetch("OPENAI_BASE_URL", "https://api.openai.com/v1"), http: Elelem::Net.http)
+      def initialize(model:, api_key:, base_url: "https://api.openai.com/v1", http: Elelem::Net.http)
         @url = "#{base_url}/chat/completions"
         @model, @api_key, @http = model, api_key, http
       end
 
       def fetch(messages, tools = [], &block)
-        content, tool_calls, stop = "", {}, :end_turn
-        body = { model: @model, messages:, stream: true }
-        body.merge!(tools:, tool_choice: "auto") unless tools.empty?
+        tool_calls = {}
+        body = { model: @model, messages:, stream: true, tools:, tool_choice: "auto" }
 
         stream(body) do |json|
           delta = json.dig("choices", 0, "delta") || {}
+          block.call(content: delta["content"], thinking: nil) if delta["content"]
 
-          if (text = delta["content"])
-            content += text
-            block.call(type: :delta, content: text, thinking: nil, tool_calls: nil)
-          end
-
-          delta["tool_calls"]&.each do |tc|
-            idx = tc["index"]
+          delta["tool_calls"]&.each do |tool_call|
+            idx = tool_call["index"]
             tool_calls[idx] ||= { id: nil, name: nil, args: "" }
-            tool_calls[idx][:id] ||= tc["id"]
-            tool_calls[idx][:name] ||= tc.dig("function", "name")
-            tool_calls[idx][:args] += tc.dig("function", "arguments").to_s
+            tool_calls[idx][:id] ||= tool_call["id"]
+            tool_calls[idx][:name] ||= tool_call.dig("function", "name")
+            tool_calls[idx][:args] += tool_call.dig("function", "arguments").to_s
           end
-
-          stop = json.dig("choices", 0, "finish_reason")&.to_sym || stop
         end
 
-        block.call(type: :complete, content:, thinking: nil, tool_calls: finalize_tools(tool_calls))
+        finalize_tools(tool_calls)
       end
 
       private
@@ -40,6 +33,7 @@ module Elelem
       def stream(body, &block)
         @http.post(@url, headers: { "Authorization" => "Bearer #{@api_key}" }, body:) do |res|
           raise "HTTP #{res.code}: #{res.body}" unless res.is_a?(::Net::HTTPSuccess)
+
           buf = ""
           res.read_body do |chunk|
             buf += chunk
@@ -52,10 +46,13 @@ module Elelem
         end
       end
 
-      def finalize_tools(tcs)
-        tcs.values.map do |tc|
-          args = begin; JSON.parse(tc[:args]); rescue; {}; end
-          { id: tc[:id], name: tc[:name], arguments: args }
+      def finalize_tools(tool_calls)
+        tool_calls.values.map do |tool_call|
+          {
+            id: tool_call[:id],
+            name: tool_call[:name],
+            arguments: JSON.parse(tool_call[:args])
+          }
         end
       end
     end

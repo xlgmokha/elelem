@@ -3,24 +3,21 @@
 module Elelem
   module Net
     class Ollama
-      def initialize(model:, host: ENV.fetch("OLLAMA_HOST", "localhost:11434"), http: Elelem::Net.http)
+      def initialize(model:, host: "localhost:11434", http: Elelem::Net.http)
         @url = "#{host.start_with?('http') ? host : "http://#{host}"}/api/chat"
         @model, @http = model, http
       end
 
       def fetch(messages, tools = [], &block)
-        content, thinking, tool_calls = "", "", []
+        tool_calls = []
 
         stream({ model: @model, messages:, tools:, stream: true }) do |json|
           msg = json["message"] || {}
-          content += msg["content"].to_s
-          thinking += msg["thinking"].to_s
+          block.call(content: msg["content"], thinking: msg["thinking"]) unless json["done"]
           tool_calls.concat(parse_tools(msg["tool_calls"])) if msg["tool_calls"]
-
-          block.call(json["done"] ?
-            { type: :complete, content:, thinking: nilify(thinking), tool_calls: } :
-            { type: :delta, content: msg["content"], thinking: msg["thinking"], tool_calls: nil })
         end
+
+        tool_calls
       end
 
       private
@@ -38,11 +35,15 @@ module Elelem
         end
       end
 
-      def parse_tools(tcs)
-        tcs.map { |tc| { id: tc["id"], name: tc.dig("function", "name"), arguments: tc.dig("function", "arguments") || {} } }
+      def parse_tools(tool_calls)
+        tool_calls.map do |tool_call|
+          {
+            id: tool_call["id"],
+            name: tool_call.dig("function", "name"),
+            arguments: tool_call.dig("function", "arguments") || {}
+          }
+        end
       end
-
-      def nilify(s) = s.empty? ? nil : s
     end
   end
 end

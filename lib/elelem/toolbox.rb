@@ -4,7 +4,7 @@ module Elelem
   class Toolbox
     TOOLS = {
       "read" => {
-        desc: "Read file",
+        description: "Read file",
         params: { path: { type: "string" } },
         required: ["path"],
         fn: lambda do |a|
@@ -13,7 +13,7 @@ module Elelem
         end
       },
       "write" => {
-        desc: "Write file",
+        description: "Write file",
         params: { path: { type: "string" }, content: { type: "string" } },
         required: ["path", "content"],
         fn: lambda do |a|
@@ -23,7 +23,7 @@ module Elelem
         end
       },
       "execute" => {
-        desc: "Run shell command (supports pipes and redirections)",
+        description: "Run shell command (supports pipes and redirections)",
         params: { command: { type: "string" } },
         required: ["command"],
         fn: ->(a) { Elelem.sh("bash", args: ["-c", a["command"]]) { |x| $stdout.print(x) } }
@@ -78,17 +78,13 @@ module Elelem
     end
 
     def to_h
-      tools.map do |name, t|
+      tools.map do |name, tool|
         {
           type: "function",
           function: {
             name: name,
-            description: t[:desc],
-            parameters: {
-              type: "object",
-              properties: t[:params],
-              required: t[:required]
-            }
+            description: tool[:description],
+            parameters: { type: "object", properties: tool[:params], required: tool[:required] }
           }
         }
       end

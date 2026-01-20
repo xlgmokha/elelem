@@ -3,25 +3,31 @@
 module Elelem
   module Net
     class Claude
-      def initialize(endpoint:, headers:, model: nil, version: nil, http: Elelem::Net.http)
+      def self.anthropic(model:, api_key:, http: Elelem::Net.http)
+        new(
+          endpoint: "https://api.anthropic.com/v1/messages",
+          headers: { "x-api-key" => api_key, "anthropic-version" => "2023-06-01" },
+          model:,
+          http:
+        )
+      end
+
+      def self.vertex(model:, project:, region: "us-east5", http: Elelem::Net.http)
+        new(
+          endpoint: "https://#{region}-aiplatform.googleapis.com/v1/projects/#{project}/locations/#{region}/publishers/anthropic/models/#{model}:rawPredict",
+          headers: -> { { "Authorization" => "Bearer #{`gcloud auth application-default print-access-token`.strip}" } },
+          version: "vertex-2023-10-16",
+          http:
+        )
+      end
+
+      def initialize(endpoint:, headers:, model:, version: nil, http: Elelem::Net.http)
         @endpoint, @headers_src, @model, @version, @http = endpoint, headers, model, version, http
-      end
-
-      def self.anthropic(model:, api_key: ENV.fetch("ANTHROPIC_API_KEY"), http: Elelem::Net.http)
-        new(endpoint: "https://api.anthropic.com/v1/messages",
-            headers: { "x-api-key" => api_key, "anthropic-version" => "2023-06-01" },
-            model:, http:)
-      end
-
-      def self.vertex(model:, project: ENV.fetch("GOOGLE_CLOUD_PROJECT"), region: ENV.fetch("GOOGLE_CLOUD_REGION", "us-east5"), http: Elelem::Net.http)
-        new(endpoint: "https://#{region}-aiplatform.googleapis.com/v1/projects/#{project}/locations/#{region}/publishers/anthropic/models/#{model}:rawPredict",
-            headers: -> { { "Authorization" => "Bearer #{`gcloud auth application-default print-access-token`.strip}" } },
-            version: "vertex-2023-10-16", http:)
       end
 
       def fetch(messages, tools = [], &block)
         system, msgs = extract_system(messages)
-        content, thinking, tool_calls = "", "", []
+        tool_calls = []
 
         stream(msgs, system, tools) do |event|
           case event["type"]
@@ -32,23 +38,17 @@ module Elelem
           when "content_block_delta"
             case event.dig("delta", "type")
             when "text_delta"
-              text = event.dig("delta", "text")
-              content += text
-              block.call(type: :delta, content: text, thinking: nil, tool_calls: nil)
+              block.call(content: event.dig("delta", "text"), thinking: nil)
             when "thinking_delta"
-              text = event.dig("delta", "thinking")
-              thinking += text.to_s
-              block.call(type: :delta, content: nil, thinking: text, tool_calls: nil)
+              block.call(content: nil, thinking: event.dig("delta", "thinking"))
             when "input_json_delta"
               tool_calls.last[:args] += event.dig("delta", "partial_json").to_s if tool_calls.any?
             end
           when "message_stop"
-            tool_calls.each do |tc|
-              tc[:arguments] = begin; JSON.parse(tc.delete(:args)); rescue; {}; end
-            end
-            block.call(type: :complete, content:, thinking: (thinking unless thinking.empty?), tool_calls:)
+            tool_calls.each { |tool_call| tool_call[:arguments] = begin; JSON.parse(tool_call.delete(:args)); rescue; {}; end }
           end
         end
+        tool_calls
       end
 
       private
@@ -60,7 +60,7 @@ module Elelem
         body[:model] = @model if @model
         body[:anthropic_version] = @version if @version
         body[:system] = system if system
-        body[:tools] = tools.map { |t| t[:function] ? { name: t[:function][:name], description: t[:function][:description], input_schema: t[:function][:parameters] } : t } unless tools.empty?
+        body[:tools] = unwrap_tools(tools) unless tools.empty?
 
         @http.post(@endpoint, headers:, body:) do |res|
           raise "HTTP #{res.code}: #{res.body}" unless res.is_a?(::Net::HTTPSuccess)
@@ -86,23 +86,33 @@ module Elelem
 
       def normalize(messages)
         messages.map do |m|
-          role, tcs = m[:role] || m["role"], m[:tool_calls] || m["tool_calls"]
+          role, tool_calls = m[:role] || m["role"], m[:tool_calls] || m["tool_calls"]
 
           if role == "tool"
             { role: "user", content: [{ type: "tool_result", tool_use_id: m[:tool_call_id] || m["tool_call_id"], content: m[:content] || m["content"] }] }
-          elsif role == "assistant" && tcs&.any?
+          elsif role == "assistant" && tool_calls&.any?
             content = []
             text = m[:content] || m["content"]
             content << { type: "text", text: } if text && !text.empty?
-            tcs.each do |tc|
-              fn = tc[:function] || tc["function"] || {}
+            tool_calls.each do |tool_call|
+              fn = tool_call[:function] || tool_call["function"] || {}
               args = fn[:arguments] || fn["arguments"]
-              content << { type: "tool_use", id: tc[:id] || tc["id"], name: fn[:name] || fn["name"] || tc[:name] || tc["name"], input: args.is_a?(String) ? (JSON.parse(args) rescue {}) : (args || {}) }
+              content << { type: "tool_use", id: tool_call[:id] || tool_call["id"], name: fn[:name] || fn["name"] || tool_call[:name] || tool_call["name"], input: args.is_a?(String) ? (JSON.parse(args) rescue {}) : (args || {}) }
             end
             { role: "assistant", content: }
           else
             m
           end
+        end
+      end
+
+      def unwrap_tools(tools)
+        tools.map do |tool|
+          {
+            name: tool.dig(:function, :name),
+            description: tool.dig(:function, :description),
+            input_schema: tool.dig(:function, :parameters)
+          }
         end
       end
     end
