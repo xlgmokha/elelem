@@ -4,9 +4,11 @@
 ENV["GOOGLE_CLOUD_PROJECT"] || abort("GOOGLE_CLOUD_PROJECT not set")
 
 require "elelem"
+
 Signal.trap("INT") { exit 1 }
-Elelem.start(Net::Llm::VertexAI.new(
+
+Elelem.start(Net::Llm::Claude.vertex(
   model: "claude-opus-4-5@20251101",
-  project_id: ENV.fetch("GOOGLE_CLOUD_PROJECT"),
+  project: ENV.fetch("GOOGLE_CLOUD_PROJECT"),
   region: ENV.fetch("GOOGLE_CLOUD_REGION", "us-east5"),
 ))
