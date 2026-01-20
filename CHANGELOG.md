@@ -1,5 +1,40 @@
 ## [Unreleased]
 
+### Added
+- MCP (Model Context Protocol) server support via `.mcp.json` configuration
+- AGENTS.md file support for project-specific instructions
+- Sub-task tool for delegating work to focused sub-agents
+- Pre/post tool hooks for extensibility
+- Repo map generation via ctags in system prompt
+- Context compaction for long conversations
+- Plugin extension system with verify plugin
+- Markdown rendering for terminal output
+
+### Changed
+- **Breaking**: Merged `net-llm` gem into inline `lib/elelem/net/` module
+- **Breaking**: Simplified LLM client `fetch` contract
+  - Now yields `{content:, thinking:}` deltas and returns `tool_calls` array
+  - Removed `:delta`/`:complete` event types
+- **Breaking**: Tool schema now uses OpenAI format (`{type: "function", function: {...}}`)
+- **Breaking**: Tool definitions use `description:` key instead of `desc:`
+- **Breaking**: Removed modes and permissions system
+- Consolidated exe files into single entry point
+- Refactored all three clients (Claude, OpenAI, Ollama) to idiomatic Ruby
+- Updated system prompt with rg, fd, sg tool hints
+- Replaced patch tool with system prompt guidance for sed/patch usage
+
+### Removed
+- `web_fetch`, `web_search`, and `eval` tools
+- `patch` tool (guidance moved to system prompt)
+- Modes and permissions system
+- Events module
+
+### Fixed
+- Frozen string literal errors when accumulating tool call arguments
+- Vertex AI model parameter handling (model in URL, not body)
+- Tool call error display for unknown tools
+- Context compaction for long conversations
+
 ## [0.8.0] - 2026-01-14
 
 ### Added
