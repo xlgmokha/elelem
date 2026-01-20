@@ -5,12 +5,13 @@ PATH
       date (~> 3.0)
       fileutils (~> 1.0)
       json (~> 2.0)
-      net-llm (~> 0.5, >= 0.5.0)
+      net-hippie (~> 1.0)
       open3 (~> 0.1)
       pathname (~> 0.1)
       reline (~> 0.6)
       stringio (~> 3.0)
       tempfile (~> 0.3)
+      uri (~> 1.0)
 
 GEM
   remote: https://rubygems.org/
@@ -35,10 +36,6 @@ GEM
       openssl (~> 3.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
-    net-llm (0.6.1)
-      json (~> 2.0)
-      net-hippie (~> 1.0)
-      uri (~> 1.0)
     open3 (0.2.1)
     openssl (3.3.2)
     pathname (0.4.0)
