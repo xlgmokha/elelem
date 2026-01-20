@@ -4,7 +4,7 @@ module Elelem
   module Plugins
     LOAD_PATHS = [".elelem/plugins", "~/.elelem/plugins"].freeze
 
-    def self.load_all
+    def self.load!
       LOAD_PATHS.each do |path|
         dir = File.expand_path(path)
         next unless File.directory?(dir)
@@ -15,13 +15,6 @@ module Elelem
           warn "elelem: failed to load plugin #{file}: #{e.message}"
         end
       end
-    end
-
-    def self.load! = load_all
-
-    def self.init
-      dir = File.expand_path(LOAD_PATHS.first)
-      FileUtils.mkdir_p(dir)
     end
 
     def self.register(name, &block)

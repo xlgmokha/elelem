@@ -23,7 +23,6 @@ module Elelem
     end
   end
 
-  # Convenience methods at module level
   def self.on(event, &block)
     Events.on(event, &block)
   end

@@ -65,9 +65,6 @@ opts = parse_args(ARGV.dup)
 case opts[:command]
 when "help"
   help
-when "init"
-  Elelem::Plugins.init
-  puts "Created .elelem/plugins/"
 when "chat"
   client = PROVIDERS.fetch(opts[:provider]).call(opts[:model])
   Elelem.start(client)
