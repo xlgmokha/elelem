@@ -36,12 +36,12 @@ module Elelem
   end
 
   def self.start(client, toolbox: Toolbox.new)
-    Plugins.load!
+    Plugins.setup!(toolbox)
     Agent.new(client, toolbox).repl
   end
 
   def self.ask(client, prompt, toolbox: Toolbox.new)
-    Plugins.load!
+    Plugins.setup!(toolbox)
     agent = Agent.new(client, toolbox, terminal: Terminal.new(quiet: true))
     agent.turn(prompt)
     agent.history.last[:content]

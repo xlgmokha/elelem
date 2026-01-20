@@ -30,6 +30,7 @@ Gem::Specification.new do |spec|
     "lib/elelem/events.rb",
     "lib/elelem/mcp.rb",
     "lib/elelem/plugins.rb",
+    "lib/elelem/plugins/verify.rb",
     "lib/elelem/terminal.rb",
     "lib/elelem/toolbox.rb",
     "lib/elelem/version.rb",

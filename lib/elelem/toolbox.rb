@@ -42,7 +42,6 @@ module Elelem
     def initialize(tools = TOOLS.dup)
       @tools = tools
       @hooks = { before: Hash.new { |h, k| h[k] = [] }, after: Hash.new { |h, k| h[k] = [] } }
-      setup_default_hooks
     end
 
     def add(name, tool)
@@ -121,27 +120,6 @@ module Elelem
       return if text.strip.empty?
 
       parts << (result[:error] ? "  ! #{text.lines.first&.strip}" : text)
-    end
-
-    def test_commands_for(path)
-      commands = []
-      commands << "ruby -c #{path}" if path&.end_with?(".rb")
-      commands << %w[script/test bin/test].find { |s| File.executable?(s) }
-      commands.compact
-    end
-
-    def setup_default_hooks
-      after("write") do |args, result|
-        next if result[:error]
-
-        result[:verify] = {}
-        test_commands_for(result[:path]).each do |cmd|
-          $stdout.puts "\n  → verify: #{cmd}"
-          v = Elelem.sh("bash", args: ["-c", cmd]) { |x| $stdout.print(x) }
-          result[:verify][cmd] = v
-          break if v[:exit_status] != 0
-        end
-      end
     end
   end
 end

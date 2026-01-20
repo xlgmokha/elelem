@@ -81,10 +81,8 @@ module Elelem
 
     def process(tool_call)
       name, args = tool_call[:name], tool_call[:arguments]
-      Elelem.emit(:tool_call, name: name, args: args)
       terminal.say toolbox.header(name, args)
       toolbox.run(name.to_s, args).tap do |result|
-        Elelem.emit(:tool_result, name: name, args: args, result: result)
         terminal.say toolbox.format_result(name, result)
       end
     end
