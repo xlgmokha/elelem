@@ -18,7 +18,6 @@ module Elelem
     end
 
     def repl
-      Elelem.emit(:repl_start, agent: self)
       terminal.say "elelem v#{VERSION}"
       loop do
         input = terminal.ask("> ")
@@ -26,8 +25,6 @@ module Elelem
         next if input.empty?
         input.start_with?("/") ? command(input) : turn(input)
       end
-    ensure
-      Elelem.emit(:repl_stop, agent: self)
     end
 
     def command(input)
@@ -44,7 +41,6 @@ module Elelem
     end
 
     def turn(input)
-      Elelem.emit(:turn_start, input: input)
       history << { role: "user", content: input }
       compact_if_needed
       ctx = []
@@ -63,7 +59,6 @@ module Elelem
       end
 
       history << { role: "assistant", content: content }
-      Elelem.emit(:turn_complete, input: input, output: content)
       content
     end
 

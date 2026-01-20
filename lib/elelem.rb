@@ -10,7 +10,6 @@ require "reline"
 require "stringio"
 require "tempfile"
 
-require_relative "elelem/events"
 require_relative "elelem/plugins"
 require_relative "elelem/agent"
 require_relative "elelem/mcp"
@@ -19,8 +18,6 @@ require_relative "elelem/toolbox"
 require_relative "elelem/version"
 
 module Elelem
-  extend Events
-
   def self.sh(cmd, args: [], cwd: Dir.pwd, env: {})
     output = StringIO.new
 

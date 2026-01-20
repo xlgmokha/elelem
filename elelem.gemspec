@@ -27,7 +27,6 @@ Gem::Specification.new do |spec|
     "exe/elelem",
     "lib/elelem.rb",
     "lib/elelem/agent.rb",
-    "lib/elelem/events.rb",
     "lib/elelem/mcp.rb",
     "lib/elelem/plugins.rb",
     "lib/elelem/plugins/verify.rb",
