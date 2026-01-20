@@ -125,7 +125,7 @@ module Elelem
         - execute: shell command
 
         # Editing
-        Use `patch` tool for multi-line changes (unified diff format)
+        Use `patch -p1` for multi-line changes: `echo "DIFF" | patch -p1`
         Use sed for single-line changes: `sed -i'' 's/old/new/' file`
         Use write for new files or full rewrites
 
