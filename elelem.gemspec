@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
     "lib/elelem/net/ollama.rb",
     "lib/elelem/net/openai.rb",
     "lib/elelem/plugins.rb",
+    "lib/elelem/plugins/confirm.rb",
     "lib/elelem/plugins/verify.rb",
     "lib/elelem/terminal.rb",
     "lib/elelem/toolbox.rb",
