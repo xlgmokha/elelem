@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module Net
-  module Llm
+module Elelem
+  module Net
     class Ollama
-      def initialize(model:, host: ENV.fetch("OLLAMA_HOST", "localhost:11434"), http: Net::Llm.http)
+      def initialize(model:, host: ENV.fetch("OLLAMA_HOST", "localhost:11434"), http: Elelem::Net.http)
         @url = "#{host.start_with?('http') ? host : "http://#{host}"}/api/chat"
         @model, @http = model, http
       end
@@ -27,7 +27,7 @@ module Net
 
       def stream(body, &block)
         @http.post(@url, body:) do |res|
-          raise "HTTP #{res.code}: #{res.body}" unless res.is_a?(Net::HTTPSuccess)
+          raise "HTTP #{res.code}: #{res.body}" unless res.is_a?(::Net::HTTPSuccess)
           buf = ""
           res.read_body do |chunk|
             buf += chunk

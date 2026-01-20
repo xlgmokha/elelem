@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
-module Net
-  module Llm
+module Elelem
+  module Net
     class Claude
-      def initialize(endpoint:, headers:, model: nil, version: nil, http: Net::Llm.http)
+      def initialize(endpoint:, headers:, model: nil, version: nil, http: Elelem::Net.http)
         @endpoint, @headers_src, @model, @version, @http = endpoint, headers, model, version, http
       end
 
-      def self.anthropic(model:, api_key: ENV.fetch("ANTHROPIC_API_KEY"), http: Net::Llm.http)
+      def self.anthropic(model:, api_key: ENV.fetch("ANTHROPIC_API_KEY"), http: Elelem::Net.http)
         new(endpoint: "https://api.anthropic.com/v1/messages",
             headers: { "x-api-key" => api_key, "anthropic-version" => "2023-06-01" },
             model:, http:)
       end
 
-      def self.vertex(model:, project: ENV.fetch("GOOGLE_CLOUD_PROJECT"), region: ENV.fetch("GOOGLE_CLOUD_REGION", "us-east5"), http: Net::Llm.http)
+      def self.vertex(model:, project: ENV.fetch("GOOGLE_CLOUD_PROJECT"), region: ENV.fetch("GOOGLE_CLOUD_REGION", "us-east5"), http: Elelem::Net.http)
         new(endpoint: "https://#{region}-aiplatform.googleapis.com/v1/projects/#{project}/locations/#{region}/publishers/anthropic/models/#{model}:rawPredict",
             headers: -> { { "Authorization" => "Bearer #{`gcloud auth application-default print-access-token`.strip}" } },
             version: "vertex-2023-10-16", http:)
@@ -63,7 +63,7 @@ module Net
         body[:tools] = tools.map { |t| t[:function] ? { name: t[:function][:name], description: t[:function][:description], input_schema: t[:function][:parameters] } : t } unless tools.empty?
 
         @http.post(@endpoint, headers:, body:) do |res|
-          raise "HTTP #{res.code}: #{res.body}" unless res.is_a?(Net::HTTPSuccess)
+          raise "HTTP #{res.code}: #{res.body}" unless res.is_a?(::Net::HTTPSuccess)
           buf = ""
           res.read_body do |chunk|
             buf += chunk
@@ -106,9 +106,5 @@ module Net
         end
       end
     end
-
-    # Convenience aliases
-    Anthropic = Claude
-    VertexAI = Claude
   end
 end

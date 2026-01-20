@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module Net
-  module Llm
+module Elelem
+  module Net
     class OpenAI
-      def initialize(model:, api_key: ENV.fetch("OPENAI_API_KEY"), base_url: ENV.fetch("OPENAI_BASE_URL", "https://api.openai.com/v1"), http: Net::Llm.http)
+      def initialize(model:, api_key: ENV.fetch("OPENAI_API_KEY"), base_url: ENV.fetch("OPENAI_BASE_URL", "https://api.openai.com/v1"), http: Elelem::Net.http)
         @url = "#{base_url}/chat/completions"
         @model, @api_key, @http = model, api_key, http
       end
@@ -39,7 +39,7 @@ module Net
 
       def stream(body, &block)
         @http.post(@url, headers: { "Authorization" => "Bearer #{@api_key}" }, body:) do |res|
-          raise "HTTP #{res.code}: #{res.body}" unless res.is_a?(Net::HTTPSuccess)
+          raise "HTTP #{res.code}: #{res.body}" unless res.is_a?(::Net::HTTPSuccess)
           buf = ""
           res.read_body do |chunk|
             buf += chunk

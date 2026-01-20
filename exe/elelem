@@ -6,10 +6,10 @@ require "elelem"
 Signal.trap("INT") { exit 1 }
 
 PROVIDERS = {
-  "ollama" => -> (model) { Net::Llm::Ollama.new(model: model || "gpt-oss:latest") },
-  "anthropic" => -> (model) { Net::Llm::Claude.anthropic(model: model || "claude-opus-4-5-20250514") },
-  "vertex" => -> (model) { Net::Llm::Claude.vertex(model: model || "claude-opus-4-5@20251101") },
-  "openai" => -> (model) { Net::Llm::OpenAI.new(model: model || "gpt-4o") }
+  "ollama" => -> (model) { Elelem::Net::Ollama.new(model: model || "gpt-oss:latest") },
+  "anthropic" => -> (model) { Elelem::Net::Claude.anthropic(model: model || "claude-opus-4-5-20250514") },
+  "vertex" => -> (model) { Elelem::Net::Claude.vertex(model: model || "claude-opus-4-5@20251101") },
+  "openai" => -> (model) { Elelem::Net::OpenAI.new(model: model || "gpt-4o") }
 }.freeze
 
 def parse_args(args)
