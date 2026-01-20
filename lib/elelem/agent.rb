@@ -73,10 +73,6 @@ module Elelem
       @history = anchors + recent
     end
 
-    def summarize(ctx)
-      ctx.reverse.find { |m| m[:role] == "assistant" }&.[](:content) || ""
-    end
-
     def process(tool_call)
       name, args = tool_call[:name], tool_call[:arguments]
       terminal.say toolbox.header(name, args)
