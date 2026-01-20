@@ -8,10 +8,6 @@ module Elelem
       ".elelem/plugins"
     ].freeze
 
-    def self.init
-      FileUtils.mkdir_p(File.expand_path(LOAD_PATHS.last))
-    end
-
     def self.setup!(toolbox)
       LOAD_PATHS.each do |path|
         dir = File.expand_path(path)
