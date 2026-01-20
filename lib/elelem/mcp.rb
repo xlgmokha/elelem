@@ -13,7 +13,7 @@ module Elelem
           [
             "#{name}_#{tool["name"]}",
             {
-              desc: tool["description"],
+              description: tool["description"],
               params: tool.dig("inputSchema", "properties") || {},
               required: tool.dig("inputSchema", "required") || [],
               fn: ->(a) { server(name).call(tool["name"], a) }

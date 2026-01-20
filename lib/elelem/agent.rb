@@ -84,7 +84,7 @@ module Elelem
 
     def task_tool
       {
-        desc: "Delegate subtask to focused agent (complex searches, multi-file analysis)",
+        description: "Delegate subtask to focused agent (complex searches, multi-file analysis)",
         params: { prompt: { type: "string" } },
         required: ["prompt"],
         fn: ->(a) {
