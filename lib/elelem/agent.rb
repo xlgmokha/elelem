@@ -44,6 +44,7 @@ module Elelem
       history << { role: "user", content: input }
       compact_if_needed
       ctx = []
+      content = nil
 
       loop do
         terminal.waiting
@@ -57,7 +58,7 @@ module Elelem
         end
       end
 
-      history << { role: "assistant", content: summarize(ctx) }
+      history << { role: "assistant", content: content }
     end
 
     private
