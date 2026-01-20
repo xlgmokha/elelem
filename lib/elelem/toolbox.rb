@@ -67,12 +67,15 @@ module Elelem
       tool = tools[name]
       return { error: "unknown tool: #{name}" } unless tool
 
+      missing = (tool[:required] || []) - (args&.keys || [])
+      return { error: "missing required args: #{missing.join(', ')}" } if missing.any?
+
       @hooks[:before][name].each { |h| h.call(args) }
       result = tool[:fn].call(args)
       @hooks[:after][name].each { |h| h.call(args, result) }
       result
     rescue => e
-      { error: e.message }
+      { error: e.message, name: name, args: args }
     end
 
     def to_h

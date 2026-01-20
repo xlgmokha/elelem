@@ -1,4 +1,96 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-exec "elelem-ollama"
+require "elelem"
+
+Signal.trap("INT") { exit 1 }
+
+PROVIDERS = {
+  "ollama" => -> (model) { Net::Llm::Ollama.new(model: model || "gpt-oss:latest") },
+  "anthropic" => -> (model) { Net::Llm::Claude.anthropic(model: model || "claude-opus-4-5-20250514") },
+  "vertex" => -> (model) { Net::Llm::Claude.vertex(model: model || "claude-opus-4-5@20251101") },
+  "openai" => -> (model) { Net::Llm::OpenAI.new(model: model || "gpt-4o") }
+}.freeze
+
+def parse_args(args)
+  opts = { provider: "ollama", model: nil, command: nil, args: [] }
+
+  while args.any?
+    case args.first
+    when "-p", "--provider"
+      args.shift
+      opts[:provider] = args.shift
+    when "-m", "--model"
+      args.shift
+      opts[:model] = args.shift
+    when "chat", "ask", "pipe", "files", "init", "help"
+      opts[:command] = args.shift
+    else
+      opts[:args] << args.shift
+    end
+  end
+
+  opts[:command] ||= "chat"
+  opts
+end
+
+def help
+  puts <<~HELP
+    elelem - Ruby coding agent
+
+    Usage: elelem [command] [options] [args]
+
+    Commands:
+      chat              Interactive REPL (default)
+      ask <question>    One-shot query
+      pipe <prompt>     Process stdin with prompt
+      files             Output files as XML (stdin or git ls-files)
+      init              Create .elelem/plugins/ directory
+
+    Options:
+      -p, --provider    ollama, anthropic, vertex, openai (default: ollama)
+      -m, --model       Override default model for provider
+
+    Examples:
+      elelem                              # Ollama chat
+      elelem -p anthropic                 # Anthropic chat
+      elelem ask "what is 2+2"            # One-shot with Ollama
+      elelem -p vertex ask "explain this" # One-shot with Vertex
+      echo "code" | elelem pipe "review"  # Pipe stdin
+  HELP
+end
+
+opts = parse_args(ARGV.dup)
+
+case opts[:command]
+when "help"
+  help
+when "init"
+  Elelem::Plugins.init
+  puts "Created .elelem/plugins/"
+when "chat"
+  client = PROVIDERS.fetch(opts[:provider]).call(opts[:model])
+  Elelem.start(client)
+when "ask"
+  prompt = opts[:args].join(" ")
+  abort "Usage: elelem ask <question>" if prompt.empty?
+  client = PROVIDERS.fetch(opts[:provider]).call(opts[:model])
+  puts Elelem.ask(client, prompt)
+when "pipe"
+  instruction = opts[:args].join(" ")
+  abort "Usage: elelem pipe <prompt>" if instruction.empty?
+  client = PROVIDERS.fetch(opts[:provider]).call(opts[:model])
+  puts Elelem.pipe(client, $stdin.read, instruction)
+when "files"
+  files = $stdin.stat.pipe? ? $stdin.readlines : `git ls-files`.lines
+  puts "<documents>"
+  files.each_with_index do |line, i|
+    path = line.strip
+    next if path.empty? || !File.file?(path)
+    puts %Q{<document index="#{i + 1}">}
+    puts %Q{<source>#{path}</source>}
+    puts %Q{<content><![CDATA[#{File.read(path)}]]></content>}
+    puts "</document>"
+  end
+  puts "</documents>"
+end

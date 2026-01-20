@@ -1,7 +1,0 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
-
-require "elelem"
-
-Signal.trap("INT") { exit 1 }
-Elelem.start(Net::Llm::Ollama.new(model: "gpt-oss"))

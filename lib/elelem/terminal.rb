@@ -2,10 +2,11 @@
 
 module Elelem
   class Terminal
-    def initialize(commands: [])
+    def initialize(commands: [], quiet: false)
       @commands = commands
+      @quiet = quiet
       @dots_thread = nil
-      setup_completion
+      setup_completion unless @quiet
     end
 
     def ask(prompt)
@@ -19,7 +20,7 @@ module Elelem
     end
 
     def markdown(text)
-      return if blank?(text)
+      return if @quiet || blank?(text)
 
       newline(n: 2)
       width = $stdout.winsize[1] rescue 80
@@ -33,14 +34,14 @@ module Elelem
     end
 
     def print(text)
-      return if blank?(text)
+      return if @quiet || blank?(text)
 
       stop_dots
       $stdout.print text
     end
 
     def say(text)
-      return if blank?(text)
+      return if @quiet || blank?(text)
 
       stop_dots
       $stdout.puts text
@@ -51,6 +52,8 @@ module Elelem
     end
 
     def waiting
+      return if @quiet
+
       @dots_thread = Thread.new do
         loop do
           $stdout.print "."
