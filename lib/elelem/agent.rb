@@ -3,6 +3,7 @@
 module Elelem
   class Agent
     COMMANDS = %w[/clear /context /exit /help].freeze
+    MAX_CONTEXT_MESSAGES = 50
 
     attr_reader :history, :client, :toolbox, :terminal
 
@@ -41,6 +42,7 @@ module Elelem
 
     def turn(input)
       history << { role: "user", content: input }
+      compact_if_needed
       ctx = []
 
       loop do
@@ -59,6 +61,16 @@ module Elelem
     end
 
     private
+
+    def compact_if_needed
+      return if history.length < MAX_CONTEXT_MESSAGES
+      terminal.say "  → compacting context (#{history.length} messages)"
+
+      anchors = [history[0], history[1]]
+      recent = history.last(MAX_CONTEXT_MESSAGES / 2)
+
+      @history = anchors + recent
+    end
 
     def summarize(ctx)
       ctx.reverse.find { |m| m[:role] == "assistant" }&.[](:content) || ""
@@ -127,6 +139,9 @@ module Elelem
         1. State plan before acting
         2. Work through steps one at a time
         3. Summarize what was done
+
+        # Long Tasks
+        For complex multi-step work, write notes to .elelem/scratch.md
 
         # Policy
         - Explain before non-trivial commands
