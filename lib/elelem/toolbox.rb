@@ -2,50 +2,17 @@
 
 module Elelem
   class Toolbox
-    TOOLS = {
-      "read" => {
-        description: "Read file",
-        params: { path: { type: "string" } },
-        required: ["path"],
-        fn: lambda do |a|
-          path = Pathname.new(a["path"]).expand_path
-          path.exist? ? { content: path.read } : { error: "not found" }
-        end
-      },
-      "write" => {
-        description: "Write file",
-        params: { path: { type: "string" }, content: { type: "string" } },
-        required: ["path", "content"],
-        fn: lambda do |a|
-          path = Pathname.new(a["path"]).expand_path
-          FileUtils.mkdir_p(path.dirname)
-          { bytes: path.write(a["content"]), path: a["path"] }
-        end
-      },
-      "execute" => {
-        description: "Run shell command (supports pipes and redirections)",
-        params: { command: { type: "string" } },
-        required: ["command"],
-        fn: ->(a) { Elelem.sh("bash", args: ["-c", a["command"]]) { |x| $stdout.print(x) } }
-      }
-    }.freeze
+    attr_reader :tools, :hooks, :aliases
 
-    ALIASES = {
-      "bash" => "execute",
-      "sh" => "execute",
-      "exec" => "execute",
-      "open" => "read"
-    }.freeze
-
-    attr_reader :tools, :hooks
-
-    def initialize(tools = TOOLS.dup)
-      @tools = tools
+    def initialize
+      @tools = {}
+      @aliases = {}
       @hooks = { before: Hash.new { |h, k| h[k] = [] }, after: Hash.new { |h, k| h[k] = [] } }
     end
 
-    def add(name, tool)
-      @tools[name] = tool
+    def add(name, description:, params: {}, required: [], aliases: [], &fn)
+      @tools[name] = { description: description, params: params, required: required, fn: fn }
+      aliases.each { |a| @aliases[a] = name }
     end
 
     def before(tool_name, &block)
@@ -62,7 +29,7 @@ module Elelem
     end
 
     def run(name, args)
-      name = ALIASES.fetch(name, name)
+      name = @aliases.fetch(name, name)
       tool = tools[name]
       return { error: "unknown tool: #{name}" } unless tool
 
@@ -88,34 +55,6 @@ module Elelem
           }
         }
       end
-    end
-
-    def format_result(name, result)
-      return if result[:exit_status] && !result[:verify]
-
-      parts = []
-      format_verify_results(parts, result[:verify]) if result[:verify]
-      format_content(parts, result)
-      parts.join("\n") unless parts.empty?
-    end
-
-    private
-
-    def format_verify_results(parts, verify)
-      verify.each do |cmd, v|
-        status = v[:exit_status] == 0 ? "✓" : "✗"
-        parts << "  #{status} #{cmd}"
-        next if v[:exit_status] == 0
-
-        parts << v[:content].lines.first(5).map { |l| "    #{l}" }.join
-      end
-    end
-
-    def format_content(parts, result)
-      text = result[:content] || result[:error] || ""
-      return if text.strip.empty?
-
-      parts << (result[:error] ? "  ! #{text.lines.first&.strip}" : text)
     end
   end
 end

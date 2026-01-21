@@ -13,9 +13,7 @@ module Elelem
       @terminal = terminal || Terminal.new(commands: COMMANDS)
       @history = history || []
       @memory = nil
-      @toolbox.add("task", task_tool)
-      @mcp = MCP.new
-      @mcp.tools.each { |name, tool| @toolbox.add(name, tool) }
+      register_task_tool
     end
 
     def repl
@@ -69,24 +67,22 @@ module Elelem
     def process(tool_call)
       name, args = tool_call[:name], tool_call[:arguments]
       terminal.say toolbox.header(name, args)
-      toolbox.run(name.to_s, args).tap do |result|
-        terminal.say toolbox.format_result(name, result)
-      end
+      toolbox.run(name.to_s, args)
     end
 
-    def task_tool
-      {
+    def register_task_tool
+      agent = self
+      @toolbox.add("task",
         description: "Delegate subtask to focused agent (complex searches, multi-file analysis)",
         params: { prompt: { type: "string" } },
-        required: ["prompt"],
-        fn: ->(a) {
-          sub = Agent.new(client, toolbox, terminal: terminal, history: [
-            { role: "system", content: "Research agent. Search, analyze, report. Be concise." }
-          ])
-          sub.turn(a["prompt"])
-          { result: sub.history.last[:content] }
-        }
-      }
+        required: ["prompt"]
+      ) do |a|
+        sub = Agent.new(agent.client, agent.toolbox, terminal: agent.terminal, history: [
+          { role: "system", content: "Research agent. Search, analyze, report. Be concise." }
+        ])
+        sub.turn(a["prompt"])
+        { result: sub.history.last[:content] }
+      end
     end
 
     def fetch_response(ctx)

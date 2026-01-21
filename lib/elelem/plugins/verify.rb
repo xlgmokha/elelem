@@ -30,12 +30,15 @@ module Elelem
     toolbox.after("write") do |_, result|
       next if result[:error]
 
-      result[:verify] = {}
       Verifiers.for(result[:path]).each do |cmd|
-        $stdout.puts "\n  → verify: #{cmd}"
+        $stdout.puts "\n  -> verify: #{cmd}"
         v = Elelem.sh("bash", args: ["-c", cmd]) { |x| $stdout.print(x) }
-        result[:verify][cmd] = v
-        break if v[:exit_status] != 0
+        status = v[:exit_status] == 0 ? "\u2713" : "\u2717"
+        $stdout.puts "  #{status} #{cmd}"
+        if v[:exit_status] != 0
+          $stdout.puts v[:content].lines.first(5).map { |l| "    #{l}" }.join
+          break
+        end
       end
     end
   end
