@@ -31,10 +31,10 @@ module Elelem
       case input
       when "/exit" then exit(0)
       when "/clear"
-        @history = [{ role: "system", content: system_prompt }]
+        @history = []
         terminal.say "  → context cleared"
       when "/context"
-        terminal.say JSON.pretty_generate(history)
+        terminal.say JSON.pretty_generate(combined_history)
       else
         terminal.say "/clear /context /exit"
       end
@@ -42,7 +42,6 @@ module Elelem
 
     def turn(input)
       history << { role: "user", content: input }
-      compact_if_needed
       ctx = []
       content = nil
 
@@ -63,16 +62,6 @@ module Elelem
     end
 
     private
-
-    def compact_if_needed
-      return if history.length < MAX_CONTEXT_MESSAGES
-      terminal.say "  → compacting context (#{history.length} messages)"
-
-      anchors = [history[0], history[1]]
-      recent = history.last(MAX_CONTEXT_MESSAGES / 2)
-
-      @history = anchors + recent
-    end
 
     def process(tool_call)
       name, args = tool_call[:name], tool_call[:arguments]
@@ -99,7 +88,7 @@ module Elelem
 
     def fetch_response(ctx)
       content = ""
-      tool_calls = client.fetch(history + ctx, toolbox.to_h) do |delta|
+      tool_calls = client.fetch(combined_history + ctx, toolbox.to_h) do |delta|
         content += delta[:content].to_s
         terminal.print(terminal.think(delta[:thinking])) if delta[:thinking]
       end
@@ -107,6 +96,11 @@ module Elelem
     rescue => e
       terminal.say "\n  ✗ #{e.message}"
       [nil, []]
+    end
+
+    def combined_history
+      system = [{ role: "system", content: system_prompt }]
+      system + history
     end
 
     def system_prompt
