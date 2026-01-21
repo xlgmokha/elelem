@@ -34,8 +34,13 @@ Gem::Specification.new do |spec|
     "lib/elelem/net/openai.rb",
     "lib/elelem/plugins.rb",
     "lib/elelem/plugins/confirm.rb",
+    "lib/elelem/plugins/execute.rb",
+    "lib/elelem/plugins/mcp.rb",
+    "lib/elelem/plugins/read.rb",
     "lib/elelem/plugins/verify.rb",
+    "lib/elelem/plugins/write.rb",
     "lib/elelem/terminal.rb",
+    "lib/elelem/tool.rb",
     "lib/elelem/toolbox.rb",
     "lib/elelem/version.rb",
   ]

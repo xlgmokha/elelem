@@ -14,6 +14,7 @@ require_relative "elelem/mcp"
 require_relative "elelem/net"
 require_relative "elelem/plugins"
 require_relative "elelem/terminal"
+require_relative "elelem/tool"
 require_relative "elelem/toolbox"
 require_relative "elelem/version"
 

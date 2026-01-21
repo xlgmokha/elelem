@@ -11,8 +11,9 @@ module Elelem
     end
 
     def add(name, description:, params: {}, required: [], aliases: [], &fn)
-      @tools[name] = { description: description, params: params, required: required, fn: fn }
-      aliases.each { |a| @aliases[a] = name }
+      tool = Tool.new(name, description: description, params: params, required: required, aliases: aliases, &fn)
+      @tools[name] = tool
+      tool.aliases.each { |a| @aliases[a] = name }
     end
 
     def before(tool_name, &block)
@@ -33,11 +34,11 @@ module Elelem
       tool = tools[name]
       return { error: "unknown tool: #{name}" } unless tool
 
-      missing = (tool[:required] || []) - (args&.keys || [])
+      missing = tool.required - (args&.keys || [])
       return { error: "missing required args: #{missing.join(', ')}" } if missing.any?
 
       @hooks[:before][name].each { |h| h.call(args) }
-      result = tool[:fn].call(args)
+      result = tool.call(args)
       @hooks[:after][name].each { |h| h.call(args, result) }
       result
     rescue => e
@@ -45,16 +46,7 @@ module Elelem
     end
 
     def to_a
-      tools.map do |name, tool|
-        {
-          type: "function",
-          function: {
-            name: name,
-            description: tool[:description],
-            parameters: { type: "object", properties: tool[:params], required: tool[:required] }
-          }
-        }
-      end
+      tools.values.map(&:to_h)
     end
   end
 end
