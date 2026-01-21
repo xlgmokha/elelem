@@ -71,13 +71,12 @@ module Elelem
     end
 
     def register_task_tool
-      agent = self
       @toolbox.add("task",
         description: "Delegate subtask to focused agent (complex searches, multi-file analysis)",
         params: { prompt: { type: "string" } },
         required: ["prompt"]
       ) do |a|
-        sub = Agent.new(agent.client, agent.toolbox, terminal: agent.terminal, history: [
+        sub = Agent.new(client, toolbox, terminal: terminal, history: [
           { role: "system", content: "Research agent. Search, analyze, report. Be concise." }
         ])
         sub.turn(a["prompt"])

@@ -33,7 +33,7 @@ module Elelem
       Verifiers.for(result[:path]).each do |cmd|
         $stdout.puts "\n  -> verify: #{cmd}"
         v = Elelem.sh("bash", args: ["-c", cmd]) { |x| $stdout.print(x) }
-        status = v[:exit_status] == 0 ? "\u2713" : "\u2717"
+        status = v[:exit_status] == 0 ? "ok" : "FAIL"
         $stdout.puts "  #{status} #{cmd}"
         if v[:exit_status] != 0
           $stdout.puts v[:content].lines.first(5).map { |l| "    #{l}" }.join
