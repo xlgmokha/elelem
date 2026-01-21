@@ -5,11 +5,18 @@ require "elelem"
 
 Signal.trap("INT") { exit 1 }
 
+MODELS = {
+  "ollama" => "gpt-oss:latest",
+  "anthropic" => "claude-opus-4-5-20250514",
+  "vertex" => "claude-opus-4-5@20251101",
+  "openai" => "gpt-4o",
+}.freeze
+
 PROVIDERS = {
-  "ollama" => -> (model) { Elelem::Net::Ollama.new(model: model || "gpt-oss:latest", host: ENV.fetch("OLLAMA_HOST", "localhost:11434")) },
-  "anthropic" => -> (model) { Elelem::Net::Claude.anthropic(model: model || "claude-opus-4-5-20250514", api_key: ENV.fetch("ANTHROPIC_API_KEY")) },
-  "vertex" => -> (model) { Elelem::Net::Claude.vertex(model: model || "claude-opus-4-5@20251101", project: ENV.fetch("GOOGLE_CLOUD_PROJECT"), region: ENV.fetch("GOOGLE_CLOUD_REGION", "us-east5")) },
-  "openai" => -> (model) { Elelem::Net::OpenAI.new(model: model || "gpt-4o", api_key: ENV.fetch("OPENAI_API_KEY")) }
+  "ollama" => -> (model) { Elelem::Net::Ollama.new(model: model || MODELS["ollama"], host: ENV.fetch("OLLAMA_HOST", "localhost:11434")) },
+  "anthropic" => -> (model) { Elelem::Net::Claude.anthropic(model: model || MODELS["anthropic"], api_key: ENV.fetch("ANTHROPIC_API_KEY")) },
+  "vertex" => -> (model) { Elelem::Net::Claude.vertex(model: model || MODELS["vertex"], project: ENV.fetch("GOOGLE_CLOUD_PROJECT"), region: ENV.fetch("GOOGLE_CLOUD_REGION", "us-east5")) },
+  "openai" => -> (model) { Elelem::Net::OpenAI.new(model: model || MODELS["openai"], api_key: ENV.fetch("OPENAI_API_KEY")) }
 }.freeze
 
 def parse_args(args)
