@@ -3,9 +3,9 @@
 RSpec.describe Elelem::Toolbox do
   subject { described_class.new }
 
-  describe "#to_h" do
+  describe "#to_a" do
     it "returns all tools in API format" do
-      tool_names = subject.to_h.map { |t| t.dig(:function, :name) }
+      tool_names = subject.to_a.map { |t| t.dig(:function, :name) }
       expect(tool_names).to include("read", "write", "execute")
     end
   end
