@@ -34,8 +34,8 @@ module Elelem
       tool = tools[name]
       return { error: "unknown tool: #{name}" } unless tool
 
-      missing = tool.required - (args&.keys || [])
-      return { error: "missing required args: #{missing.join(', ')}" } if missing.any?
+      errors = tool.validate(args)
+      return { error: errors.join(", ") } if errors.any?
 
       @hooks[:before][name].each { |h| h.call(args) }
       result = tool.call(args)

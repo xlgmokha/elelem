@@ -11,10 +11,17 @@ module Elelem
       @required = required
       @aliases = aliases
       @fn = fn
+      @schema = JSONSchemer.schema(schema_hash)
     end
 
     def call(args)
       @fn.call(args)
+    end
+
+    def validate(args)
+      @schema.validate(args || {}).map do |error|
+        error["error"]
+      end
     end
 
     def to_h
@@ -23,8 +30,18 @@ module Elelem
         function: {
           name: name,
           description: description,
-          parameters: { type: "object", properties: params, required: required }
+          parameters: schema_hash
         }
+      }
+    end
+
+    private
+
+    def schema_hash
+      {
+        type: "object",
+        properties: params,
+        required: required
       }
     end
   end

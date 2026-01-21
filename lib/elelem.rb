@@ -3,6 +3,7 @@
 require "date"
 require "fileutils"
 require "json"
+require "json_schemer"
 require "open3"
 require "pathname"
 require "reline"
