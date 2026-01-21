@@ -7,6 +7,7 @@ PATH
       json (~> 2.0)
       net-hippie (~> 1.0)
       open3 (~> 0.1)
+      optparse (~> 0.1)
       pathname (~> 0.1)
       reline (~> 0.6)
       stringio (~> 3.0)
@@ -38,6 +39,7 @@ GEM
       uri (>= 0.11.1)
     open3 (0.2.1)
     openssl (3.3.2)
+    optparse (0.8.1)
     pathname (0.4.0)
     pp (0.6.3)
       prettyprint
