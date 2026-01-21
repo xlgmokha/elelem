@@ -11,7 +11,7 @@ module Elelem
       @client = client
       @toolbox = toolbox
       @terminal = terminal || Terminal.new(commands: COMMANDS)
-      @history = history || [{ role: "system", content: system_prompt }]
+      @history = history || []
       @toolbox.add("task", task_tool)
       @mcp = MCP.new
       @mcp.tools.each { |name, tool| @toolbox.add(name, tool) }
