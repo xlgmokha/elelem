@@ -77,7 +77,7 @@ module Elelem
       { error: e.message, name: name, args: args }
     end
 
-    def to_h
+    def to_a
       tools.map do |name, tool|
         {
           type: "function",

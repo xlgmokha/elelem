@@ -12,6 +12,7 @@ module Elelem
       @toolbox = toolbox
       @terminal = terminal || Terminal.new(commands: COMMANDS)
       @history = history || []
+      @memory = nil
       @toolbox.add("task", task_tool)
       @mcp = MCP.new
       @mcp.tools.each { |name, tool| @toolbox.add(name, tool) }
@@ -32,6 +33,7 @@ module Elelem
       when "/exit" then exit(0)
       when "/clear"
         @history = []
+        @memory = nil
         terminal.say "  → context cleared"
       when "/context"
         terminal.say JSON.pretty_generate(combined_history)
@@ -41,6 +43,7 @@ module Elelem
     end
 
     def turn(input)
+      compact_if_needed
       history << { role: "user", content: input }
       ctx = []
       content = nil
@@ -88,7 +91,7 @@ module Elelem
 
     def fetch_response(ctx)
       content = ""
-      tool_calls = client.fetch(combined_history + ctx, toolbox.to_h) do |delta|
+      tool_calls = client.fetch(combined_history + ctx, toolbox.to_a) do |delta|
         content += delta[:content].to_s
         terminal.print(terminal.think(delta[:thinking])) if delta[:thinking]
       end
@@ -99,8 +102,35 @@ module Elelem
     end
 
     def combined_history
-      system = [{ role: "system", content: system_prompt }]
-      system + history
+      [{ role: "system", content: system_prompt_with_memory }] + history
+    end
+
+    def system_prompt_with_memory
+      prompt = system_prompt
+      prompt += "\n\n# Earlier Context\n#{@memory}" if @memory
+      prompt
+    end
+
+    def compact_if_needed
+      return if history.length <= MAX_CONTEXT_MESSAGES
+
+      terminal.say "  → compacting context"
+      keep = MAX_CONTEXT_MESSAGES / 2
+      old = history.first(history.length - keep)
+
+      to_summarize = @memory ? [{ role: "memory", content: @memory }, *old] : old
+      @memory = summarize(to_summarize)
+      @history = history.last(keep)
+    end
+
+    def summarize(messages)
+      text = messages.map { |message| { role: message[:role], content: message[:content] } }.to_json
+
+      String.new.tap do |buffer|
+        client.fetch([{ role: "user", content: "Summarize key facts:\n#{text}" }], []) do |d|
+          buffer << d[:content].to_s
+        end
+      end
     end
 
     def system_prompt
