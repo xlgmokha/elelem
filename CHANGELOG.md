@@ -1,39 +1,68 @@
 ## [Unreleased]
 
 ### Added
-- MCP (Model Context Protocol) server support via `.mcp.json` configuration
-- AGENTS.md file support for project-specific instructions
-- Sub-task tool for delegating work to focused sub-agents
-- Pre/post tool hooks for extensibility
-- Repo map generation via ctags in system prompt
-- Context compaction for long conversations
-- Plugin extension system with verify plugin
-- Markdown rendering for terminal output
+- **Plugin system** with support for custom tool definitions
+  - Load plugins from `lib/elelem/plugins/`, `~/.elelem/plugins/`, and `.elelem/plugins/`
+  - `Elelem::Plugins.register(name) { |toolbox| ... }` API
+  - Built-in plugins: `read`, `write`, `edit`, `execute`, `verify`, `confirm`, `mcp`
+- **MCP (Model Context Protocol)** server support via `.mcp.json` configuration
+- **AGENTS.md** file support - searches up directory tree for project instructions
+- **`task` tool** for delegating subtasks to focused sub-agents
+- **`edit` tool** for replacing first occurrence of text in a file
+- **`verify` tool** for syntax checking and running project tests
+- **Pre/post tool hooks** (`toolbox.before`/`toolbox.after`) for extensibility
+- **Confirmation prompt** before executing shell commands (when TTY)
+- **Context compaction** for long conversations (summarizes old messages)
+- **Repo map** via ctags included in system prompt
+- **CLI improvements**: optparse-based interface with `-p`/`-m` flags
+  - `elelem chat` - Interactive REPL (default)
+  - `elelem ask <question>` - One-shot query
+  - `elelem pipe <prompt>` - Process stdin with prompt
+  - `elelem files` - Output files as XML
+- JSON Schema validation for tool call arguments (via `json_schemer`)
+- Tool aliases support (e.g., `bash`, `sh`, `exec` → `execute`)
 
 ### Changed
-- **Breaking**: Merged `net-llm` gem into inline `lib/elelem/net/` module
+- **Breaking**: Requires Ruby >= 4.0.0 (was 3.4.0)
+- **Breaking**: Removed `net-llm` dependency - LLM clients now inline in `lib/elelem/net/`
+  - `Elelem::Net::Claude` (Anthropic and Vertex AI)
+  - `Elelem::Net::OpenAI`
+  - `Elelem::Net::Ollama`
 - **Breaking**: Simplified LLM client `fetch` contract
-  - Now yields `{content:, thinking:}` deltas and returns `tool_calls` array
-  - Removed `:delta`/`:complete` event types
-- **Breaking**: Tool schema now uses OpenAI format (`{type: "function", function: {...}}`)
-- **Breaking**: Tool definitions use `description:` key instead of `desc:`
-- **Breaking**: Removed modes and permissions system
-- Consolidated exe files into single entry point
-- Refactored all three clients (Claude, OpenAI, Ollama) to idiomatic Ruby
-- Updated system prompt with rg, fd, sg tool hints
-- Replaced patch tool with system prompt guidance for sed/patch usage
+  - Yields `{content:, thinking:}` deltas
+  - Returns `tool_calls` array directly
+- **Breaking**: Tool schema uses OpenAI format (`{type: "function", function: {...}}`)
+- **Breaking**: Tool definitions use `description:` key (was `desc:`)
+- **Breaking**: Removed modes and permissions system entirely
+- **Breaking**: Removed slash commands (`/mode`, `/env`, `/shell`, `/provider`, `/model`)
+  - Only `/clear`, `/context`, `/exit`, `/help` remain
+- **Breaking**: Removed many dependencies
+  - Removed: `thor`, `cli-ui`, `erb`, `cgi`, `set`, `timeout`, `logger`, `net-llm`, `json-schema`
+  - Added: `json_schemer`, `optparse`, `tempfile`, `stringio`, `uri`
+- Consolidated multiple exe files into single `exe/elelem` entry point
+- Tools are now defined via plugins instead of hardcoded in Toolbox
+- System prompt includes hints for `rg`, `fd`, `sg` (ast-grep), `sed`, `patch`
+- System prompt regenerated on each fetch (includes dynamic repo map)
+- Default tool set: `read`, `write`, `edit`, `execute`, `verify`, `task`
 
 ### Removed
-- `web_fetch`, `web_search`, and `eval` tools
-- `patch` tool (guidance moved to system prompt)
+- `lib/elelem/application.rb` - CLI now in `exe/elelem`
+- `lib/elelem/conversation.rb` - simplified into Agent
+- `lib/elelem/git_context.rb` - inlined into Agent
+- `lib/elelem/system_prompt.erb` - now generated in Agent
+- `web_fetch`, `web_search`, `fetch`, `search_engine` tools
+- `eval` tool (dynamic tool creation)
+- `patch` tool (use `edit` or `execute` with `sed`/`patch`)
+- `grep`, `list` tools (use `execute` with `rg`, `fd`)
 - Modes and permissions system
 - Events module
+- GitHub Actions CI workflow
 
 ### Fixed
-- Frozen string literal errors when accumulating tool call arguments
-- Vertex AI model parameter handling (model in URL, not body)
-- Tool call error display for unknown tools
-- Context compaction for long conversations
+- Handle missing args in Claude provider
+- Tool alias resolution (use canonical tool name, not alias)
+- Unknown tool error now suggests using `execute` and lists available tools
+- Duplicate write operations in edit flow
 
 ## [0.8.0] - 2026-01-14
 
@@ -83,7 +112,7 @@
 - Tab completion for `pass` entries without requiring `show` subcommand
 - Password store symlink support in tab completion
 
-## [0.5.0] - 2025-01-07
+## [0.5.0] - 2026-01-07
 
 ### Added
 - Multi-provider support: Ollama, Anthropic, OpenAI, and VertexAI
@@ -233,4 +262,3 @@
 ## [0.1.0] - 2025-08-08
 
 - Initial release
-
