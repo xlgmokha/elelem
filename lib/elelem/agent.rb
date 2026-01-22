@@ -2,7 +2,7 @@
 
 module Elelem
   class Agent
-    COMMANDS = %w[/clear /context /init /exit /help].freeze
+    COMMANDS = %w[/clear /context /init /shell /exit /help].freeze
     MAX_CONTEXT_MESSAGES = 50
     INIT_PROMPT = <<~PROMPT
       AGENTS.md generator. Analyze codebase and write AGENTS.md to project root.
@@ -52,6 +52,10 @@ module Elelem
       case input
       when "/exit" then exit(0)
       when "/init" then init_agents_md
+      when "/shell"
+        transcript = start_shell
+        history << { role: "user", content: transcript } unless transcript.strip.empty?
+        terminal.say "  → shell session captured"
       when "/clear"
         @history = []
         @memory = nil
@@ -59,7 +63,7 @@ module Elelem
       when "/context"
         terminal.say JSON.pretty_generate(combined_history)
       else
-        terminal.say "/clear /context /exit"
+        terminal.say COMMANDS.join(" ")
       end
     end
 
@@ -109,6 +113,22 @@ module Elelem
     def init_agents_md
       sub = Agent.new(client, toolbox, terminal: terminal, system_prompt: INIT_PROMPT)
       sub.turn("Generate AGENTS.md for this project")
+    end
+
+    def start_shell
+      Tempfile.create do |file|
+        system("script", "-q", file.path, chdir: Dir.pwd)
+        strip_ansi(File.read(file.path))
+      end
+    end
+
+    def strip_ansi(text)
+      text.gsub(/^Script started.*?\n/, "")
+          .gsub(/\nScript done.*$/, "")
+          .gsub(/\e\[[0-9;]*[a-zA-Z]/, "")
+          .gsub(/\e\[\?[0-9]+[hl]/, "")
+          .gsub(/[\b]/, "")
+          .gsub(/\r/, "")
     end
 
     def fetch_response(ctx)

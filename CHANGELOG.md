@@ -8,6 +8,7 @@
 - **MCP (Model Context Protocol)** server support via `.mcp.json` configuration
 - **AGENTS.md** file support - searches up directory tree for project instructions
 - **`/init` command** to generate an AGENTS.md file for the current project
+- **`/shell` command** to drop into a shell session and capture the transcript to context
 - **`task` tool** for delegating subtasks to focused sub-agents
 - **`edit` tool** for replacing first occurrence of text in a file
 - **`verify` tool** for syntax checking and running project tests
@@ -36,8 +37,8 @@
 - **Breaking**: Tool schema uses OpenAI format (`{type: "function", function: {...}}`)
 - **Breaking**: Tool definitions use `description:` key (was `desc:`)
 - **Breaking**: Removed modes and permissions system entirely
-- **Breaking**: Removed slash commands (`/mode`, `/env`, `/shell`, `/provider`, `/model`)
-  - Only `/clear`, `/context`, `/exit`, `/help` remain
+- **Breaking**: Removed slash commands (`/mode`, `/env`, `/provider`, `/model`)
+  - Remaining: `/clear`, `/context`, `/init`, `/shell`, `/exit`, `/help`
 - **Breaking**: Removed many dependencies
   - Removed: `thor`, `cli-ui`, `erb`, `cgi`, `set`, `timeout`, `logger`, `net-llm`, `json-schema`
   - Added: `json_schemer`, `optparse`, `tempfile`, `stringio`, `uri`
