@@ -11,7 +11,7 @@ Elelem::Plugins.register(:execute) do |toolbox|
   end
 
   toolbox.after("execute") do |args, result|
-    return if result[:exit_status] == 0
+    next if result[:exit_status] == 0
 
     $stdout.puts toolbox.header("execute", args, state: "x")
   end
