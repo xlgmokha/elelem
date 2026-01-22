@@ -2,6 +2,7 @@
 
 ### Fixed
 - Use `next` instead of `return` to exit block in execute plugin after-hook
+- Use `break` instead of `return` to exit `inject` block in verify plugin
 
 ## [0.9.0] - 2026-01-21
 

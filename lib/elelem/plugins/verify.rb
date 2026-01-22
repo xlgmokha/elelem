@@ -37,7 +37,7 @@ module Elelem
       Verifiers.for(path).inject({verified: []}) do |memo, cmd|
         $stdout.puts toolbox.header("execute", { "command" => cmd })
         v = toolbox.run("execute", { "command" => cmd })
-        return v.merge(path: path, command: cmd) if v[:exit_status] != 0
+        break v.merge(path: path, command: cmd) if v[:exit_status] != 0
 
         memo[:verified] << cmd
         memo
