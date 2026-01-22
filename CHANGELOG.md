@@ -4,13 +4,14 @@
 - **Plugin system** with support for custom tool definitions
   - Load plugins from `lib/elelem/plugins/`, `~/.elelem/plugins/`, and `.elelem/plugins/`
   - `Elelem::Plugins.register(name) { |toolbox| ... }` API
-  - Built-in plugins: `read`, `write`, `edit`, `execute`, `verify`, `confirm`, `mcp`
+  - Built-in plugins: `read`, `write`, `edit`, `execute`, `eval`, `verify`, `confirm`, `mcp`
 - **MCP (Model Context Protocol)** server support via `.mcp.json` configuration
 - **AGENTS.md** file support - searches up directory tree for project instructions
 - **`/init` command** to generate an AGENTS.md file for the current project
 - **`/shell` command** to drop into a shell session and capture the transcript to context
 - **`task` tool** for delegating subtasks to focused sub-agents
 - **`edit` tool** for replacing first occurrence of text in a file
+- **`eval` tool** for executing Ruby code and dynamically registering new tools
 - **`verify` tool** for syntax checking and running project tests
 - **Pre/post tool hooks** (`toolbox.before`/`toolbox.after`) for extensibility
 - **Confirmation prompt** before executing shell commands (when TTY)
@@ -54,7 +55,6 @@
 - `lib/elelem/git_context.rb` - inlined into Agent
 - `lib/elelem/system_prompt.erb` - now generated in Agent
 - `web_fetch`, `web_search`, `fetch`, `search_engine` tools
-- `eval` tool (dynamic tool creation)
 - `patch` tool (use `edit` or `execute` with `sed`/`patch`)
 - `grep`, `list` tools (use `execute` with `rg`, `fd`)
 - Modes and permissions system
