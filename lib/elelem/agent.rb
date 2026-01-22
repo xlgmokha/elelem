@@ -160,6 +160,7 @@ module Elelem
         - Explain before non-trivial commands
         - Verify changes (read file, run tests)
         - No interactive flags (-i, -p)
+        - Use `man` to when you need to understand how to execute a program
 
         # Environment
         pwd: #{Dir.pwd}
