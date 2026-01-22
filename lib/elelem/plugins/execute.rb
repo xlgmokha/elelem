@@ -11,7 +11,7 @@ Elelem::Plugins.register(:execute) do |toolbox|
   end
 
   toolbox.after("execute") do |args, result|
-    status = result[:exit_status] == 0 ? "ok" : "FAIL"
-    $stdout.puts "  #{status} #{args["command"]}"
+    status = result[:exit_status] == 0 ? "✓" : "x"
+    $stdout.puts toolbox.header("execute", args, state: status)
   end
 end

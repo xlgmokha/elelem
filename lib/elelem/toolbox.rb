@@ -24,9 +24,9 @@ module Elelem
       @hooks[:after][tool_name] << block
     end
 
-    def header(name, args)
+    def header(name, args, state: "+")
       name = tool_for(name)&.name || "#{name}?"
-      "\n+ #{name}(#{args})"
+      "\n#{state} #{name}(#{args})"
     end
 
     def run(name, args)
