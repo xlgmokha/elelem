@@ -25,7 +25,7 @@ module Elelem
     end
 
     def header(name, args)
-      name = tool_for(name)&.name || "?"
+      name = tool_for(name)&.name || "#{name}?"
       "\n+ #{name}(#{args})"
     end
 
