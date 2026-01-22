@@ -9,17 +9,12 @@ Elelem::Plugins.register(:edit) do |toolbox|
     path = Pathname.new(a["path"]).expand_path
     content = path.read
     if content.include?(a["old"])
-      { path: a["path"], bytes: path.write(content.sub(a["old"], a["new"])) }
+      toolbox.run("write", {
+        "path" => a["path"],
+        "content" => content.sub(a["old"], a["new"])
+      })
     else
       { error: "text not found", content: content.lines.first(20).join }
-    end
-  end
-
-  toolbox.after("edit") do |_, result|
-    if result[:error]
-      $stdout.puts "  ! #{result[:error]}"
-    elsif !system("bat", "--paging=never", result[:path])
-      $stdout.puts "  -> #{result[:path]}"
     end
   end
 end
