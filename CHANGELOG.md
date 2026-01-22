@@ -9,6 +9,7 @@
 - **AGENTS.md** file support - searches up directory tree for project instructions
 - **`/init` command** to generate an AGENTS.md file for the current project
 - **`/shell` command** to drop into a shell session and capture the transcript to context
+- **`/reload` command** to hot-reload source code without restarting the process
 - **`task` tool** for delegating subtasks to focused sub-agents
 - **`edit` tool** for replacing first occurrence of text in a file
 - **`eval` tool** for executing Ruby code and dynamically registering new tools
@@ -39,7 +40,7 @@
 - **Breaking**: Tool definitions use `description:` key (was `desc:`)
 - **Breaking**: Removed modes and permissions system entirely
 - **Breaking**: Removed slash commands (`/mode`, `/env`, `/provider`, `/model`)
-  - Remaining: `/clear`, `/context`, `/init`, `/shell`, `/exit`, `/help`
+  - Remaining: `/clear`, `/context`, `/init`, `/reload`, `/shell`, `/exit`, `/help`
 - **Breaking**: Removed many dependencies
   - Removed: `thor`, `cli-ui`, `erb`, `cgi`, `set`, `timeout`, `logger`, `net-llm`, `json-schema`
   - Added: `json_schemer`, `optparse`, `tempfile`, `stringio`, `uri`

@@ -2,7 +2,7 @@
 
 module Elelem
   class Agent
-    COMMANDS = %w[/clear /context /init /shell /exit /help].freeze
+    COMMANDS = %w[/clear /context /init /reload /shell /exit /help].freeze
     MAX_CONTEXT_MESSAGES = 50
     INIT_PROMPT = <<~PROMPT
       AGENTS.md generator. Analyze codebase and write AGENTS.md to project root.
@@ -52,6 +52,7 @@ module Elelem
       case input
       when "/exit" then exit(0)
       when "/init" then init_agents_md
+      when "/reload" then reload_source!
       when "/shell"
         transcript = start_shell
         history << { role: "user", content: transcript } unless transcript.strip.empty?
@@ -112,6 +113,16 @@ module Elelem
     def init_agents_md
       sub = Agent.new(client, toolbox, terminal: terminal, system_prompt: INIT_PROMPT)
       sub.turn("Generate AGENTS.md for this project")
+    end
+
+    def reload_source!
+      lib_dir = File.expand_path("..", __dir__)
+      original_verbose, $VERBOSE = $VERBOSE, nil
+      Dir["#{lib_dir}/**/*.rb"].sort.each { |f| load(f) }
+      $VERBOSE = original_verbose
+      @toolbox = Toolbox.new
+      Plugins.reload!(@toolbox)
+      register_task_tool
     end
 
     def start_shell

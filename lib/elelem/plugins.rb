@@ -9,6 +9,17 @@ module Elelem
     ].freeze
 
     def self.setup!(toolbox)
+      load_plugins
+      registry.each_value { |plugin| plugin.call(toolbox) }
+    end
+
+    def self.reload!(toolbox)
+      @registry = {}
+      load_plugins
+      registry.each_value { |plugin| plugin.call(toolbox) }
+    end
+
+    def self.load_plugins
       LOAD_PATHS.each do |path|
         dir = File.expand_path(path)
         next unless File.directory?(dir)
@@ -19,7 +30,6 @@ module Elelem
           warn "elelem: failed to load plugin #{file}: #{e.message}"
         end
       end
-      registry.each_value { |plugin| plugin.call(toolbox) }
     end
 
     def self.register(name, &block)
