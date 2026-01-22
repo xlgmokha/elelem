@@ -24,6 +24,10 @@ module Elelem
       Dir.pwd
     end
 
+    def elelem_source
+      File.expand_path("../..", __dir__)
+    end
+
     def platform
       RUBY_PLATFORM.split("-").last
     end
