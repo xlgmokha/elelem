@@ -32,17 +32,25 @@ module Elelem
     def run(name, args)
       name = @aliases.fetch(name, name)
       tool = tools[name]
-      return { error: "unknown tool: #{name}. Use 'execute' to run shell commands like rg, fd, git.", tools: to_a } unless tool
+      return failure(error: "unknown tool: #{name}. Use 'execute' to run shell commands like rg, fd, git.", tools: to_a) unless tool
 
       errors = tool.validate(args)
-      return { error: errors.join(", ") } if errors.any?
+      return failure(error: errors.join(", ")) if errors.any?
 
       @hooks[:before][name].each { |h| h.call(args) }
       result = tool.call(args)
       @hooks[:after][name].each { |h| h.call(args, result) }
-      result
+      result[:error] ? failure(result) : success(result)
     rescue => e
-      { error: e.message, name: name, args: args }
+      failure(error: e.message, name: name, args: args)
+    end
+
+    def success(payload)
+      payload.merge(ok: true)
+    end
+
+    def failure(payload)
+      payload.merge(ok: false)
     end
 
     def to_a
