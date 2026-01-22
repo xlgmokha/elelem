@@ -2,16 +2,38 @@
 
 module Elelem
   class Agent
-    COMMANDS = %w[/clear /context /exit /help].freeze
+    COMMANDS = %w[/clear /context /init /exit /help].freeze
     MAX_CONTEXT_MESSAGES = 50
+    INIT_PROMPT = <<~PROMPT
+      AGENTS.md generator. Analyze codebase and write AGENTS.md to project root.
+
+      # AGENTS.md Spec (https://agents.md/)
+      A file providing context and instructions for AI coding agents.
+
+      ## Recommended Sections
+      - Commands: build, test, lint commands
+      - Code Style: conventions, patterns
+      - Architecture: key components and flow
+      - Testing: how to run tests
+
+      ## Process
+      1. Read README.md if present
+      2. Identify language (Gemfile, package.json, go.mod)
+      3. Find test scripts (bin/test, npm test)
+      4. Check linter configs
+      5. Write concise AGENTS.md
+
+      Keep it minimal. No fluff.
+    PROMPT
 
     attr_reader :history, :client, :toolbox, :terminal
 
-    def initialize(client, toolbox, terminal: nil, history: nil)
+    def initialize(client, toolbox, terminal: nil, history: nil, system_prompt: nil)
       @client = client
       @toolbox = toolbox
       @terminal = terminal || Terminal.new(commands: COMMANDS)
       @history = history || []
+      @system_prompt = system_prompt
       @memory = nil
       register_task_tool
     end
@@ -29,6 +51,7 @@ module Elelem
     def command(input)
       case input
       when "/exit" then exit(0)
+      when "/init" then init_agents_md
       when "/clear"
         @history = []
         @memory = nil
@@ -76,12 +99,16 @@ module Elelem
         params: { prompt: { type: "string" } },
         required: ["prompt"]
       ) do |a|
-        sub = Agent.new(client, toolbox, terminal: terminal, history: [
-          { role: "system", content: "Research agent. Search, analyze, report. Be concise." }
-        ])
+        sub = Agent.new(client, toolbox, terminal: terminal,
+          system_prompt: "Research agent. Search, analyze, report. Be concise.")
         sub.turn(a["prompt"])
         { result: sub.history.last[:content] }
       end
+    end
+
+    def init_agents_md
+      sub = Agent.new(client, toolbox, terminal: terminal, system_prompt: INIT_PROMPT)
+      sub.turn("Generate AGENTS.md for this project")
     end
 
     def fetch_response(ctx)
@@ -101,7 +128,7 @@ module Elelem
     end
 
     def system_prompt_with_memory
-      prompt = system_prompt
+      prompt = @system_prompt || default_system_prompt
       prompt += "\n\n# Earlier Context\n#{@memory}" if @memory
       prompt
     end
@@ -128,7 +155,7 @@ module Elelem
       end
     end
 
-    def system_prompt
+    def default_system_prompt
       prompt = <<~PROMPT
         Terminal coding agent. Be concise. Verify your work.
 
