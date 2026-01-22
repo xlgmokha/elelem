@@ -67,7 +67,7 @@ class App
     abort "Usage: elelem ask <prompt>" if @args.empty?
     prompt = @args.join(" ")
     prompt = "#{prompt}\n\n```\n#{$stdin.read}\n```" if $stdin.stat.pipe?
-    puts Elelem.ask(client, prompt)
+    Elelem::Terminal.new.markdown Elelem.ask(client, prompt)
   end
 
   def files
