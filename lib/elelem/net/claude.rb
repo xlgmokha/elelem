@@ -82,7 +82,8 @@ module Elelem
 
       def finalize_tool_calls(tool_calls)
         tool_calls.each do |tool_call|
-          tool_call[:arguments] = JSON.parse(tool_call.delete(:args))
+          args = tool_call.delete(:args)
+          tool_call[:arguments] = args.empty? ? {} : JSON.parse(args)
         end
       end
 

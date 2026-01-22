@@ -93,7 +93,7 @@ module Elelem
       [content, tool_calls]
     rescue => e
       terminal.say "\n  ✗ #{e.message}"
-      [nil, []]
+      ["Error: #{e.message} #{e.backtrace.join("\n")}", []]
     end
 
     def combined_history
