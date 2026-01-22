@@ -8,13 +8,8 @@ Elelem::Plugins.register(:edit) do |toolbox|
   ) do |a|
     path = Pathname.new(a["path"]).expand_path
     content = path.read
-    if content.include?(a["old"])
-      toolbox.run("write", {
-        "path" => a["path"],
-        "content" => content.sub(a["old"], a["new"])
-      })
-    else
-      { error: "text not found", content: content.lines.first(20).join }
-    end
+    toolbox
+      .run("write", { "path" => a["path"], "content" => content.sub(a["old"], a["new"]) })
+      .merge(replaced: a["old"], with: a["new"])
   end
 end
