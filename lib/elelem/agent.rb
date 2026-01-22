@@ -136,6 +136,7 @@ module Elelem
         - read(path): file contents
         - write(path, content): create/overwrite file
         - execute(command): shell command
+        - task(prompt): delegate complex searches or multi-file analysis to a focused subagent
 
         # Editing
         Use execute(`patch -p1`) for multi-line changes: `echo "DIFF" | patch -p1`
