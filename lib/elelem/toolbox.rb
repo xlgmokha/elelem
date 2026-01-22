@@ -25,24 +25,33 @@ module Elelem
     end
 
     def header(name, args)
-      name = name.to_s.empty? ? "?" : name
+      name = tool_for(name)&.name || "?"
       "\n+ #{name}(#{args})"
     end
 
     def run(name, args)
-      name = @aliases.fetch(name, name)
-      tool = tools[name]
+      tool = tool_for(name)
       return failure(error: "unknown tool: #{name}. Use 'execute' to run shell commands like rg, fd, git.", tools: to_a) unless tool
 
       errors = tool.validate(args)
       return failure(error: errors.join(", ")) if errors.any?
 
-      @hooks[:before][name].each { |h| h.call(args) }
+      @hooks[:before][tool.name].each { |h| h.call(args) }
       result = tool.call(args)
-      @hooks[:after][name].each { |h| h.call(args, result) }
+      @hooks[:after][tool.name].each { |h| h.call(args, result) }
       result[:error] ? failure(result) : success(result)
     rescue => e
       failure(error: e.message, name: name, args: args)
+    end
+
+    def to_a
+      tools.values.map(&:to_h)
+    end
+
+    private
+
+    def tool_for(name)
+      tools[@aliases.fetch(name, name)]
     end
 
     def success(payload)
@@ -51,10 +60,6 @@ module Elelem
 
     def failure(payload)
       payload.merge(ok: false)
-    end
-
-    def to_a
-      tools.values.map(&:to_h)
     end
   end
 end
