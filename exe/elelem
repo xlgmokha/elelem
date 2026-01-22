@@ -41,8 +41,7 @@ class App
       o.banner = "Usage: elelem [command] [options] [args]"
       o.separator "\nCommands:"
       o.separator "  chat              Interactive REPL (default)"
-      o.separator "  ask <question>    One-shot query"
-      o.separator "  pipe <prompt>     Process stdin with prompt"
+      o.separator "  ask <prompt>      One-shot query (reads stdin if piped)"
       o.separator "  files             Output files as XML (no options)"
       o.separator "  help              Show this help"
       o.separator "\nOptions:"
@@ -65,13 +64,10 @@ class App
   def chat = Elelem.start(client)
 
   def ask
-    abort "Usage: elelem ask <question>" if @args.empty?
-    puts Elelem.ask(client, @args.join(" "))
-  end
-
-  def pipe
-    abort "Usage: elelem pipe <prompt>" if @args.empty?
-    puts Elelem.pipe(client, $stdin.read, @args.join(" "))
+    abort "Usage: elelem ask <prompt>" if @args.empty?
+    prompt = @args.join(" ")
+    prompt = "#{prompt}\n\n```\n#{$stdin.read}\n```" if $stdin.stat.pipe?
+    puts Elelem.ask(client, prompt)
   end
 
   def files

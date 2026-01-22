@@ -45,8 +45,4 @@ module Elelem
     agent.turn(prompt)
     agent.history.last[:content]
   end
-
-  def self.pipe(client, input, instruction, toolbox: Toolbox.new)
-    ask(client, "#{instruction}\n\n```\n#{input}\n```", toolbox:)
-  end
 end
