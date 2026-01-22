@@ -1,3 +1,8 @@
+## [0.9.1] - 2026-01-22
+
+### Fixed
+- Use `next` instead of `return` to exit block in execute plugin after-hook
+
 ## [0.9.0] - 2026-01-21
 
 ### Added
