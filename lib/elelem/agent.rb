@@ -180,6 +180,7 @@ module Elelem
         - read(path): file contents
         - write(path, content): create/overwrite file
         - execute(command): shell command
+        - eval(ruby): execute Ruby code; use to create tools for repetitive tasks
         - task(prompt): delegate complex searches or multi-file analysis to a focused subagent
 
         # Editing
