@@ -1,3 +1,8 @@
+## [0.9.2] - 2026-01-22
+
+### Fixed
+- Suppress pathname gem constant redefinition warnings on Ruby 4.0
+
 ## [0.9.1] - 2026-01-22
 
 ### Fixed
