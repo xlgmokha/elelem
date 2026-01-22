@@ -52,10 +52,7 @@ module Elelem
       case input
       when "/exit" then exit(0)
       when "/init" then init_agents_md
-      when "/shell"
-        transcript = start_shell
-        history << { role: "user", content: transcript } unless transcript.strip.empty?
-        terminal.say "  → shell session captured"
+      when "/shell" then history << { role: "user", content: start_shell }
       when "/clear"
         @history = []
         @memory = nil
