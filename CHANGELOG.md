@@ -1,4 +1,4 @@
-## [Unreleased]
+## [0.9.0] - 2026-01-21
 
 ### Added
 - **Plugin system** with support for custom tool definitions
