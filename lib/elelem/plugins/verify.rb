@@ -27,7 +27,7 @@ module Elelem
   end
 
   Plugins.register(:verify) do |toolbox|
-    toolbox.after("write") do |_, result|
+    toolbox.after("write") do |_args, result|
       next if result[:error]
 
       Verifiers.for(result[:path]).each do |cmd|

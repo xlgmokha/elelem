@@ -5,7 +5,7 @@ Elelem::Plugins.register(:execute) do |toolbox|
     description: "Run shell command (supports pipes and redirections)",
     params: { command: { type: "string" } },
     required: ["command"],
-    aliases: ["bash", "sh", "exec"]
+    aliases: ["bash", "sh", "exec", "execute<|channel|>"]
   ) do |a|
     Elelem.sh("bash", args: ["-c", a["command"]]) { |x| $stdout.print(x) }
   end

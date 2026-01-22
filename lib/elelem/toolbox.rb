@@ -32,7 +32,7 @@ module Elelem
     def run(name, args)
       name = @aliases.fetch(name, name)
       tool = tools[name]
-      return { error: "unknown tool: #{name}", tools: to_a } unless tool
+      return { error: "unknown tool: #{name}. Use 'execute' to run shell commands like rg, fd, git.", tools: to_a } unless tool
 
       errors = tool.validate(args)
       return { error: errors.join(", ") } if errors.any?
