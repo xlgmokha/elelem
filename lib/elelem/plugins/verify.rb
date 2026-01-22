@@ -27,18 +27,19 @@ module Elelem
   end
 
   Plugins.register(:verify) do |toolbox|
-    toolbox.after("write") do |_args, result|
-      next if result[:error]
-
-      Verifiers.for(result[:path]).each do |cmd|
+    toolbox.add("verify",
+      description: "Verify file syntax and run tests",
+      params: { path: { type: "string" } },
+      required: ["path"]
+    ) do |a|
+      path = a["path"]
+      Verifiers.for(path).inject({verified: []}) do |memo, cmd|
         $stdout.puts "\n  -> verify: #{cmd}"
-        v = Elelem.sh("bash", args: ["-c", cmd]) { |x| $stdout.print(x) }
-        status = v[:exit_status] == 0 ? "ok" : "FAIL"
-        $stdout.puts "  #{status} #{cmd}"
-        if v[:exit_status] != 0
-          $stdout.puts v[:content].lines.first(5).map { |l| "    #{l}" }.join
-          break
-        end
+        v = toolbox.run("execute", { "command" => cmd })
+        return v.merge(path: path, command: cmd) if v[:exit_status] != 0
+
+        memo[:verified] << cmd
+        memo
       end
     end
   end

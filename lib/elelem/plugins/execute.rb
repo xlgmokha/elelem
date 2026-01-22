@@ -9,4 +9,9 @@ Elelem::Plugins.register(:execute) do |toolbox|
   ) do |a|
     Elelem.sh("bash", args: ["-c", a["command"]]) { |x| $stdout.print(x) }
   end
+
+  toolbox.after("execute") do |args, result|
+    status = result[:exit_status] == 0 ? "ok" : "FAIL"
+    $stdout.puts "  #{status} #{args["command"]}"
+  end
 end

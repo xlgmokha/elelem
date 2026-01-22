@@ -15,8 +15,9 @@ Elelem::Plugins.register(:write) do |toolbox|
   toolbox.after("write") do |_, result|
     if result[:error]
       $stdout.puts "  ! #{result[:error]}"
-    elsif !system("bat", "--paging=never", result[:path])
-      $stdout.puts "  -> #{result[:path]}"
+    else
+      system("bat", "--paging=never", result[:path]) || $stdout.puts("  -> #{result[:path]}")
+      toolbox.run("verify", { "path" => result[:path] })
     end
   end
 end
