@@ -47,7 +47,8 @@
 - Tools are now defined via plugins instead of hardcoded in Toolbox
 - System prompt includes hints for `rg`, `fd`, `sg` (ast-grep), `sed`, `patch`
 - System prompt regenerated on each fetch (includes dynamic repo map)
-- Default tool set: `read`, `write`, `edit`, `execute`, `verify`, `task`
+- Default tool set: `read`, `write`, `edit`, `execute`, `eval`, `verify`, `task`
+- System prompt encourages using `eval` to create tools for repetitive tasks
 
 ### Removed
 - `lib/elelem/application.rb` - CLI now in `exe/elelem`
