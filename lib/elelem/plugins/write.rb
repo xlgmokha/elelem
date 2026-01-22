@@ -4,7 +4,8 @@ Elelem::Plugins.register(:write) do |toolbox|
   toolbox.add("write",
     description: "Write file",
     params: { path: { type: "string" }, content: { type: "string" } },
-    required: ["path", "content"]
+    required: ["path", "content"],
+    aliases: ["write<|channel|>"]
   ) do |a|
     path = Pathname.new(a["path"]).expand_path
     FileUtils.mkdir_p(path.dirname)
