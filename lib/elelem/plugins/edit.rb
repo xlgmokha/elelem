@@ -9,7 +9,6 @@ Elelem::Plugins.register(:edit) do |toolbox|
     path = Pathname.new(a["path"]).expand_path
     content = path.read
     if content.include?(a["old"])
-      path.write(content.sub(a["old"], a["new"]))
       { path: a["path"], bytes: path.write(content.sub(a["old"], a["new"])) }
     else
       { error: "text not found", content: content.lines.first(20).join }
