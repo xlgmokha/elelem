@@ -41,6 +41,8 @@ Gem::Specification.new do |spec|
     "lib/elelem/plugins/read.rb",
     "lib/elelem/plugins/verify.rb",
     "lib/elelem/plugins/write.rb",
+    "lib/elelem/system_prompt.rb",
+    "lib/elelem/templates/system_prompt.erb",
     "lib/elelem/terminal.rb",
     "lib/elelem/tool.rb",
     "lib/elelem/toolbox.rb",
@@ -51,6 +53,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "date", "~> 3.0"
+  spec.add_dependency "erb", "~> 6.0"
   spec.add_dependency "fileutils", "~> 1.0"
   spec.add_dependency "json", "~> 2.0"
   spec.add_dependency "json_schemer", "~> 2.0"

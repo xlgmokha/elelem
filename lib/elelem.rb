@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "date"
+require "erb"
 require "fileutils"
 require "json"
 require "json_schemer"
@@ -14,6 +15,7 @@ require_relative "elelem/agent"
 require_relative "elelem/mcp"
 require_relative "elelem/net"
 require_relative "elelem/plugins"
+require_relative "elelem/system_prompt"
 require_relative "elelem/terminal"
 require_relative "elelem/tool"
 require_relative "elelem/toolbox"

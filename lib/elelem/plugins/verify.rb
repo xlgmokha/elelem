@@ -4,6 +4,7 @@ module Elelem
   module Verifiers
     SYNTAX = {
       ".rb" => "ruby -c %{path}",
+      ".erb" => "erb -x %{path} | ruby -c",
       ".py" => "python -m py_compile %{path}",
       ".go" => "go vet %{path}",
       ".rs" => "cargo check --quiet",

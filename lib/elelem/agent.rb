@@ -52,7 +52,9 @@ module Elelem
       case input
       when "/exit" then exit(0)
       when "/init" then init_agents_md
-      when "/shell" then history << { role: "user", content: start_shell }
+      when "/shell"
+        transcript = start_shell
+        history << { role: "user", content: transcript } unless transcript.strip.empty?
       when "/clear"
         @history = []
         @memory = nil
@@ -141,13 +143,11 @@ module Elelem
     end
 
     def combined_history
-      [{ role: "system", content: system_prompt_with_memory }] + history
+      [{ role: "system", content: system_prompt }] + history
     end
 
-    def system_prompt_with_memory
-      prompt = @system_prompt || default_system_prompt
-      prompt += "\n\n# Earlier Context\n#{@memory}" if @memory
-      prompt
+    def system_prompt
+      @system_prompt || SystemPrompt.new(memory: @memory).render
     end
 
     def compact_if_needed
@@ -170,80 +170,6 @@ module Elelem
           buffer << d[:content].to_s
         end
       end
-    end
-
-    def default_system_prompt
-      prompt = <<~PROMPT
-        Terminal coding agent. Be concise. Verify your work.
-
-        # Tools
-        - read(path): file contents
-        - write(path, content): create/overwrite file
-        - execute(command): shell command
-        - eval(ruby): execute Ruby code; use to create tools for repetitive tasks
-        - task(prompt): delegate complex searches or multi-file analysis to a focused subagent
-
-        # Editing
-        Use execute(`patch -p1`) for multi-line changes: `echo "DIFF" | patch -p1`
-        Use execute(`sed`) for single-line changes: `sed -i'' 's/old/new/' file`
-        Use write for new files or full rewrites
-
-        # Search
-        Use execute(`rg`) for text search: `rg -n "pattern" .`
-        Use execute(`fd`) for file discovery: `fd -e rb .`
-        Use execute(`sg`) (ast-grep) for structural search: `sg -p 'def $NAME' -l ruby`
-
-        # Task Management
-        For complex tasks:
-        1. State plan before acting
-        2. Work through steps one at a time
-        3. Summarize what was done
-
-        # Long Tasks
-        For complex multi-step work, write notes to .elelem/scratch.md
-
-        # Policy
-        - Explain before non-trivial commands
-        - Verify changes (read file, run tests)
-        - No interactive flags (-i, -p)
-        - Use `man` to when you need to understand how to execute a program
-
-        # Environment
-        pwd: #{Dir.pwd}
-        platform: #{RUBY_PLATFORM.split("-").last}
-        date: #{Date.today}
-        #{git_branch}
-
-        # Codebase
-        #{repo_map}
-      PROMPT
-      prompt += "\n\n# Project Instructions\n#{agents_md}" if agents_md
-      prompt
-    end
-
-    def agents_md
-      Pathname.pwd.ascend.each do |dir|
-        file = dir / "AGENTS.md"
-        return file.read if file.exist?
-      end
-      nil
-    end
-
-    def git_branch
-      return unless File.exist?(".git")
-      "branch: #{`git branch --show-current`.strip}"
-    rescue
-      nil
-    end
-
-    def repo_map
-      `ctags -x --sort=no --languages=Ruby,Python,JavaScript,TypeScript,Go,Rust -R . 2>/dev/null`
-        .lines
-        .reject { |l| l.include?("vendor/") || l.include?("node_modules/") || l.include?("spec/") }
-        .first(100)
-        .join
-    rescue
-      ""
     end
   end
 end
