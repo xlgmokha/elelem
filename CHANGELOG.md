@@ -7,6 +7,7 @@
   - Built-in plugins: `read`, `write`, `edit`, `execute`, `verify`, `confirm`, `mcp`
 - **MCP (Model Context Protocol)** server support via `.mcp.json` configuration
 - **AGENTS.md** file support - searches up directory tree for project instructions
+- **`/init` command** to generate an AGENTS.md file for the current project
 - **`task` tool** for delegating subtasks to focused sub-agents
 - **`edit` tool** for replacing first occurrence of text in a file
 - **`verify` tool** for syntax checking and running project tests
@@ -14,13 +15,14 @@
 - **Confirmation prompt** before executing shell commands (when TTY)
 - **Context compaction** for long conversations (summarizes old messages)
 - **Repo map** via ctags included in system prompt
+- **Markdown rendering** with [glow](https://github.com/charmbracelet/glow) for LLM responses
 - **CLI improvements**: optparse-based interface with `-p`/`-m` flags
   - `elelem chat` - Interactive REPL (default)
-  - `elelem ask <question>` - One-shot query
-  - `elelem pipe <prompt>` - Process stdin with prompt
+  - `elelem ask <prompt>` - One-shot query (reads stdin if piped)
   - `elelem files` - Output files as XML
 - JSON Schema validation for tool call arguments (via `json_schemer`)
 - Tool aliases support (e.g., `bash`, `sh`, `exec` → `execute`)
+- **Dependencies documentation** in README with installation links
 
 ### Changed
 - **Breaking**: Requires Ruby >= 4.0.0 (was 3.4.0)
