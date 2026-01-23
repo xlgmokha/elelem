@@ -38,7 +38,7 @@ module Elelem
           handle_event(event, tool_calls, &block)
         end
 
-        finalize_tool_calls(tool_calls)
+        finalize_tool_calls(tool_calls, &block)
       end
 
       private
@@ -72,19 +72,21 @@ module Elelem
 
         case delta["type"]
         when "text_delta"
-          block.call(content: delta["text"], thinking: nil)
+          block.call(type: "saying", text: delta["text"])
         when "thinking_delta"
-          block.call(content: nil, thinking: delta["thinking"])
+          block.call(type: "thinking", text: delta["thinking"])
         when "input_json_delta"
           tool_calls.last[:args] << delta["partial_json"].to_s if tool_calls.any?
         end
       end
 
-      def finalize_tool_calls(tool_calls)
+      def finalize_tool_calls(tool_calls, &block)
         tool_calls.each do |tool_call|
           args = tool_call.delete(:args)
           tool_call[:arguments] = args.empty? ? {} : JSON.parse(args)
+          block.call(type: "tool_call", id: tool_call[:id], name: tool_call[:name], arguments: tool_call[:arguments])
         end
+        tool_calls
       end
 
       def stream(messages, system_prompt, tools)

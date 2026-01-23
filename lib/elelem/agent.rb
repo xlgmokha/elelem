@@ -142,11 +142,20 @@ module Elelem
     end
 
     def fetch_response(ctx)
-      content = ""
-      tool_calls = client.fetch(combined_history + ctx, toolbox.to_a) do |delta|
-        content += delta[:content].to_s
-        terminal.print(terminal.think(delta[:thinking])) if delta[:thinking]
+      content = String.new
+      tool_calls = []
+
+      client.fetch(combined_history + ctx, toolbox.to_a) do |event|
+        case event[:type]
+        when "saying"
+          content << event[:text].to_s
+        when "thinking"
+          terminal.print(terminal.think(event[:text]))
+        when "tool_call"
+          tool_calls << { id: event[:id], name: event[:name], arguments: event[:arguments] }
+        end
       end
+
       [content, tool_calls]
     rescue => e
       terminal.say "\n  ✗ #{e.message}"
@@ -177,8 +186,8 @@ module Elelem
       text = messages.map { |message| { role: message[:role], content: message[:content] } }.to_json
 
       String.new.tap do |buffer|
-        client.fetch([{ role: "user", content: "Summarize key facts:\n#{text}" }], []) do |d|
-          buffer << d[:content].to_s
+        client.fetch([{ role: "user", content: "Summarize key facts:\n#{text}" }], []) do |event|
+          buffer << event[:text].to_s if event[:type] == "saying"
         end
       end
     end

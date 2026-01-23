@@ -18,7 +18,7 @@ module Elelem
           handle_event(event, tool_calls, &block)
         end
 
-        finalize_tool_calls(tool_calls)
+        finalize_tool_calls(tool_calls, &block)
       end
 
       private
@@ -30,7 +30,7 @@ module Elelem
       def handle_event(event, tool_calls, &block)
         delta = event.dig("choices", 0, "delta") || {}
 
-        block.call(content: delta["content"], thinking: nil) if delta["content"]
+        block.call(type: "saying", text: delta["content"]) if delta["content"]
 
         accumulate_tool_calls(delta["tool_calls"], tool_calls) if delta["tool_calls"]
       end
@@ -72,13 +72,15 @@ module Elelem
         end
       end
 
-      def finalize_tool_calls(tool_calls)
+      def finalize_tool_calls(tool_calls, &block)
         tool_calls.values.map do |tool_call|
-          {
+          result = {
             id: tool_call[:id],
             name: tool_call[:name],
             arguments: JSON.parse(tool_call[:args])
           }
+          block.call(type: "tool_call", **result)
+          result
         end
       end
     end

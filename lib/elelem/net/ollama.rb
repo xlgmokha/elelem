@@ -35,11 +35,14 @@ module Elelem
         message = event["message"] || {}
 
         unless event["done"]
-          block.call(content: message["content"], thinking: message["thinking"])
+          block.call(type: "saying", text: message["content"]) if message["content"]
+          block.call(type: "thinking", text: message["thinking"]) if message["thinking"]
         end
 
         if message["tool_calls"]
-          tool_calls.concat(parse_tool_calls(message["tool_calls"]))
+          parsed = parse_tool_calls(message["tool_calls"])
+          parsed.each { |tc| block.call(type: "tool_call", **tc) }
+          tool_calls.concat(parsed)
         end
       end
 
