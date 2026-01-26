@@ -49,8 +49,7 @@ Elelem::Plugins.register(:builtins) do |agent|
       Keep it minimal. No fluff.
     PROMPT
 
-    sub = Agent.new(agent.client, toolbox: agent.toolbox, terminal: agent.terminal, system_prompt: system_prompt)
-    sub.turn("Generate AGENTS.md for this project")
+    agent.fork(system_prompt: system_prompt).turn("Generate AGENTS.md for this project")
   end
 
   agent.commands.register("reload", description: "Reload plugins and source") do

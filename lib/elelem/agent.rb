@@ -33,6 +33,10 @@ module Elelem
       @conversation.to_a(system_prompt: system_prompt)
     end
 
+    def fork(system_prompt:)
+      Agent.new(client, toolbox: toolbox, terminal: terminal, system_prompt: system_prompt)
+    end
+
     def turn(input)
       @conversation.add(role: "user", content: input)
       ctx = []
