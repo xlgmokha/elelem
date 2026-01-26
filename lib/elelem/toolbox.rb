@@ -44,6 +44,11 @@ module Elelem
       failure(error: e.message, name: name, args: args)
     end
 
+    def exec(*args)
+      command = args.flatten.map { |a| Shellwords.escape(a.to_s) }.join(" ")
+      run("execute", { "command" => command })
+    end
+
     def to_a
       tools.values.map(&:to_h)
     end

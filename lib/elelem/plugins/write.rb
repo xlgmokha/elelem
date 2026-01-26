@@ -12,6 +12,17 @@ Elelem::Plugins.register(:write) do |agent|
     { bytes: path.write(a["content"]), path: a["path"] }
   end
 
+  agent.toolbox.before("write") do |args|
+    path = Pathname.new(args["path"]).expand_path
+    next unless path.exist? && $stdin.tty?
+
+    Tempfile.create(["elelem", File.extname(path)]) do |t|
+      t.write(args["content"])
+      t.flush
+      system("diff", "--color=always", "-u", path.to_s, t.path)
+    end
+  end
+
   agent.toolbox.after("write") do |_, result|
     if result[:error]
       agent.terminal.say "  ! #{result[:error]}"

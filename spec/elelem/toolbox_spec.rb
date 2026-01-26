@@ -48,4 +48,16 @@ RSpec.describe Elelem::Toolbox do
       expect(result[:error]).to include("unknown tool")
     end
   end
+
+  describe "#exec" do
+    it "escapes arguments and runs execute" do
+      result = subject.exec("echo", "hello world")
+      expect(result[:output]).to include("hello world")
+    end
+
+    it "handles arrays of arguments" do
+      result = subject.exec("echo", ["a", "b"])
+      expect(result[:output]).to include("a")
+    end
+  end
 end

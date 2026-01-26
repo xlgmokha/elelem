@@ -27,6 +27,8 @@ Gem::Specification.new do |spec|
     "exe/elelem",
     "lib/elelem.rb",
     "lib/elelem/agent.rb",
+    "lib/elelem/commands.rb",
+    "lib/elelem/conversation.rb",
     "lib/elelem/mcp.rb",
     "lib/elelem/mcp/oauth.rb",
     "lib/elelem/mcp/token_storage.rb",
@@ -34,15 +36,24 @@ Gem::Specification.new do |spec|
     "lib/elelem/net/claude.rb",
     "lib/elelem/net/ollama.rb",
     "lib/elelem/net/openai.rb",
+    "lib/elelem/permissions.rb",
     "lib/elelem/plugins.rb",
-    "lib/elelem/plugins/confirm.rb",
+    "lib/elelem/plugins/builtins.rb",
     "lib/elelem/plugins/edit.rb",
     "lib/elelem/plugins/eval.rb",
     "lib/elelem/plugins/execute.rb",
+    "lib/elelem/plugins/git.rb",
+    "lib/elelem/plugins/glob.rb",
+    "lib/elelem/plugins/grep.rb",
+    "lib/elelem/plugins/list.rb",
     "lib/elelem/plugins/mcp.rb",
+    "lib/elelem/plugins/permissions.json",
     "lib/elelem/plugins/read.rb",
+    "lib/elelem/plugins/task.rb",
+    "lib/elelem/plugins/tools.rb",
     "lib/elelem/plugins/verify.rb",
     "lib/elelem/plugins/write.rb",
+    "lib/elelem/plugins/zz_confirm.rb",
     "lib/elelem/system_prompt.rb",
     "lib/elelem/templates/system_prompt.erb",
     "lib/elelem/terminal.rb",
@@ -67,6 +78,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "pathname", "~> 0.1"
   spec.add_dependency "reline", "~> 0.6"
   spec.add_dependency "securerandom", "~> 0.1"
+  spec.add_dependency "shellwords", "~> 0.2"
   spec.add_dependency "stringio", "~> 3.0"
   spec.add_dependency "tempfile", "~> 0.3"
   spec.add_dependency "uri", "~> 1.0"

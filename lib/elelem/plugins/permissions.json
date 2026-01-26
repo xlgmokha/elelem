@@ -1,0 +1,6 @@
+{
+  "read": "allow",
+  "write": "ask",
+  "edit": "ask",
+  "execute": "ask"
+}
