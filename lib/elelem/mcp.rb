@@ -5,8 +5,13 @@ require_relative "mcp/oauth"
 
 module Elelem
   class MCP
-    def initialize(config_path = ".mcp.json")
-      @config = File.exist?(config_path) ? JSON.parse(IO.read(config_path)) : {}
+    CONFIG_PATHS = [
+      "~/.elelem/mcp.json",
+      ".elelem/mcp.json"
+    ].freeze
+
+    def initialize(configurations = CONFIG_PATHS)
+      @config = load_config(configurations)
       @servers = {}
     end
 
@@ -31,6 +36,17 @@ module Elelem
     end
 
     private
+
+    def load_config(configurations)
+      configurations.each_with_object({}) do |path, merged|
+        file = File.expand_path(path)
+        next unless File.exist?(file)
+
+        config = JSON.parse(IO.read(file))
+        servers = config.fetch("mcpServers", {})
+        merged["mcpServers"] = (merged["mcpServers"] || {}).merge(servers)
+      end
+    end
 
     def server(name)
       @servers[name] ||= build_server(@config.dig("mcpServers", name))

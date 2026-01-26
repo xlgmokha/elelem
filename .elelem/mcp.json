@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "gitlab": {
+      "type": "http",
+      "url": "https://gitlab.com/api/v4/mcp"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    }
+  }
+}

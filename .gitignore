@@ -13,7 +13,6 @@
 *.log
 target/
 *.gem
-.mcp.json
 
 # rspec failure tracking
 .rspec_status
