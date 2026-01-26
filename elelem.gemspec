@@ -28,6 +28,8 @@ Gem::Specification.new do |spec|
     "lib/elelem.rb",
     "lib/elelem/agent.rb",
     "lib/elelem/mcp.rb",
+    "lib/elelem/mcp/oauth.rb",
+    "lib/elelem/mcp/token_storage.rb",
     "lib/elelem/net.rb",
     "lib/elelem/net/claude.rb",
     "lib/elelem/net/ollama.rb",
@@ -52,7 +54,9 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "base64", "~> 0.1"
   spec.add_dependency "date", "~> 3.0"
+  spec.add_dependency "digest", "~> 3.0"
   spec.add_dependency "erb", "~> 6.0"
   spec.add_dependency "fileutils", "~> 1.0"
   spec.add_dependency "json", "~> 2.0"
@@ -62,7 +66,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "optparse", "~> 0.1"
   spec.add_dependency "pathname", "~> 0.1"
   spec.add_dependency "reline", "~> 0.6"
+  spec.add_dependency "securerandom", "~> 0.1"
   spec.add_dependency "stringio", "~> 3.0"
   spec.add_dependency "tempfile", "~> 0.3"
   spec.add_dependency "uri", "~> 1.0"
+  spec.add_dependency "webrick", "~> 1.9"
 end

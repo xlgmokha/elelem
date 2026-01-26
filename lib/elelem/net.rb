@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "net/hippie"
-require "json"
-
 require_relative "net/ollama"
 require_relative "net/openai"
 require_relative "net/claude"

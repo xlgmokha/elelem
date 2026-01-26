@@ -1,15 +1,21 @@
 # frozen_string_literal: true
 
+require "base64"
 require "date"
+require "digest"
 require "erb"
 require "fileutils"
 require "json"
 require "json_schemer"
+require "net/hippie"
 require "open3"
 require "pathname"
 require "reline"
+require "securerandom"
 require "stringio"
 require "tempfile"
+require "uri"
+require "webrick"
 
 require_relative "elelem/agent"
 require_relative "elelem/mcp"
