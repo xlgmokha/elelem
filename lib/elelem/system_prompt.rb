@@ -4,12 +4,6 @@ module Elelem
   class SystemPrompt
     TEMPLATE_PATH = File.expand_path("templates/system_prompt.erb", __dir__)
 
-    attr_reader :memory
-
-    def initialize(memory: nil)
-      @memory = memory
-    end
-
     def render
       ERB.new(template, trim_mode: "-").result(binding)
     end
@@ -40,7 +34,7 @@ module Elelem
       return unless File.exist?(".git")
 
       "branch: #{`git branch --show-current`.strip}"
-    rescue
+    rescue Errno::ENOENT
       nil
     end
 
@@ -50,7 +44,7 @@ module Elelem
         .reject { |l| l.include?("vendor/") || l.include?("node_modules/") || l.include?("spec/") }
         .first(100)
         .join
-    rescue
+    rescue Errno::ENOENT
       ""
     end
 

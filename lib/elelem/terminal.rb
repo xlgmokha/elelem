@@ -51,6 +51,12 @@ module Elelem
       n.times { $stdout.puts("") }
     end
 
+    def display_file(path, fallback: nil)
+      return if @quiet
+
+      system("bat", "--paging=never", path) || say(fallback || path)
+    end
+
     def waiting
       return if @quiet
 

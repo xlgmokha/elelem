@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-Elelem::Plugins.register(:write) do |toolbox|
-  toolbox.add("write",
+Elelem::Plugins.register(:write) do |agent|
+  agent.toolbox.add("write",
     description: "Write file",
     params: { path: { type: "string" }, content: { type: "string" } },
     required: ["path", "content"],
@@ -12,12 +12,12 @@ Elelem::Plugins.register(:write) do |toolbox|
     { bytes: path.write(a["content"]), path: a["path"] }
   end
 
-  toolbox.after("write") do |_, result|
+  agent.toolbox.after("write") do |_, result|
     if result[:error]
-      $stdout.puts "  ! #{result[:error]}"
+      agent.terminal.say "  ! #{result[:error]}"
     else
-      system("bat", "--paging=never", result[:path]) || $stdout.puts("  -> #{result[:path]}")
-      toolbox.run("verify", { "path" => result[:path] })
+      agent.terminal.display_file(result[:path], fallback: "  -> #{result[:path]}")
+      agent.toolbox.run("verify", { "path" => result[:path] })
     end
   end
 end

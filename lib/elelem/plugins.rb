@@ -8,15 +8,15 @@ module Elelem
       ".elelem/plugins"
     ].freeze
 
-    def self.setup!(toolbox)
+    def self.setup!(agent)
       load_plugins
-      registry.each_value { |plugin| plugin.call(toolbox) }
+      registry.each_value { |plugin| plugin.call(agent) }
     end
 
-    def self.reload!(toolbox)
-      @registry = {}
+    def self.reload!(agent)
+      registry.clear
       load_plugins
-      registry.each_value { |plugin| plugin.call(toolbox) }
+      registry.each_value { |plugin| plugin.call(agent) }
     end
 
     def self.load_plugins
@@ -33,7 +33,7 @@ module Elelem
     end
 
     def self.register(name, &block)
-      (@registry ||= {})[name] = block
+      registry[name] = block
     end
 
     def self.registry

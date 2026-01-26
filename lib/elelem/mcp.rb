@@ -60,16 +60,7 @@ module Elelem
       end
     end
 
-    class Server
-      def initialize(command:, args: [], env: {})
-        resolved_env = env.transform_values do |v|
-          v.gsub(/\$\{(\w+)\}/) { ENV[$1] || raise("Missing environment variable: #{$1}") }
-        end
-        @stdin, @stdout, @stderr, @wait = Open3.popen3(resolved_env, command, *args)
-        @id = 0
-        initialize!
-      end
-
+    module ServerInterface
       def tools
         request("tools/list")["tools"]
       end
@@ -79,16 +70,9 @@ module Elelem
         { content: result["content"]&.map { |c| c["text"] }&.join("\n") }
       end
 
-      def close
-        @stdin.close rescue nil
-        @stdout.close rescue nil
-        @stderr.close rescue nil
-        @wait.kill rescue nil
-      end
-
       private
 
-      def initialize!
+      def handshake!
         request("initialize", {
           protocolVersion: "2025-06-18",
           capabilities: {},
@@ -96,6 +80,26 @@ module Elelem
         })
         notify("notifications/initialized")
       end
+    end
+
+    class Server
+      include ServerInterface
+
+      def initialize(command:, args: [], env: {})
+        resolved_env = env.transform_values do |v|
+          v.gsub(/\$\{(\w+)\}/) { ENV[$1] || raise("Missing environment variable: #{$1}") }
+        end
+        @stdin, @stdout, @stderr, @wait = Open3.popen3(resolved_env, command, *args)
+        @id = 0
+        handshake!
+      end
+
+      def close
+        [@stdin, @stdout, @stderr].each { |io| io.close rescue nil }
+        @wait.kill rescue nil
+      end
+
+      private
 
       def request(method, params = {})
         send_msg(id: @id += 1, method: method, params: params)
@@ -123,6 +127,8 @@ module Elelem
     end
 
     class HttpServer
+      include ServerInterface
+
       def initialize(url:, headers: {}, http: Elelem::Net.http)
         @url = url
         @headers = resolve_headers(headers)
@@ -130,16 +136,7 @@ module Elelem
         @id = 0
         @session_id = nil
         @access_token = nil
-        initialize!
-      end
-
-      def tools
-        request("tools/list")["tools"]
-      end
-
-      def call(name, args)
-        result = request("tools/call", { name: name, arguments: args })
-        { content: result["content"]&.map { |c| c["text"] }&.join("\n") }
+        handshake!
       end
 
       def close
@@ -153,15 +150,6 @@ module Elelem
             ENV[$1] || raise("Missing environment variable: #{$1}")
           end
         end
-      end
-
-      def initialize!
-        request("initialize", {
-          protocolVersion: "2025-06-18",
-          capabilities: {},
-          clientInfo: { name: "elelem", version: VERSION }
-        })
-        notify("notifications/initialized")
       end
 
       def request(method, params = {})

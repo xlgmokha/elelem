@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-Elelem::Plugins.register(:read) do |toolbox|
-  toolbox.add("read",
+Elelem::Plugins.register(:read) do |agent|
+  agent.toolbox.add("read",
     description: "Read file",
     params: { path: { type: "string" } },
     required: ["path"],
@@ -11,11 +11,11 @@ Elelem::Plugins.register(:read) do |toolbox|
     path.exist? ? { content: path.read, path: a["path"] } : { error: "not found" }
   end
 
-  toolbox.after("read") do |_, result|
+  agent.toolbox.after("read") do |_, result|
     if result[:error]
-      $stdout.puts "  ! #{result[:error]}"
-    elsif !system("bat", "--paging=never", result[:path])
-      $stdout.puts result[:content]
+      agent.terminal.say "  ! #{result[:error]}"
+    else
+      agent.terminal.display_file(result[:path], fallback: result[:content])
     end
   end
 end

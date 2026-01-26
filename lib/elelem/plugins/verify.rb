@@ -27,16 +27,16 @@ module Elelem
     end
   end
 
-  Plugins.register(:verify) do |toolbox|
-    toolbox.add("verify",
+  Plugins.register(:verify) do |agent|
+    agent.toolbox.add("verify",
       description: "Verify file syntax and run tests",
       params: { path: { type: "string" } },
       required: ["path"]
     ) do |a|
       path = a["path"]
       Verifiers.for(path).inject({verified: []}) do |memo, cmd|
-        $stdout.puts toolbox.header("execute", { "command" => cmd })
-        v = toolbox.run("execute", { "command" => cmd })
+        agent.terminal.say agent.toolbox.header("execute", { "command" => cmd })
+        v = agent.toolbox.run("execute", { "command" => cmd })
         break v.merge(path: path, command: cmd) if v[:exit_status] != 0
 
         memo[:verified] << cmd

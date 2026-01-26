@@ -11,7 +11,8 @@ module Elelem
       @required = required
       @aliases = aliases
       @fn = fn
-      @schema = JSONSchemer.schema(schema_hash)
+      @schema_hash = { type: "object", properties: params, required: required }.freeze
+      @schema = JSONSchemer.schema(@schema_hash)
     end
 
     def call(args)
@@ -30,18 +31,8 @@ module Elelem
         function: {
           name: name,
           description: description,
-          parameters: schema_hash
+          parameters: @schema_hash
         }
-      }
-    end
-
-    private
-
-    def schema_hash
-      {
-        type: "object",
-        properties: params,
-        required: required
       }
     end
   end
