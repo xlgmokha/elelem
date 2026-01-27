@@ -31,13 +31,13 @@ Elelem relies on several external tools. Install the ones you need:
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| [Ollama](https://ollama.ai/) | Default LLM provider | https://ollama.ai/download |
-| [glow](https://github.com/charmbracelet/glow) | Markdown rendering | `brew install glow` / `go install github.com/charmbracelet/glow@latest` |
-| [ctags](https://ctags.io/) | Repo map generation | `brew install universal-ctags` / `apt install universal-ctags` |
-| [ripgrep](https://github.com/BurntSushi/ripgrep) | Text search (`rg`) | `brew install ripgrep` / `apt install ripgrep` |
-| [fd](https://github.com/sharkdp/fd) | File discovery | `brew install fd` / `apt install fd-find` |
 | [ast-grep](https://ast-grep.github.io/) | Structural search (`sg`) | `brew install ast-grep` / `cargo install ast-grep` |
-| [Git](https://git-scm.com/) | Version control | `brew install git` / `apt install git` |
+| [ctags](https://ctags.io/) | Repo map generation | `brew install universal-ctags` / `apt install universal-ctags` |
+| [fd](https://github.com/sharkdp/fd) | File discovery | `brew install fd` / `apt install fd-find` |
+| [git](https://git-scm.com/) | Version control | `brew install git` / `apt install git` |
+| [glow](https://github.com/charmbracelet/glow) | Markdown rendering | `brew install glow` / `go install github.com/charmbracelet/glow@latest` |
+| [ollama](https://ollama.ai/) | Default LLM provider | https://ollama.ai/download |
+| [ripgrep](https://github.com/BurntSushi/ripgrep) | Text search (`rg`) | `brew install ripgrep` / `apt install ripgrep` |
 
 **Required:** Git, Ollama (or another LLM provider)
 
