@@ -39,11 +39,41 @@ module Elelem
     end
 
     def repo_map
-      `ctags -x --sort=no --languages=Ruby,Python,JavaScript,TypeScript,Go,Rust -R . 2>/dev/null`
-        .lines
-        .reject { |l| l.include?("vendor/") || l.include?("node_modules/") || l.include?("spec/") }
-        .first(100)
-        .join
+      symbols = extract_with_sg
+      return ctags_fallback if symbols.nil?
+
+      format_symbols(symbols, budget: 2000)
+    end
+
+    def extract_with_sg
+      output = `sg run -p 'def $NAME' -l ruby --json=compact . 2>/dev/null`
+      return nil unless $?.success?
+
+      JSON.parse(output).map do |match|
+        {
+          file: match["file"],
+          name: match.dig("metaVariables", "single", "NAME", "text")
+        }
+      end.reject { |m| m[:file].include?("spec/") || m[:file].include?("vendor/") }
+    rescue Errno::ENOENT, JSON::ParserError
+      nil
+    end
+
+    def format_symbols(symbols, budget:)
+      result = String.new
+      symbols.group_by { |s| s[:file] }.each do |file, syms|
+        line = "#{file}: #{syms.map { |s| s[:name] }.uniq.join(", ")}\n"
+        break if result.length + line.length > budget
+        result << line
+      end
+      result
+    end
+
+    def ctags_fallback
+      symbols = `ctags -x --sort=no --languages=Ruby --kinds-Ruby=cfS --exclude=spec --exclude=vendor -R . 2>/dev/null`.lines
+        .map { |l| parts = l.split(/\s+/, 4); {file: parts[3]&.split&.first, name: parts[0]} }
+
+      format_symbols(symbols, budget: 2000)
     rescue Errno::ENOENT
       ""
     end
