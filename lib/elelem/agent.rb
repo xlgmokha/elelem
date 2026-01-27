@@ -25,8 +25,9 @@ module Elelem
     end
 
     def command(input)
-      name = input.delete_prefix("/")
-      commands.run(name) || terminal.say(commands.names.join(" "))
+      parts = input.delete_prefix("/").split(" ", 2)
+      name, args = parts[0], parts[1]
+      commands.run(name, args) || terminal.say(commands.names.join(" "))
     end
 
     def context
