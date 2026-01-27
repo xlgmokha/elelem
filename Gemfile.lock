@@ -9,6 +9,7 @@ PATH
       fileutils (~> 1.0)
       json (~> 2.0)
       json_schemer (~> 2.0)
+      logger (~> 1.0)
       net-hippie (~> 1.0)
       open3 (~> 0.1)
       optparse (~> 0.1)

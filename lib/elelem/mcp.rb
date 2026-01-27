@@ -67,7 +67,13 @@ module Elelem
 
       def call(name, args)
         result = request("tools/call", { name: name, arguments: args })
-        { content: result["content"]&.map { |c| c["text"] }&.join("\n") }
+        logger.info({ tool: name, args: args, result: result }.to_json)
+        content = result["content"]&.map { |c| c["text"] }&.join("\n")
+        result["isError"] ? { error: content } : { content: content }
+      end
+
+      def logger
+        @logger ||= Logger.new("mcp.log")
       end
 
       private
