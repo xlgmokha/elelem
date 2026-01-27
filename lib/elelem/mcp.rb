@@ -68,8 +68,16 @@ module Elelem
       def call(name, args)
         result = request("tools/call", { name: name, arguments: args })
         logger.info({ tool: name, args: args, result: result }.to_json)
-        content = result["content"]&.map { |c| c["text"] }&.join("\n")
+        content = extract_content(result)
         result["isError"] ? { error: content } : { content: content }
+      end
+
+      def extract_content(result)
+        if (structured = result["structuredContent"])
+          JSON.pretty_generate(structured)
+        else
+          result["content"]&.map { |c| c["text"] }&.join("\n")
+        end
       end
 
       def logger
