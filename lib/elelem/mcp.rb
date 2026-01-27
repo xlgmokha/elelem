@@ -4,6 +4,7 @@ require_relative "mcp/token_storage"
 require_relative "mcp/oauth"
 
 module Elelem
+  # https://modelcontextprotocol.io/specification/2025-11-25/server/tools.md
   class MCP
     CONFIG_PATHS = [
       "~/.elelem/mcp.json",
@@ -74,7 +75,7 @@ module Elelem
 
       def extract_content(result)
         if (structured = result["structuredContent"])
-          JSON.pretty_generate(structured)
+          structured
         else
           result["content"]&.map { |c| c["text"] }&.join("\n")
         end

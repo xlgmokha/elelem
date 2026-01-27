@@ -72,7 +72,7 @@ module Elelem
     private
 
     def blank?(text)
-      text.nil? || text.strip.empty?
+      text.nil? || text.to_s.strip.empty?
     end
 
     def stop_dots

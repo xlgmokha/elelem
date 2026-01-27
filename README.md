@@ -36,12 +36,13 @@ Elelem relies on several external tools. Install the ones you need:
 | [fd](https://github.com/sharkdp/fd) | File discovery | `brew install fd` / `apt install fd-find` |
 | [git](https://git-scm.com/) | Version control | `brew install git` / `apt install git` |
 | [glow](https://github.com/charmbracelet/glow) | Markdown rendering | `brew install glow` / `go install github.com/charmbracelet/glow@latest` |
+| [jq](https://jqlang.github.io/jq/) | JSON processing | `brew install jq` / `apt install jq` |
 | [ollama](https://ollama.ai/) | Default LLM provider | https://ollama.ai/download |
 | [ripgrep](https://github.com/BurntSushi/ripgrep) | Text search (`rg`) | `brew install ripgrep` / `apt install ripgrep` |
 
 **Required:** Git, Ollama (or another LLM provider)
 
-**Recommended:** glow, ctags, ripgrep, fd
+**Recommended:** glow, jq, ctags, ripgrep, fd
 
 **Optional:** ast-grep (for structural code search)
 
