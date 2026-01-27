@@ -1,3 +1,20 @@
+## [0.10.0] - 2026-01-27
+
+### Added
+- **Async MCP loading** for faster startup - tools load in background thread
+- **`/context` improvements**: `/context <n>` to view entry, `/context json` for full dump
+- **ast-grep (`sg`) support** for building repo maps - faster and more accurate than ctags
+- **OAuth authentication** for MCP servers with automatic token refresh
+- **New tools**: `glob`, `grep`, `list`, `git` for structured file operations
+- **Permissions system** (`lib/elelem/permissions.rb`) for tool access control
+- **OpenAI reasoning mode** - enables `Reasoning: high` for o-series models
+
+### Changed
+- Extracted `Conversation` class from `Agent` for better separation of concerns
+- Refactored LLM fetch interface to emit separate events for thinking/content/tool_calls
+- Simplified system prompt with inline ERB template
+- Renamed confirm plugin to `zz_confirm` to ensure it loads last
+
 ## [0.9.2] - 2026-01-22
 
 ### Fixed
