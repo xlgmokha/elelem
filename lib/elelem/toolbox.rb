@@ -16,11 +16,11 @@ module Elelem
       tool.aliases.each { |a| @aliases[a] = name }
     end
 
-    def before(tool_name, &block)
+    def before(tool_name = :*, &block)
       @hooks[:before][tool_name] << block
     end
 
-    def after(tool_name, &block)
+    def after(tool_name = :*, &block)
       @hooks[:after][tool_name] << block
     end
 
@@ -38,8 +38,10 @@ module Elelem
       errors = tool.validate(args)
       return failure(error: errors.join(", ")) if errors.any?
 
+      @hooks[:before][:*].each { |h| h.call(args, tool_name: tool.name) }
       @hooks[:before][tool.name].each { |h| h.call(args) }
       result = tool.call(args)
+      @hooks[:after][:*].each { |h| h.call(args, result, tool_name: tool.name) }
       @hooks[:after][tool.name].each { |h| h.call(args, result) }
       result[:error] ? failure(result) : success(result)
     rescue => e

@@ -146,24 +146,29 @@ module Elelem
 
       def wait_for_callback(expected_state)
         code = nil
-        server = WEBrick::HTTPServer.new(
+        @server = WEBrick::HTTPServer.new(
           Port: CALLBACK_PORT,
           Logger: WEBrick::Log.new(File::NULL),
           AccessLog: []
         )
 
-        server.mount_proc("/callback") do |req, res|
+        at_exit { @server&.shutdown }
+
+        @server.mount_proc("/callback") do |req, res|
           state = req.query["state"]
           raise "State mismatch" unless state == expected_state
 
           code = req.query["code"]
           res.content_type = "text/html"
           res.body = "<html><body><h1>Authorization complete</h1><p>You can close this window.</p></body></html>"
-          server.shutdown
+          @server.shutdown
         end
 
-        server.start
+        Timeout.timeout(120) { @server.start }
         code
+      rescue Timeout::Error
+        @server.shutdown
+        raise "OAuth callback timed out"
       end
 
       def exchange_code(metadata, client, code, verifier)

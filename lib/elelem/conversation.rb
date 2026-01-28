@@ -8,9 +8,9 @@ module Elelem
       @messages = []
     end
 
-    def add(role:, content:)
+    def add(role:, content:, **extra)
       raise ArgumentError, "invalid role: #{role}" unless ROLES.include?(role)
-      @messages << { role: role, content: content }
+      @messages << { role: role, content: content, **extra }.compact
     end
 
     def last = @messages.last

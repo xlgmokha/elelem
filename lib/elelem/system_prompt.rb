@@ -100,12 +100,17 @@ module Elelem
     end
 
     def ctags_fallback(files)
-      output = `ctags -x --languages=Ruby --kinds-Ruby=cfm -L - 2>/dev/null <<< "#{files.join("\n")}"`
-      return [] unless $?.success?
+      return [] if files.empty?
+
+      output = IO.popen(["ctags", "-x", "--languages=Ruby", "--kinds-Ruby=cfm", "-L", "-"], "r+") do |io|
+        io.puts(files)
+        io.close_write
+        io.read
+      end
 
       output.lines.map do |line|
         parts = line.split(/\s+/, 4)
-        { file: parts[3]&.split&.first, name: parts[0] }
+        { file: parts[2], name: parts[0] }
       end
     rescue Errno::ENOENT
       []
