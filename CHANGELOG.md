@@ -2,18 +2,30 @@
 
 ### Added
 - **Async MCP loading** for faster startup - tools load in background thread
+- **HTTP MCP servers** with SSE support and session management
+- **OAuth authentication** for MCP servers with PKCE, automatic token refresh
+- **Global hooks** - `toolbox.before`/`toolbox.after` without tool name applies to all tools
 - **`/context` improvements**: `/context <n>` to view entry, `/context json` for full dump
 - **ast-grep (`sg`) support** for building repo maps - faster and more accurate than ctags
-- **OAuth authentication** for MCP servers with automatic token refresh
-- **New tools**: `glob`, `grep`, `list`, `git` for structured file operations
+- **New tools**: `glob`, `grep`, `list`, `git`, `task`, `/tools` command
 - **Permissions system** (`lib/elelem/permissions.rb`) for tool access control
 - **OpenAI reasoning mode** - enables `Reasoning: high` for o-series models
+- **Test coverage** for OAuth, token storage, HTTP MCP, SSE parsing, global hooks
 
 ### Changed
+- **BREAKING: Plugin API** - plugins now receive `agent` instead of `toolbox`
+  - Old: `Elelem::Plugins.register(:name) { |toolbox| toolbox.add(...) }`
+  - New: `Elelem::Plugins.register(:name) { |agent| agent.toolbox.add(...) }`
+  - Plugins can now access `agent.terminal`, `agent.commands`, `agent.conversation`
 - Extracted `Conversation` class from `Agent` for better separation of concerns
+- Extracted `Commands` class for slash command handling
 - Refactored LLM fetch interface to emit separate events for thinking/content/tool_calls
 - Simplified system prompt with inline ERB template
 - Renamed confirm plugin to `zz_confirm` to ensure it loads last
+- MCP logs now write to `~/.elelem/mcp.log` instead of working directory
+- Tool schema now frozen to prevent mutation
+- Uses `Open3.capture2` instead of backticks for thread safety
+- Improved ANSI escape sequence stripping in `/shell` transcripts
 
 ## [0.9.2] - 2026-01-22
 

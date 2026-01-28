@@ -129,18 +129,94 @@ Each provider reads its configuration from environment variables:
 * **Conversation History** – persists across turns; can be cleared.
 * **Context Dump** – `/context` shows the current conversation state.
 
-## Toolbox Overview
+## Tools
 
-The `Toolbox` class is defined in `lib/elelem/toolbox.rb`. It supplies
-three tools, each represented by a JSON schema that the LLM can call.
+Built-in tools available to the LLM:
 
-| Tool      | Purpose            | Parameters         |
-| --------- | ------------------ | ------------------ |
-| `read`    | Read file contents | `path`             |
-| `write`   | Write file         | `path`, `content`  |
-| `execute` | Run shell command  | `command`          |
+| Tool      | Purpose                    | Parameters                |
+| --------- | -------------------------- | ------------------------- |
+| `read`    | Read file contents         | `path`                    |
+| `write`   | Write file                 | `path`, `content`         |
+| `edit`    | Replace text in file       | `path`, `old`, `new`      |
+| `execute` | Run shell command          | `command`                 |
+| `eval`    | Execute Ruby code          | `ruby`                    |
+| `glob`    | Find files by pattern      | `pattern`, `path`         |
+| `grep`    | Search file contents       | `pattern`, `path`, `glob` |
+| `list`    | List directory             | `path`, `recursive`       |
+| `git`     | Run git command            | `command`, `args`         |
+| `task`    | Delegate to sub-agent      | `prompt`                  |
+| `verify`  | Check syntax and run tests | `path`                    |
 
-Aliases: `bash`, `sh`, `exec` → `execute`; `open` → `read`
+Aliases: `bash`, `sh`, `exec` → `execute`; `open` → `read`; `ls` → `list`
+
+## Plugins
+
+Plugins extend elelem with custom tools and commands. They are loaded from:
+- `lib/elelem/plugins/` (built-in)
+- `~/.elelem/plugins/` (user global)
+- `.elelem/plugins/` (project local)
+
+### Writing a Plugin
+
+```ruby
+# ~/.elelem/plugins/hello.rb
+Elelem::Plugins.register(:hello) do |agent|
+  # Add a tool
+  agent.toolbox.add("hello",
+    description: "Say hello",
+    params: { name: { type: "string" } },
+    required: ["name"]
+  ) do |args|
+    { message: "Hello, #{args["name"]}!" }
+  end
+
+  # Add a command
+  agent.commands.register("greet", description: "Greet the user") do
+    agent.terminal.say "Hello!"
+  end
+
+  # Add hooks
+  agent.toolbox.before("execute") { |args| puts "Running: #{args["command"]}" }
+  agent.toolbox.after("execute") { |args, result| puts "Exit: #{result[:exit_status]}" }
+
+  # Global hook (runs for all tools)
+  agent.toolbox.before { |args, tool_name:| puts "Calling #{tool_name}" }
+end
+```
+
+### Plugin API
+
+Plugins receive an `agent` object with access to:
+- `agent.toolbox` - add tools, register hooks
+- `agent.terminal` - output to the user (`say`, `ask`, `markdown`)
+- `agent.commands` - register slash commands
+- `agent.conversation` - access message history
+- `agent.client` - the LLM client
+- `agent.fork(system_prompt:)` - create a sub-agent
+
+## MCP Configuration
+
+Configure MCP servers in `~/.elelem/mcp.json` or `.elelem/mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "gitlab": {
+      "command": "npx",
+      "args": ["-y", "@anthropics/gitlab-mcp"],
+      "env": {
+        "GITLAB_TOKEN": "${GITLAB_TOKEN}"
+      }
+    },
+    "remote": {
+      "type": "http",
+      "url": "https://mcp.example.com/sse"
+    }
+  }
+}
+```
+
+HTTP servers support OAuth authentication automatically.
 
 ## Known Limitations
 
