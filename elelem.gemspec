@@ -55,7 +55,6 @@ Gem::Specification.new do |spec|
     "lib/elelem/plugins/write.rb",
     "lib/elelem/plugins/zz_confirm.rb",
     "lib/elelem/system_prompt.rb",
-    "lib/elelem/templates/system_prompt.erb",
     "lib/elelem/terminal.rb",
     "lib/elelem/tool.rb",
     "lib/elelem/toolbox.rb",
