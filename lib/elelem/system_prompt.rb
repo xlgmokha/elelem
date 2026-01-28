@@ -83,8 +83,8 @@ module Elelem
     end
 
     def extract_symbols(files)
-      output = `sg run -p 'def $NAME' -l ruby --json=compact . 2>/dev/null`
-      return ctags_fallback(files) unless $?.success?
+      output, status = Open3.capture2("sg", "run", "-p", "def $NAME", "-l", "ruby", "--json=compact", ".", err: File::NULL)
+      return ctags_fallback(files) unless status.success?
 
       parse_sg_output(output, files)
     end
