@@ -52,7 +52,7 @@ module Elelem
       <%= agents_md %>
     ERB
 
-    attr_reader :template
+    attr_accessor :template
 
     def initialize(template = nil)
       @template = template || TEMPLATE
