@@ -7,11 +7,11 @@ module Elelem
     def initialize(name, description:, params: {}, required: [], aliases: [], &fn)
       @name = name
       @description = description
-      @params = params
-      @required = required
-      @aliases = aliases
+      @params = params.freeze
+      @required = required.freeze
+      @aliases = aliases.freeze
       @fn = fn
-      @schema_hash = { type: "object", properties: params, required: required }.freeze
+      @schema_hash = { type: "object", properties: @params, required: @required }.freeze
       @schema = JSONSchemer.schema(@schema_hash)
     end
 
