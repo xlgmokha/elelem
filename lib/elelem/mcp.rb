@@ -82,7 +82,7 @@ module Elelem
       end
 
       def logger
-        @logger ||= Logger.new("mcp.log")
+        @logger ||= Logger.new(File.expand_path("~/.elelem/mcp.log"))
       end
 
       private
