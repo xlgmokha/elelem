@@ -2,7 +2,7 @@
 
 module Elelem
   class Agent
-    attr_reader :conversation, :client, :toolbox, :terminal, :commands
+    attr_reader :conversation, :client, :toolbox, :terminal, :commands, :system_prompt
     attr_writer :terminal, :toolbox, :commands
 
     def initialize(client, toolbox: Toolbox.new, terminal: nil, system_prompt: nil, commands: nil)
@@ -11,7 +11,7 @@ module Elelem
       @commands = commands || Commands.new
       @terminal = terminal
       @conversation = Conversation.new
-      @system_prompt = system_prompt
+      @system_prompt = SystemPrompt.new(system_prompt)
     end
 
     def repl
@@ -31,11 +31,11 @@ module Elelem
     end
 
     def context
-      @conversation.to_a(system_prompt: system_prompt)
+      @conversation.to_a(system_prompt: system_prompt.render)
     end
 
     def fork(system_prompt:)
-      Agent.new(client, toolbox: toolbox, terminal: terminal, system_prompt: system_prompt)
+      Agent.new(client, toolbox: toolbox, terminal: terminal, system_prompt: system_prompt.template)
     end
 
     def turn(input)
@@ -71,7 +71,7 @@ module Elelem
       content = String.new
       tool_calls = []
 
-      client.fetch(@conversation.to_a(system_prompt: system_prompt) + ctx, toolbox.to_a) do |event|
+      client.fetch(@conversation.to_a(system_prompt: system_prompt.render) + ctx, toolbox.to_a) do |event|
         case event[:type]
         when "saying"
           content << event[:text].to_s
@@ -86,10 +86,6 @@ module Elelem
     rescue => e
       terminal.say "\n  ✗ #{e.message}"
       ["Error: #{e.message} #{e.backtrace.join("\n")}", []]
-    end
-
-    def system_prompt
-      @system_prompt || SystemPrompt.new.render
     end
   end
 end

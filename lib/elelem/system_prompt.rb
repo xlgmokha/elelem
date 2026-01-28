@@ -52,8 +52,14 @@ module Elelem
       <%= agents_md %>
     ERB
 
+    attr_reader :template
+
+    def initialize(template = nil)
+      @template = template || TEMPLATE
+    end
+
     def render
-      ERB.new(TEMPLATE, trim_mode: "-").result(binding)
+      ERB.new(template, trim_mode: "-").result(binding)
     end
 
     private
