@@ -90,9 +90,27 @@ module Elelem
 
     def complete(target, preposing)
       line = "#{preposing}#{target}"
-      return @commands.select { |c| c.start_with?(line) } if line.start_with?("/") && !preposing.include?(" ")
+
+      if line.start_with?("/") && !preposing.include?(" ")
+        return command_names.select { |c| c.start_with?(line) }
+      end
+
+      if preposing.start_with?("/") && preposing.include?(" ")
+        cmd_name = preposing.delete_prefix("/").split(" ", 2).first
+        return complete_command_args(cmd_name, target)
+      end
 
       complete_files(target)
+    end
+
+    def command_names
+      @commands.respond_to?(:names) ? @commands.names : @commands
+    end
+
+    def complete_command_args(cmd_name, partial)
+      return [] unless @commands.respond_to?(:completions_for)
+
+      @commands.completions_for(cmd_name, partial)
     end
 
     def complete_files(target)

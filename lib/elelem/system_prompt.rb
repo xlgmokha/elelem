@@ -2,60 +2,52 @@
 
 module Elelem
   class SystemPrompt
-    TEMPLATE = <<~ERB
-      Terminal coding agent. Be concise. Verify your work.
+    LOAD_PATHS = [
+      File.expand_path("prompts", __dir__),
+      File.expand_path("~/.elelem/prompts"),
+      ".elelem/prompts"
+    ].freeze
 
-      # Tools
-      - read(path): file contents
-      - write(path, content): create/overwrite file
-      - execute(command): shell command
-      - eval(ruby): execute Ruby code; use to create tools for repetitive tasks
-      - task(prompt): delegate complex searches or multi-file analysis to a focused subagent
+    class << self
+      def templates
+        @templates ||= load_templates
+      end
 
-      # Editing
-      Use execute(`patch -p1`) for multi-line changes: `echo "DIFF" | patch -p1`
-      Use execute(`sed`) for single-line changes: `sed -i'' 's/old/new/' file`
-      Use write for new files or full rewrites
+      def available_modes
+        templates.keys.sort
+      end
 
-      # Search
-      Use execute(`rg`) for text search: `rg -n "pattern" .`
-      Use execute(`fd`) for file discovery: `fd -e rb .`
-      Use execute(`sg`) (ast-grep) for structural search: `sg -p 'def $NAME' -l ruby`
+      def get(name)
+        templates[name.to_s] || templates["default"]
+      end
 
-      # Task Management
-      For complex tasks:
-      1. State plan before acting
-      2. Work through steps one at a time
-      3. Summarize what was done
+      def reload!
+        @templates = nil
+      end
 
-      # Long Tasks
-      For complex multi-step work, write notes to .elelem/scratch.md
+      private
 
-      # Policy
-      - Explain before non-trivial commands
-      - Verify changes (read file, run tests)
-      - No interactive flags (-i, -p)
-      - Use `man` when you need to understand how to execute a program
+      def load_templates
+        result = {}
+        LOAD_PATHS.each do |dir|
+          next unless File.directory?(dir)
 
-      # Environment
-      pwd: <%= pwd %>
-      platform: <%= platform %>
-      date: <%= date %>
-      self: <%= elelem_source %>
-      <%= git_info %>
-
-      <% if repo_map && !repo_map.empty? %>
-      # Codebase
-      ```
-      <%= repo_map %>```
-      <% end %>
-      <%= agents_md %>
-    ERB
+          Dir[File.join(dir, "*.erb")].each do |path|
+            result[File.basename(path, ".erb")] = File.read(path)
+          end
+        end
+        result
+      end
+    end
 
     attr_accessor :template
 
     def initialize(template = nil)
-      @template = template || TEMPLATE
+      @template = template || self.class.get("default")
+    end
+
+    def switch(name)
+      @template = self.class.get(name)
     end
 
     def render

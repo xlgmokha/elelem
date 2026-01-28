@@ -6,8 +6,16 @@ module Elelem
       @registry = {}
     end
 
-    def register(name, description: "", &handler)
-      @registry[name] = { description: description, handler: handler }
+    def register(name, description: "", completions: nil, &handler)
+      @registry[name] = { description: description, completions: completions, handler: handler }
+    end
+
+    def completions_for(name, partial = "")
+      cmd = @registry[name]
+      return [] unless cmd && cmd[:completions]
+
+      options = cmd[:completions].respond_to?(:call) ? cmd[:completions].call : cmd[:completions]
+      options.select { |o| o.start_with?(partial) }
     end
 
     def run(name, args = nil)

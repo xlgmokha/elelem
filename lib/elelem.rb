@@ -50,7 +50,7 @@ module Elelem
   def self.start(client, toolbox: Toolbox.new)
     agent = Agent.new(client, toolbox: toolbox)
     Plugins.setup!(agent)
-    agent.terminal = Terminal.new(commands: agent.commands.names)
+    agent.terminal = Terminal.new(commands: agent.commands)
     agent.repl
   end
 
