@@ -72,7 +72,8 @@ module Elelem
         )
 
         tokens["access_token"]
-      rescue StandardError
+      rescue StandardError => e
+        warn "Token refresh failed: #{e.message}"
         authorize
       end
 
