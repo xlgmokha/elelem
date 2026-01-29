@@ -1,6 +1,7 @@
 {
-  "read": "allow",
-  "write": "ask",
   "edit": "ask",
-  "execute": "ask"
+  "execute": "ask",
+  "interview": "allow",
+  "read": "allow",
+  "write": "ask"
 }

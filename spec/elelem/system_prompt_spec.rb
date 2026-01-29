@@ -22,7 +22,7 @@ RSpec.describe Elelem::SystemPrompt do
 
     it "returns plan template" do
       template = described_class.get("plan")
-      expect(template).to include("plan mode")
+      expect(template).to include("Scrum Master")
     end
 
     it "falls back to default for unknown name" do
@@ -37,7 +37,7 @@ RSpec.describe Elelem::SystemPrompt do
       expect(prompt.template).to include("Terminal system agent")
 
       prompt.switch("plan")
-      expect(prompt.template).to include("plan mode")
+      expect(prompt.template).to include("Scrum Master")
     end
 
     it "updates the mode name" do
