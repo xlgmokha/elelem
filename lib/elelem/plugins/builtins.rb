@@ -9,6 +9,6 @@ Elelem::Plugins.register(:builtins) do |agent|
   end
 
   agent.commands.register("help", description: "Show available commands") do
-    agent.terminal.say agent.commands.names.join(" ")
+    agent.terminal.say agent.commands.map { |name, description| "#{name.ljust(12)} #{description}" }.join("\n")
   end
 end

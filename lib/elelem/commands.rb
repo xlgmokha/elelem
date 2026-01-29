@@ -2,6 +2,8 @@
 
 module Elelem
   class Commands
+    include Enumerable
+
     def initialize
       @registry = {}
     end
