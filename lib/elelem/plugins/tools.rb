@@ -2,12 +2,19 @@
 
 Elelem::Plugins.register(:tools) do |agent|
   agent.commands.register("tools", description: "List available tools") do
-    agent.toolbox.tools.each_value do |tool|
-      agent.terminal.say ""
-      agent.terminal.say "  #{tool.name}"
-      agent.terminal.say "    #{tool.description}"
-      tool.params.each { |k, v| agent.terminal.say "      #{k}: #{v[:type] || v["type"]}" }
-      agent.terminal.say "    aliases: #{tool.aliases.join(", ")}" if tool.aliases.any?
-    end
+    md = agent.toolbox.tools.each_value.map do |tool|
+      lines = ["- **#{tool.name}** - #{tool.description.lines.first.chomp}"]
+
+      tool.params.each do |name, spec|
+        req = tool.required.include?(name.to_s) ? ", required" : ""
+        desc = spec[:description] ? " - #{spec[:description]}" : ""
+        lines << "  - `#{name}` (#{spec[:type]}#{req})#{desc}"
+      end
+
+      lines << "  - aliases: #{tool.aliases.join(", ")}" if tool.aliases.any?
+      lines.join("\n")
+    end.join("\n\n")
+
+    agent.terminal.say agent.terminal.markdown(md)
   end
 end
