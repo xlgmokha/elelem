@@ -15,11 +15,4 @@ Elelem::Plugins.register(:mode) do |agent|
       agent.terminal.say "mode: #{name}"
     end
   end
-
-  agent.commands.register("compact", description: "Compress context") do
-    response = agent.turn("Summarize: accomplishments, state, next steps. Brief.")
-    agent.conversation.clear!
-    agent.conversation.add(role: "user", content: "Context: #{response}")
-    agent.terminal.say "  → compacted"
-  end
 end
