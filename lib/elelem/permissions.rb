@@ -3,7 +3,7 @@
 module Elelem
   class Permissions
     LOAD_PATHS = [
-      File.expand_path("plugins/permissions.json", __dir__),
+      File.expand_path("permissions.json", __dir__),
       "~/.elelem/permissions.json",
       ".elelem/permissions.json"
     ].freeze
