@@ -1,20 +1,35 @@
 # frozen_string_literal: true
 
 Elelem::Plugins.register(:tools) do |agent|
-  agent.commands.register("tools", description: "List available tools") do
-    md = agent.toolbox.tools.each_value.map do |tool|
-      lines = ["- **#{tool.name}** - #{tool.description.lines.first.chomp}"]
+  completions = -> { agent.toolbox.tools.keys }
 
+  agent.commands.register("tools", description: "List available tools", completions: completions) do |arg|
+    if arg && !arg.empty?
+      tool = agent.toolbox.tools[arg]
+      unless tool
+        agent.terminal.say "Unknown tool: #{arg}"
+        next
+      end
+
+      lines = ["## #{tool.name}", "", tool.description, "", "### Parameters", ""]
       tool.params.each do |name, spec|
         req = tool.required.include?(name.to_s) ? ", required" : ""
         desc = spec[:description] ? " - #{spec[:description]}" : ""
-        lines << "  - `#{name}` (#{spec[:type]}#{req})#{desc}"
+        lines << "- `#{name}` (#{spec[:type]}#{req})#{desc}"
+      end
+      lines << "" << "*aliases: #{tool.aliases.join(", ")}*" if tool.aliases.any?
+
+      agent.terminal.say agent.terminal.markdown(lines.join("\n"))
+    else
+      rows = agent.toolbox.tools.each_value.map do |tool|
+        "| #{tool.name} | #{tool.description.lines.first.chomp} |"
       end
 
-      lines << "  - aliases: #{tool.aliases.join(", ")}" if tool.aliases.any?
-      lines.join("\n")
-    end.join("\n\n")
+      md = String.new("| Tool | Description |\n")
+      md << "|------|-------------|\n"
+      md << rows.join("\n")
 
-    agent.terminal.say agent.terminal.markdown(md)
+      agent.terminal.say agent.terminal.markdown(md)
+    end
   end
 end
