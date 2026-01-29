@@ -17,12 +17,12 @@ RSpec.describe Elelem::SystemPrompt do
   describe ".get" do
     it "returns template content for known name" do
       template = described_class.get("default")
-      expect(template).to include("Terminal coding agent")
+      expect(template).to include("Terminal system agent")
     end
 
     it "returns plan template" do
       template = described_class.get("plan")
-      expect(template).to include("Plan mode is active")
+      expect(template).to include("plan mode")
     end
 
     it "falls back to default for unknown name" do
@@ -34,10 +34,18 @@ RSpec.describe Elelem::SystemPrompt do
   describe "#switch" do
     it "changes the template" do
       prompt = described_class.new
-      expect(prompt.template).to include("Terminal coding agent")
+      expect(prompt.template).to include("Terminal system agent")
 
       prompt.switch("plan")
-      expect(prompt.template).to include("Plan mode is active")
+      expect(prompt.template).to include("plan mode")
+    end
+
+    it "updates the mode name" do
+      prompt = described_class.new
+      expect(prompt.mode).to eq("default")
+
+      prompt.switch("plan")
+      expect(prompt.mode).to eq("plan")
     end
   end
 

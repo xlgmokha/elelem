@@ -41,12 +41,15 @@ module Elelem
     end
 
     attr_accessor :template
+    attr_reader :mode
 
     def initialize(template = nil)
+      @mode = "default"
       @template = template || self.class.get("default")
     end
 
     def switch(name)
+      @mode = name
       @template = self.class.get(name)
     end
 
