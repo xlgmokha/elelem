@@ -202,15 +202,14 @@ Configure MCP servers in `~/.elelem/mcp.json` or `.elelem/mcp.json`:
 {
   "mcpServers": {
     "gitlab": {
-      "command": "npx",
-      "args": ["-y", "@anthropics/gitlab-mcp"],
-      "env": {
-        "GITLAB_TOKEN": "${GITLAB_TOKEN}"
-      }
-    },
-    "remote": {
       "type": "http",
-      "url": "https://mcp.example.com/sse"
+      "url": "https://gitlab.com/api/v4/mcp"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     }
   }
 }
