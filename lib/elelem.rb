@@ -133,7 +133,7 @@ module Elelem
       files.each_with_index do |line, i|
         path = line.strip
         next if path.empty? || !File.file?(path)
-        puts %Q{<document index="#{i + 1}"><source>#{path}</source><content><![CDATA[#{File.read(path)}]]></content></document>}
+        puts %Q{<document index="#{i + 1}"><source>#{path}</source><document_content><![CDATA[#{File.read(path)}]]></document_content></document>}
       end
       puts "</documents>"
     end
