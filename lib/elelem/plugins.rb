@@ -9,17 +9,22 @@ module Elelem
     ].freeze
 
     def self.setup!(agent)
-      load_plugins
+      load!
+      run!(agent)
+    end
+
+    def self.run!(agent)
       registry.each_value { |plugin| plugin.call(agent) }
     end
 
     def self.reload!(agent)
+      Providers.registry.clear
       registry.clear
-      load_plugins
-      registry.each_value { |plugin| plugin.call(agent) }
+      load!
+      run!(agent)
     end
 
-    def self.load_plugins
+    def self.load!
       LOAD_PATHS.each do |path|
         dir = File.expand_path(path)
         next unless File.directory?(dir)

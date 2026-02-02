@@ -2,8 +2,8 @@
 
 module Elelem
   class Agent
-    attr_reader :conversation, :client, :toolbox, :terminal, :commands, :system_prompt
-    attr_writer :terminal, :toolbox, :commands
+    attr_reader :conversation, :system_prompt
+    attr_accessor :client, :toolbox, :terminal, :commands
 
     def initialize(client, toolbox: Toolbox.new, terminal: nil, system_prompt: nil, commands: nil)
       @client = client
