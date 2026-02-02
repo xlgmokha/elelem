@@ -2,20 +2,8 @@
 
 ## [0.10.0] - 2026-01-27
 
-### Added
-- **Async MCP loading** for faster startup - tools load in background thread
-- **HTTP MCP servers** with SSE support and session management
-- **OAuth authentication** for MCP servers with PKCE, automatic token refresh
-- **Global hooks** - `toolbox.before`/`toolbox.after` without tool name applies to all tools
-- **`/context` improvements**: `/context <n>` to view entry, `/context json` for full dump
-- **ast-grep (`sg`) support** for building repo maps - faster and more accurate than ctags
-- **New tools**: `glob`, `grep`, `list`, `git`, `task`, `/tools` command
-- **Permissions system** (`lib/elelem/permissions.rb`) for tool access control
-- **OpenAI reasoning mode** - enables `Reasoning: high` for o-series models
-- **Test coverage** for OAuth, token storage, HTTP MCP, SSE parsing, global hooks
-
 ### Changed
-- **BREAKING: Plugin API** - plugins now receive `agent` instead of `toolbox`
+- **Breaking: Plugin API** - plugins now receive `agent` instead of `toolbox`
   - Old: `Elelem::Plugins.register(:name) { |toolbox| toolbox.add(...) }`
   - New: `Elelem::Plugins.register(:name) { |agent| agent.toolbox.add(...) }`
   - Plugins can now access `agent.terminal`, `agent.commands`, `agent.conversation`
@@ -29,6 +17,18 @@
 - Uses `Open3.capture2` instead of backticks for thread safety
 - Improved ANSI escape sequence stripping in `/shell` transcripts
 
+### Added
+- **Async MCP loading** for faster startup - tools load in background thread
+- **HTTP MCP servers** with SSE support and session management
+- **OAuth authentication** for MCP servers with PKCE, automatic token refresh
+- **Global hooks** - `toolbox.before`/`toolbox.after` without tool name applies to all tools
+- **`/context` improvements**: `/context <n>` to view entry, `/context json` for full dump
+- **ast-grep (`sg`) support** for building repo maps - faster and more accurate than ctags
+- **New tools**: `glob`, `grep`, `list`, `git`, `task`, `/tools` command
+- **Permissions system** (`lib/elelem/permissions.rb`) for tool access control
+- **OpenAI reasoning mode** - enables `Reasoning: high` for o-series models
+- **Test coverage** for OAuth, token storage, HTTP MCP, SSE parsing, global hooks
+
 ## [0.9.2] - 2026-01-22
 
 ### Fixed
@@ -41,6 +41,30 @@
 - Use `break` instead of `return` to exit `inject` block in verify plugin
 
 ## [0.9.0] - 2026-01-21
+
+### Changed
+- **Breaking**: Requires Ruby >= 4.0.0 (was 3.4.0)
+- **Breaking**: Removed `net-llm` dependency - LLM clients now inline in `lib/elelem/net/`
+  - `Elelem::Net::Claude` (Anthropic and Vertex AI)
+  - `Elelem::Net::OpenAI`
+  - `Elelem::Net::Ollama`
+- **Breaking**: Simplified LLM client `fetch` contract
+  - Yields `{content:, thinking:}` deltas
+  - Returns `tool_calls` array directly
+- **Breaking**: Tool schema uses OpenAI format (`{type: "function", function: {...}}`)
+- **Breaking**: Tool definitions use `description:` key (was `desc:`)
+- **Breaking**: Removed modes and permissions system entirely
+- **Breaking**: Removed slash commands (`/mode`, `/env`, `/provider`, `/model`)
+  - Remaining: `/clear`, `/context`, `/init`, `/reload`, `/shell`, `/exit`, `/help`
+- **Breaking**: Removed many dependencies
+  - Removed: `thor`, `cli-ui`, `erb`, `cgi`, `set`, `timeout`, `logger`, `net-llm`, `json-schema`
+  - Added: `json_schemer`, `optparse`, `tempfile`, `stringio`, `uri`
+- Consolidated multiple exe files into single `exe/elelem` entry point
+- Tools are now defined via plugins instead of hardcoded in Toolbox
+- System prompt includes hints for `rg`, `fd`, `sg` (ast-grep), `sed`, `patch`
+- System prompt regenerated on each fetch (includes dynamic repo map)
+- Default tool set: `read`, `write`, `edit`, `execute`, `eval`, `verify`, `task`
+- System prompt encourages using `eval` to create tools for repetitive tasks
 
 ### Added
 - **Plugin system** with support for custom tool definitions
@@ -68,30 +92,6 @@
 - JSON Schema validation for tool call arguments (via `json_schemer`)
 - Tool aliases support (e.g., `bash`, `sh`, `exec` → `execute`)
 - **Dependencies documentation** in README with installation links
-
-### Changed
-- **Breaking**: Requires Ruby >= 4.0.0 (was 3.4.0)
-- **Breaking**: Removed `net-llm` dependency - LLM clients now inline in `lib/elelem/net/`
-  - `Elelem::Net::Claude` (Anthropic and Vertex AI)
-  - `Elelem::Net::OpenAI`
-  - `Elelem::Net::Ollama`
-- **Breaking**: Simplified LLM client `fetch` contract
-  - Yields `{content:, thinking:}` deltas
-  - Returns `tool_calls` array directly
-- **Breaking**: Tool schema uses OpenAI format (`{type: "function", function: {...}}`)
-- **Breaking**: Tool definitions use `description:` key (was `desc:`)
-- **Breaking**: Removed modes and permissions system entirely
-- **Breaking**: Removed slash commands (`/mode`, `/env`, `/provider`, `/model`)
-  - Remaining: `/clear`, `/context`, `/init`, `/reload`, `/shell`, `/exit`, `/help`
-- **Breaking**: Removed many dependencies
-  - Removed: `thor`, `cli-ui`, `erb`, `cgi`, `set`, `timeout`, `logger`, `net-llm`, `json-schema`
-  - Added: `json_schemer`, `optparse`, `tempfile`, `stringio`, `uri`
-- Consolidated multiple exe files into single `exe/elelem` entry point
-- Tools are now defined via plugins instead of hardcoded in Toolbox
-- System prompt includes hints for `rg`, `fd`, `sg` (ast-grep), `sed`, `patch`
-- System prompt regenerated on each fetch (includes dynamic repo map)
-- Default tool set: `read`, `write`, `edit`, `execute`, `eval`, `verify`, `task`
-- System prompt encourages using `eval` to create tools for repetitive tasks
 
 ### Removed
 - `lib/elelem/application.rb` - CLI now in `exe/elelem`
@@ -121,15 +121,15 @@
 
 ## [0.7.0] - 2026-01-14
 
+### Changed
+- Renamed internal `mode` concept to `permissions` for clarity (read/write/execute are permissions, plan/build/verify are modes)
+- Refactored `Toolbox#run_tool` to accept `permissions:` parameter
+
 ### Added
 - ASCII spinner animation while waiting for LLM responses
 - `Terminal#waiting` method with automatic cleanup on next output
 - Decision-making principles in system prompt (prefer reversible actions, ask when uncertain)
 - Mode enforcement tests
-
-### Changed
-- Renamed internal `mode` concept to `permissions` for clarity (read/write/execute are permissions, plan/build/verify are modes)
-- Refactored `Toolbox#run_tool` to accept `permissions:` parameter
 
 ### Fixed
 - **Security**: Mode restrictions now enforced at execution time, not just schema time
@@ -137,13 +137,6 @@
   - Now `run_tool` validates the tool is allowed for the current permission set
 
 ## [0.6.0] - 2026-01-12
-
-### Added
-- `/env` slash command to capture environment variables for provider connections
-- `/shell` slash command
-- `/provider` and `/model` slash commands
-- Tab completion for commands
-- Help output for `/mode` and `/env` commands
 
 ### Changed
 - Renamed `bash` tool to `exec`
@@ -153,6 +146,13 @@
 - Use pessimistic constraint on net-llm dependency
 - Extracted Terminal class for IO abstraction (enables E2E testing)
 
+### Added
+- `/env` slash command to capture environment variables for provider connections
+- `/shell` slash command
+- `/provider` and `/model` slash commands
+- Tab completion for commands
+- Help output for `/mode` and `/env` commands
+
 ### Fixed
 - Prevent infinite looping errors
 - Provide function schema when tool is called with invalid arguments
@@ -161,16 +161,16 @@
 
 ## [0.5.0] - 2026-01-07
 
+### Changed
+- Requires net-llm >= 0.5.0 with unified fetch interface
+- Updated gem description to reflect multi-provider support
+
 ### Added
 - Multi-provider support: Ollama, Anthropic, OpenAI, and VertexAI
 - `--provider` CLI option to select LLM provider (default: ollama)
 - `--model` CLI option to override default model
 - Tool aliases (`bash` also accepts `exec`, `shell`, `command`, `terminal`, `run`)
 - Thinking text output for models that support extended thinking
-
-### Changed
-- Requires net-llm >= 0.5.0 with unified fetch interface
-- Updated gem description to reflect multi-provider support
 
 ## [0.4.2] - 2025-12-01
 
@@ -181,27 +181,19 @@
 
 ## [0.4.1] - 2025-11-26
 
-### Added
-- `elelem files` subcommand: generates Claude‑compatible XML file listings.
-- Rake task `files:prompt` to output a ready‑to‑copy list of files for prompts.
-
 ### Changed
-- Refactor tool‑call formatting to a more compact JSON payload for better LLM parsing.
-- Updated CI and documentation to use GitHub instead of previous hosting.
-- Runtime validation of command‑line parameters against a JSON schema.
+- Refactor tool-call formatting to a more compact JSON payload for better LLM parsing
+- Updated CI and documentation to use GitHub instead of previous hosting
+- Runtime validation of command-line parameters against a JSON schema
+
+### Added
+- `elelem files` subcommand: generates Claude-compatible XML file listings
+- Rake task `files:prompt` to output a ready-to-copy list of files for prompts
 
 ### Fixed
-- Minor documentation and CI workflow adjustments.
+- Minor documentation and CI workflow adjustments
 
 ## [0.4.0] - 2025-11-10
-
-### Added
-- **Eval Tool**: Meta-programming tool that allows the LLM to dynamically create and register new tools at runtime
-  - Eval tool has access to the toolbox for enhanced capabilities
-- Comprehensive test coverage with RSpec
-  - Agent specs
-  - Conversation specs
-  - Toolbox specs
 
 ### Changed
 - **Architecture Improvements**: Significant refactoring for better separation of concerns
@@ -212,10 +204,33 @@
   - Tool constants moved to Toolbox for better organization
   - Agent class simplified by delegating to Tool instances
 
+### Added
+- **Eval Tool**: Meta-programming tool that allows the LLM to dynamically create and register new tools at runtime
+  - Eval tool has access to the toolbox for enhanced capabilities
+- Comprehensive test coverage with RSpec
+  - Agent specs
+  - Conversation specs
+  - Toolbox specs
+
 ### Fixed
 - `/context` command now correctly accounts for the current mode
 
 ## [0.3.0] - 2025-11-05
+
+### Changed
+- **Breaking**: Removed `llm-ollama` and `llm-openai` standalone executables (use main `elelem chat` command)
+- **Breaking**: Simplified architecture - consolidated all logic into Agent class
+  - Removed Configuration class
+  - Removed Toolbox system
+  - Removed MCP client infrastructure
+  - Removed Tool and Tools classes
+  - Removed TUI abstraction layer (direct puts/Reline usage)
+  - Removed API wrapper class
+  - Removed state machine
+- Improved execute tool description to guide LLM toward direct command execution
+- Extracted tool definitions from long inline strings to readable private methods
+- Updated README with clear philosophy and usage examples
+- Reduced total codebase from 417 to 395 lines (-5%)
 
 ### Added
 - **Mode System**: Control agent capabilities with workflow modes
@@ -232,26 +247,6 @@
 - Design philosophy documentation in README
 - Mode system documentation
 
-### Changed
-- **BREAKING**: Removed `llm-ollama` and `llm-openai` standalone executables (use main `elelem chat` command)
-- **BREAKING**: Simplified architecture - consolidated all logic into Agent class
-  - Removed Configuration class
-  - Removed Toolbox system
-  - Removed MCP client infrastructure
-  - Removed Tool and Tools classes
-  - Removed TUI abstraction layer (direct puts/Reline usage)
-  - Removed API wrapper class
-  - Removed state machine
-- Improved execute tool description to guide LLM toward direct command execution
-- Extracted tool definitions from long inline strings to readable private methods
-- Updated README with clear philosophy and usage examples
-- Reduced total codebase from 417 to 395 lines (-5%)
-
-### Fixed
-- Working directory handling for execute tool (handles empty string cwd)
-- REPL EOF handling (graceful exit when input stream ends)
-- Tool call formatting now shows clean, readable commands
-
 ### Removed
 - `exe/llm-ollama` (359 lines)
 - `exe/llm-openai` (340 lines)
@@ -264,6 +259,11 @@
 - `lib/elelem/states/*` (state machine infrastructure)
 - Removed ~750 lines of unused/redundant code
 
+### Fixed
+- Working directory handling for execute tool (handles empty string cwd)
+- REPL EOF handling (graceful exit when input stream ends)
+- Tool call formatting now shows clean, readable commands
+
 ## [0.2.1] - 2025-10-15
 
 ### Fixed
@@ -272,6 +272,15 @@
 
 ## [0.2.0] - 2025-10-15
 
+### Changed
+- **Breaking**: Migrated from custom Net::HTTP implementation to `net-llm` gem
+- API client now uses `Net::Llm::Ollama` for better reliability and maintainability
+- Removed direct dependencies on `net-http` and `uri` (now transitive through net-llm)
+- Maps Ollama's `thinking` field to internal `reasoning` field
+- Maps Ollama's `done_reason` to internal `finish_reason`
+- Improved system prompt for better agent behavior
+- Enhanced error handling and logging
+
 ### Added
 - New `llm-ollama` executable - minimal coding agent with streaming support for Ollama
 - New `llm-openai` executable - minimal coding agent for OpenAI/compatible APIs
@@ -279,15 +288,6 @@
 - Web fetch tool for retrieving and analyzing web content
 - Streaming responses with real-time token display
 - Visual "thinking" progress indicators with dots during reasoning phase
-
-### Changed
-- **BREAKING**: Migrated from custom Net::HTTP implementation to `net-llm` gem
-- API client now uses `Net::Llm::Ollama` for better reliability and maintainability
-- Removed direct dependencies on `net-http` and `uri` (now transitive through net-llm)
-- Maps Ollama's `thinking` field to internal `reasoning` field
-- Maps Ollama's `done_reason` to internal `finish_reason`
-- Improved system prompt for better agent behavior
-- Enhanced error handling and logging
 
 ### Fixed
 - Response processing for Ollama's native message format
