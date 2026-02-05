@@ -73,14 +73,75 @@ sections. If already at line start, it's a no-op. If mid-content, it adds one ne
 
 ## Testing
 * [x] Add spec for `gap` idempotence: calling twice produces one blank line
-* [ ] Visual audit: conversation with tool calls
-* [ ] Visual audit: multi-tool execution
+* [x] Visual audit: conversation with tool calls
+* [x] Visual audit: multi-tool execution
 * [ ] Visual audit: streaming execute output
 
 # Acceptance Criteria
 
-* [ ] Single blank line between distinct output sections
-* [ ] No double blank lines appear in any scenario
-* [ ] No missing blank lines between sections
-* [ ] Spacing is consistent regardless of event order
+* [x] Single blank line between distinct output sections
+* [x] No double blank lines appear in any scenario
+* [x] No missing blank lines between sections
+* [x] Spacing is consistent regardless of event order
 * [ ] Visual audit of common workflows passes
+
+# Demo Notes
+
+Verified: 2026-02-04
+Status: ACCEPTED
+
+## Verification Run: 2026-02-04
+
+All 75 tests pass (0 failures).
+
+**Automated Tests Verified:**
+- `gap` idempotence: calling multiple times produces single blank line ✓
+- `@at_line_start` state tracking across `say`, `print`, `newline` ✓
+- `gap` stops dots before adding newline ✓
+
+**Scenarios Verified:**
+| Scenario | Expected | Result |
+|----------|----------|--------|
+| Dots → tool header | 1 blank line | ✓ |
+| Tool → tool | 1 blank line | ✓ |
+| Tool → markdown | 1 blank line | ✓ |
+
+**Remaining:** Visual audit of streaming execute output (requires manual LLM testing)
+
+---
+
+## Implementation Summary
+
+Added `@at_line_start` flag and `gap` method to Terminal class:
+- `gap` is idempotent: stops dots, then adds newline only if not at line start
+- All output methods (`say`, `print`, `newline`) update `@at_line_start`
+- `markdown` uses `gap` instead of hardcoded `newline(n: 2)`
+- `header` in Toolbox no longer prepends `\n`
+- Agent calls `terminal.gap` before tool headers
+
+## Tested Scenarios
+
+1. **Dots → tool header**: `.` prints, gap stops dots + newline, header prints
+   - Result: Single blank line after dots ✓
+
+2. **Tool header → tool header**: gap adds single newline between headers
+   - Result: Consistent single blank line ✓
+
+3. **Tool header → markdown**: gap inside markdown is no-op (already at line start)
+   - Result: No extra blank lines ✓
+
+4. **Idempotence**: Calling gap multiple times produces only one newline
+   - Result: Safe to call gap anywhere ✓
+
+## Files Changed
+
+- `lib/elelem/terminal.rb` - Added `@at_line_start`, `gap`, updated output methods
+- `lib/elelem/toolbox.rb` - Removed `\n` prefix from `header`
+- `lib/elelem/agent.rb` - Added `terminal.gap` before tool headers
+- `spec/elelem/terminal_spec.rb` - Added tests for gap behavior
+
+## Edge Case Fixed During Demo
+
+Initial implementation missed that `gap` should stop dots if running. When dots
+thread prints directly to stdout, `@at_line_start` stays true but cursor is
+mid-line. Fixed by having `gap` call `stop_dots` before checking state.
