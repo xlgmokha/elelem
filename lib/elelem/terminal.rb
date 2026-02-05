@@ -60,6 +60,7 @@ module Elelem
     end
 
     def gap
+      stop_dots
       newline unless @at_line_start
     end
 
