@@ -20,6 +20,14 @@ RSpec.describe Elelem::Terminal do
       terminal.instance_variable_set(:@at_line_start, false)
       expect { terminal.gap; terminal.gap }.to output("\n").to_stdout
     end
+
+    it "stops dots thread when called" do
+      dots_thread = double("thread")
+      allow(dots_thread).to receive(:kill)
+      terminal.instance_variable_set(:@dots_thread, dots_thread)
+      terminal.gap
+      expect(terminal.instance_variable_get(:@dots_thread)).to be_nil
+    end
   end
 
   describe "@at_line_start tracking" do
