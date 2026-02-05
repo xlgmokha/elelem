@@ -225,6 +225,10 @@ HTTP servers support OAuth authentication automatically.
 
 ## Contributing
 
+```bash
+$ git clone https://git.mokhan.ca/xlgmokha/elelem.git
+```
+
 Send me an email. For instructions see https://git-send-email.io/.
 
 ## License
