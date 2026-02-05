@@ -7,7 +7,11 @@ module Elelem
       @quiet = quiet
       @dots_thread = nil
       @at_line_start = true
-      setup_completion unless @quiet
+      setup_completion unless quiet?
+    end
+
+    def quiet?
+      @quiet
     end
 
     def ask(prompt)
@@ -21,7 +25,7 @@ module Elelem
     end
 
     def markdown(text)
-      return if @quiet || blank?(text)
+      return if quiet? || blank?(text)
 
       gap
       width = $stdout.winsize[1] rescue 80
@@ -35,27 +39,23 @@ module Elelem
     end
 
     def print(text)
-      return if blank?(text)
+      return if quiet? || blank?(text)
 
-      unless @quiet
-        stop_dots
-        $stdout.print text
-      end
+      stop_dots
+      $stdout.print text
       @at_line_start = false
     end
 
     def say(text)
-      return if blank?(text)
+      return if quiet? || blank?(text)
 
-      unless @quiet
-        stop_dots
-        $stdout.puts text
-      end
+      stop_dots
+      $stdout.puts text
       @at_line_start = true
     end
 
     def newline(n: 1)
-      n.times { $stdout.puts("") }
+      n.times { $stdout.puts("") } unless quiet?
       @at_line_start = true
     end
 
@@ -65,13 +65,13 @@ module Elelem
     end
 
     def display_file(path, fallback: nil)
-      return if @quiet
+      return if quiet?
 
       system("bat", "--paging=never", path) || say(fallback || path)
     end
 
     def waiting
-      return if @quiet
+      return if quiet?
 
       @dots_thread = Thread.new do
         loop do
