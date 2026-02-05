@@ -28,7 +28,7 @@ module Elelem
       tool = tool_for(name)
       color = tool ? "36" : "33"
       name = tool&.name || "#{name}?"
-      "\n#{state} \e[#{color}m#{name}\e[0m(#{args})"
+      "#{state} \e[#{color}m#{name}\e[0m(#{args})"
     end
 
     def run(name, args)

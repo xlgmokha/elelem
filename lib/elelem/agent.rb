@@ -63,6 +63,7 @@ module Elelem
 
     def process(tool_call)
       name, args = tool_call[:name], tool_call[:arguments]
+      terminal.gap
       terminal.say toolbox.header(name, args)
       toolbox.run(name.to_s, args)
     end

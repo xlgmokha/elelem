@@ -6,6 +6,7 @@ module Elelem
       @commands = commands
       @quiet = quiet
       @dots_thread = nil
+      @at_line_start = true
       setup_completion unless @quiet
     end
 
@@ -22,7 +23,7 @@ module Elelem
     def markdown(text)
       return if @quiet || blank?(text)
 
-      newline(n: 2)
+      gap
       width = $stdout.winsize[1] rescue 80
       IO.popen(["glow", "-s", "dark", "-w", width.to_s, "-"], "r+") do |io|
         io.write(text)
@@ -34,21 +35,32 @@ module Elelem
     end
 
     def print(text)
-      return if @quiet || blank?(text)
+      return if blank?(text)
 
-      stop_dots
-      $stdout.print text
+      unless @quiet
+        stop_dots
+        $stdout.print text
+      end
+      @at_line_start = false
     end
 
     def say(text)
-      return if @quiet || blank?(text)
+      return if blank?(text)
 
-      stop_dots
-      $stdout.puts text
+      unless @quiet
+        stop_dots
+        $stdout.puts text
+      end
+      @at_line_start = true
     end
 
     def newline(n: 1)
       n.times { $stdout.puts("") }
+      @at_line_start = true
+    end
+
+    def gap
+      newline unless @at_line_start
     end
 
     def display_file(path, fallback: nil)
