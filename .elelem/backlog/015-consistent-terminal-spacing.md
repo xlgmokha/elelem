@@ -90,7 +90,24 @@ sections. If already at line start, it's a no-op. If mid-content, it adds one ne
 Verified: 2026-02-04
 Status: ACCEPTED
 
-## Verification Run: 2026-02-04
+## Verification Run: 2026-02-04 (Final)
+
+All 83 tests pass (0 failures).
+
+**Code Review Fixes Applied:**
+- `newline` now respects `quiet?` mode
+- `print` and `say` only set `@at_line_start` when actually outputting
+- Test spec uses `expect` instead of `allow` for dots thread kill
+- Replaced `@quiet` with `quiet?` predicate throughout
+- Tests refactored to test behavior, not implementation (no `instance_variable_get`)
+
+**Manual Verification via `./bin/run`:**
+- Library loads without errors ✓
+- Spacing between sections is exactly 1 line ✓
+- No double blank lines in output ✓
+- `gap` is idempotent (multiple calls = single newline) ✓
+
+## Previous: Verification Run 2026-02-04
 
 All 75 tests pass (0 failures).
 
