@@ -27,6 +27,7 @@ Gem::Specification.new do |spec|
     "exe/elelem",
     "lib/elelem.rb",
     "lib/elelem/agent.rb",
+    "lib/elelem/cli.rb",
     "lib/elelem/commands.rb",
     "lib/elelem/conversation.rb",
     "lib/elelem/mcp.rb",

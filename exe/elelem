@@ -1,7 +1,7 @@
 #!/usr/bin/env -S ruby -W0
 # frozen_string_literal: true
 
-require "elelem"
+require "elelem/cli"
 
 Signal.trap("INT") { exit 1 }
 
