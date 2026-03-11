@@ -74,13 +74,11 @@ module Elelem
 
       def finalize_tool_calls(tool_calls, &block)
         tool_calls.values.map do |tool_call|
-          result = {
+          {
             id: tool_call[:id],
             name: tool_call[:name],
             arguments: JSON.parse(tool_call[:args])
-          }
-          block.call(type: "tool_call", **result)
-          result
+          }.tap { |result| block.call(result.merge(type: "doing")) }
         end
       end
     end

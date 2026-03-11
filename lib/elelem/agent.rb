@@ -78,7 +78,7 @@ module Elelem
           content << event[:text].to_s
         when "thinking"
           terminal.print(terminal.think(event[:text]))
-        when "tool_call"
+        when "doing"
           tool_calls << { id: event[:id], name: event[:name], arguments: event[:arguments] }
         end
       end

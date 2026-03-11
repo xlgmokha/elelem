@@ -41,7 +41,7 @@ module Elelem
 
         if message["tool_calls"]
           parsed = parse_tool_calls(message["tool_calls"])
-          parsed.each { |tc| block.call(type: "tool_call", **tc) }
+          parsed.each { |tc| block.call(type: "doing", **tc) }
           tool_calls.concat(parsed)
         end
       end

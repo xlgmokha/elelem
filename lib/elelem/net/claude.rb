@@ -84,7 +84,7 @@ module Elelem
         tool_calls.each do |tool_call|
           args = tool_call.delete(:args)
           tool_call[:arguments] = args.empty? ? {} : JSON.parse(args)
-          block.call(type: "tool_call", id: tool_call[:id], name: tool_call[:name], arguments: tool_call[:arguments])
+          block.call(type: "doing", id: tool_call[:id], name: tool_call[:name], arguments: tool_call[:arguments])
         end
         tool_calls
       end
