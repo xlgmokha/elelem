@@ -45,6 +45,7 @@ module Elelem
       @hooks[:after][tool.name].each { |h| h.call(args, result) }
       result[:error] ? failure(result) : success(result)
     rescue => e
+      warn e.message
       failure(error: e.message, name: name, args: args)
     end
 
