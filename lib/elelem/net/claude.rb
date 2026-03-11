@@ -3,15 +3,6 @@
 module Elelem
   module Net
     class Claude
-      def self.anthropic(model:, api_key:, http: Elelem::Net.http)
-        new(
-          endpoint: "https://api.anthropic.com/v1/messages",
-          headers: { "x-api-key" => api_key, "anthropic-version" => "2023-06-01" },
-          model:,
-          http:
-        )
-      end
-
       def self.vertex(model:, project:, region: "us-east5", http: Elelem::Net.http)
         new(
           endpoint: "https://#{region}-aiplatform.googleapis.com/v1/projects/#{project}/locations/#{region}/publishers/anthropic/models/#{model}:rawPredict",
