@@ -7,7 +7,7 @@ Elelem::Plugins.register(:list) do |agent|
     required: [],
     aliases: ["ls"]
   ) do |a|
-    path = a["path"] || "."
+    path = a["path"] && !a["path"].empty? ? a["path"] : "."
     flags = a["recursive"] ? "-laR" : "-la"
     agent.toolbox.exec("ls", flags, path)
   end
