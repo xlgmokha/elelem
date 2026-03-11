@@ -1,52 +1,31 @@
 # frozen_string_literal: true
 
 RSpec.describe Elelem::SystemPrompt do
+  subject(:prompt) { described_class.new }
+
   before { described_class.reload! }
 
   describe ".available_modes" do
-    it "returns sorted list of template names" do
-      expect(described_class.available_modes).to include("default", "plan")
-    end
+    subject(:modes) { described_class.available_modes }
 
-    it "returns names in alphabetical order" do
-      modes = described_class.available_modes
-      expect(modes).to eq(modes.sort)
-    end
+    it { is_expected.to include("default", "plan") }
+    it { is_expected.to eq(modes.sort) }
   end
 
   describe ".get" do
-    it "returns template content for known name" do
-      template = described_class.get("default")
-      expect(template).to include("Terminal coding agent")
-    end
-
-    it "returns plan template" do
-      template = described_class.get("plan")
-      expect(template).to include("Scrum Master")
-    end
-
-    it "falls back to default for unknown name" do
-      template = described_class.get("nonexistent")
-      expect(template).to eq(described_class.get("default"))
-    end
+    it { expect(described_class.get("default")).to include("Terminal coding agent") }
+    it { expect(described_class.get("plan")).to include("Scrum Master") }
+    it { expect(described_class.get("nonexistent")).to eq(described_class.get("default")) }
   end
 
+  it { expect(prompt.template).to include("Terminal coding agent") }
+  it { expect(prompt.mode).to eq("default") }
+
   describe "#switch" do
-    it "changes the template" do
-      prompt = described_class.new
-      expect(prompt.template).to include("Terminal coding agent")
+    before { prompt.switch("plan") }
 
-      prompt.switch("plan")
-      expect(prompt.template).to include("Scrum Master")
-    end
-
-    it "updates the mode name" do
-      prompt = described_class.new
-      expect(prompt.mode).to eq("default")
-
-      prompt.switch("plan")
-      expect(prompt.mode).to eq("plan")
-    end
+    it { expect(prompt.mode).to eq("plan") }
+    it { expect(prompt.template).to include("Scrum Master") }
   end
 
   describe "override behavior" do
@@ -65,10 +44,8 @@ RSpec.describe Elelem::SystemPrompt do
       described_class.reload!
     end
 
-    it "loads project-level templates" do
-      expect(described_class.available_modes).to include("custom")
-      expect(described_class.get("custom")).to eq("Custom template")
-    end
+    it { expect(described_class.available_modes).to include("custom") }
+    it { expect(described_class.get("custom")).to eq("Custom template") }
 
     it "project templates override built-in" do
       dir = ".elelem/prompts"
