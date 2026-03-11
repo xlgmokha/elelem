@@ -3,16 +3,6 @@
 module Elelem
   module Net
     class Claude
-      def self.vertex(model:, project:, region: "us-east5", http: Elelem::Net.http)
-        new(
-          endpoint: "https://#{region}-aiplatform.googleapis.com/v1/projects/#{project}/locations/#{region}/publishers/anthropic/models/#{model}:rawPredict",
-          headers: -> { { "Authorization" => "Bearer #{`gcloud auth application-default print-access-token`.strip}" } },
-          model:,
-          version: "vertex-2023-10-16",
-          http:
-        )
-      end
-
       def initialize(endpoint:, headers:, model:, version: nil, http: Elelem::Net.http)
         @endpoint = endpoint
         @headers_source = headers
