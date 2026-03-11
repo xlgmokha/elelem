@@ -8,10 +8,8 @@ module Elelem
       ".elelem/permissions.json"
     ].freeze
 
-    def initialize
-      @rules = LOAD_PATHS.reduce({}) do |rules, path|
-        rules.merge(load_config(File.expand_path(path)))
-      end
+    def initialize(rules: default_rules)
+      @rules = rules
     end
 
     def check(tool_name, args, terminal:)
@@ -40,6 +38,12 @@ module Elelem
       raise "User denied permission: #{tool_name}" if answer == "n"
 
       true
+    end
+
+    def default_rules
+      LOAD_PATHS.reduce({}) do |rules, path|
+        rules.merge(load_config(File.expand_path(path)))
+      end
     end
   end
 end

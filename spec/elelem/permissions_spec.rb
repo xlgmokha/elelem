@@ -14,11 +14,9 @@ RSpec.describe Elelem::Permissions do
     end
 
     context "with deny policy" do
-      it "raises an error" do
-        permissions = described_class.new
-        permissions.instance_variable_set(:@rules, { write: :deny })
-        expect { permissions.check("write", {}, terminal: terminal) }.to raise_error(/Permission denied/)
-      end
+      subject { described_class.new(rules: { write: :deny }) }
+
+      it { expect { subject.check("write", {}, terminal: terminal) }.to raise_error(/Permission denied/) }
     end
 
     context "with ask policy in non-TTY mode" do
