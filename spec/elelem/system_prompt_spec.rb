@@ -17,7 +17,7 @@ RSpec.describe Elelem::SystemPrompt do
   describe ".get" do
     it "returns template content for known name" do
       template = described_class.get("default")
-      expect(template).to include("Terminal system agent")
+      expect(template).to include("Terminal coding agent")
     end
 
     it "returns plan template" do
@@ -34,7 +34,7 @@ RSpec.describe Elelem::SystemPrompt do
   describe "#switch" do
     it "changes the template" do
       prompt = described_class.new
-      expect(prompt.template).to include("Terminal system agent")
+      expect(prompt.template).to include("Terminal coding agent")
 
       prompt.switch("plan")
       expect(prompt.template).to include("Scrum Master")
