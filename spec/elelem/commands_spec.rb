@@ -4,11 +4,31 @@ RSpec.describe Elelem::Commands do
   subject { described_class.new }
 
   describe "#register" do
-    it "registers a command with handler" do
-      called = false
-      subject.register("test") { called = true }
-      subject.run("test")
-      expect(called).to be true
+    context "when registering a command without args" do
+      before do
+        @called = false
+        subject.register("example") { @called = true }
+      end
+
+      it "executes the command" do
+        expect(subject.run("example")).to be(true)
+        expect(@called).to be(true)
+      end
+    end
+
+    context "when registering a command with args" do
+      before do
+        @called = false
+        @args = {}
+        subject.register("example") { |args| @called = true; @args = args }
+      end
+
+      it "executes the command with args" do
+        args = { ts: Time.now.to_i }
+        expect(subject.run("example", args)).to be(true)
+        expect(@called).to be(true)
+        expect(@args).to eq(args)
+      end
     end
 
     it "stores description" do

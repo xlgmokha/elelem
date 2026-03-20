@@ -4,8 +4,8 @@ module Elelem
   class Commands
     include Enumerable
 
-    def initialize
-      @registry = {}
+    def initialize(registry = {})
+      @registry = registry
     end
 
     def register(name, description: "", completions: nil, &handler)
