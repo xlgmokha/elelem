@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email = ["mo@mokhan.ca"]
 
   spec.summary = "A minimal coding agent for LLMs."
-  spec.description = "A minimal coding agent supporting Ollama, Anthropic, OpenAI, and VertexAI."
+  spec.description = "A minimal coding agent supporting Ollama and more."
   spec.homepage = "https://src.mokhan.ca/xlgmokha/elelem"
   spec.license = "MIT"
   spec.required_ruby_version = ">= 4.0.0"
