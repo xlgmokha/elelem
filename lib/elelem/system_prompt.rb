@@ -61,7 +61,7 @@ module Elelem
 
     def pwd = Dir.pwd
     def platform = RUBY_PLATFORM.split("-").last
-    def date = Date.today
+    def date = DateTime.now
 
     def elelem_source
       spec = Gem.loaded_specs["elelem"]
