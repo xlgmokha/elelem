@@ -61,11 +61,11 @@ RSpec.describe Elelem::Commands do
   describe "#run" do
     it "returns true when command exists" do
       commands.register("test") { }
-      expect(commands.run("test")).to be true
+      expect(commands.run("test")).to be(true)
     end
 
     it "returns false when command does not exist" do
-      expect(commands.run("nonexistent")).to be false
+      expect(commands.run("nonexistent")).to be(false)
     end
   end
 

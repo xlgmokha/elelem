@@ -12,12 +12,12 @@ module Elelem
     end
 
     def call(args)
+      @handler.arity == 0 ? @handler.call : @handler.call(args)
     end
   end
 
   class Commands
     include Enumerable
-
 
     def initialize(registry = {})
       @registry = registry
@@ -28,10 +28,10 @@ module Elelem
     end
 
     def command_for(name)
-      hash = @registry[name]
-      return if hash.nil?
+      item = @registry[name]
+      return unless item
 
-      SlashCommand.new(name, description: hash[:description], completions: hash[:completions], handler: hash[:handler])
+      SlashCommand.new(name, description: item[:description], completions: item[:completions], handler: item[:handler])
     end
 
     def completions_for(name, partial = "")
@@ -43,10 +43,10 @@ module Elelem
     end
 
     def run(name, args = nil)
-      entry = @registry[name]
-      return false unless entry
+      command = command_for(name)
+      return false unless command
 
-      entry[:handler].arity == 0 ? entry[:handler].call : entry[:handler].call(args)
+      command.call(args)
       true
     end
 
