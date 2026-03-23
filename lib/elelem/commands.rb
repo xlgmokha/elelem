@@ -1,8 +1,23 @@
 # frozen_string_literal: true
 
 module Elelem
+  class SlashCommand
+    attr_reader :name, :description, :completions
+
+    def initialize(name, description: "", completions: nil, handler:)
+      @name = name
+      @description = description
+      @completions = completions
+      @handler = handler
+    end
+
+    def call(args)
+    end
+  end
+
   class Commands
     include Enumerable
+
 
     def initialize(registry = {})
       @registry = registry
@@ -10,6 +25,11 @@ module Elelem
 
     def register(name, description: "", completions: nil, &handler)
       @registry[name] = { description: description, completions: completions, handler: handler }
+    end
+
+    def command_for(name)
+      hash = @registry[name]
+      SlashCommand.new(name, description: hash[:description], completions: hash[:completions], handler: hash[:handler])
     end
 
     def completions_for(name, partial = "")
