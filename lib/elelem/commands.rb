@@ -29,6 +29,8 @@ module Elelem
 
     def command_for(name)
       hash = @registry[name]
+      return if hash.nil?
+
       SlashCommand.new(name, description: hash[:description], completions: hash[:completions], handler: hash[:handler])
     end
 

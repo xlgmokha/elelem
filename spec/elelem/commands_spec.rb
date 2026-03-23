@@ -38,9 +38,9 @@ RSpec.describe Elelem::Commands do
   end
 
   describe "#command_for" do
-    context "when the command is registered" do
-      subject(:command) { commands.command_for("raise") }
+    subject(:command) { commands.command_for("raise") }
 
+    context "when the command is registered" do
       before do
         commands.register("raise", description: "Raises an error", completions: ['heck']) do |args|
           raise args.inspect
@@ -51,6 +51,10 @@ RSpec.describe Elelem::Commands do
       it { expect(command&.name).to eq("raise") }
       it { expect(command&.description).to eq("Raises an error") }
       it { expect(command&.completions).to match_array(['heck']) }
+    end
+
+    context "when the command is not registered" do
+      it { expect(command).to be_nil }
     end
   end
 
