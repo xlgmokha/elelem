@@ -4,7 +4,7 @@ module Elelem
   class SlashCommand
     attr_reader :name, :description, :completions
 
-    def initialize(name, description: "", completions: nil, handler:)
+    def initialize(name, description = "", completions = nil, &handler)
       @name = name
       @description = description
       @completions = completions
@@ -24,21 +24,18 @@ module Elelem
     end
 
     def register(name, description: "", completions: nil, &handler)
-      @registry[name] = { description: description, completions: completions, handler: handler }
+      @registry[name] = SlashCommand.new(name, description, completions, &handler)
     end
 
     def command_for(name)
-      item = @registry[name]
-      return unless item
-
-      SlashCommand.new(name, description: item[:description], completions: item[:completions], handler: item[:handler])
+      @registry[name]
     end
 
     def completions_for(name, partial = "")
-      cmd = @registry[name]
-      return [] unless cmd && cmd[:completions]
+      cmd = command_for(name)
+      return [] unless cmd && cmd.completions
 
-      options = cmd[:completions].respond_to?(:call) ? cmd[:completions].call : cmd[:completions]
+      options = cmd.completions.respond_to?(:call) ? cmd.completions.call : cmd.completions
       options.select { |o| o.start_with?(partial) }
     end
 
@@ -55,7 +52,7 @@ module Elelem
     end
 
     def each
-      @registry.each { |name, entry| yield "/#{name}", entry[:description] }
+      @registry.each { |name, command| yield "/#{name}", command.description }
     end
 
     def include?(name)
