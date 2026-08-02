@@ -14,6 +14,10 @@ module Elelem
       @quiet
     end
 
+    def interactive?
+      $stdin.tty?
+    end
+
     def ask(prompt)
       Reline.readline(prompt, true)&.strip
     end

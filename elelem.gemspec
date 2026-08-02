@@ -51,11 +51,13 @@ Gem::Specification.new do |spec|
     "lib/elelem/plugins/write.rb",
     "lib/elelem/prompts/default.erb",
     "lib/elelem/providers.rb",
+    "lib/elelem/server.rb",
     "lib/elelem/system_prompt.rb",
     "lib/elelem/terminal.rb",
     "lib/elelem/tool.rb",
     "lib/elelem/toolbox.rb",
     "lib/elelem/version.rb",
+    "lib/elelem/web_terminal.rb",
   ]
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }

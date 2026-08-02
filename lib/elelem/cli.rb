@@ -6,6 +6,7 @@ module Elelem
   class CLI
     def initialize(args)
       @provider = "ollama"
+      @port = 4567
       @args = parse(args)
     end
 
@@ -25,9 +26,11 @@ module Elelem
         o.separator "  chat              Interactive REPL (default)"
         o.separator "  ask <prompt>      One-shot query (reads stdin if piped)"
         o.separator "  files             Output files as XML (no options)"
+        o.separator "  server            Serve the web UI on the local network"
         o.separator "  help              Show this help"
         o.separator "\nOptions:"
         o.on("-p", "--provider NAME", "ollama, anthropic, vertex, openai") { |p| @provider = p }
+        o.on("-P", "--port PORT", Integer, "Port for the server command (default 4567)") { |p| @port = p }
         o.on("-h", "--help") { puts o; exit }
       end
       @parser.parse!(args)
@@ -39,6 +42,10 @@ module Elelem
 
     def chat
       Elelem.start(provider: @provider)
+    end
+
+    def server
+      Elelem.serve(provider: @provider, port: @port)
     end
 
     def ask

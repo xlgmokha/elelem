@@ -28,11 +28,13 @@ require_relative "elelem/net"
 require_relative "elelem/permissions"
 require_relative "elelem/plugins"
 require_relative "elelem/providers"
+require_relative "elelem/server"
 require_relative "elelem/system_prompt"
 require_relative "elelem/terminal"
 require_relative "elelem/tool"
 require_relative "elelem/toolbox"
 require_relative "elelem/version"
+require_relative "elelem/web_terminal"
 
 module Elelem
   def self.sh(cmd, args: [], cwd: Dir.pwd, env: {})
@@ -55,6 +57,13 @@ module Elelem
     Plugins.setup!(agent)
     agent.terminal = Terminal.new(commands: agent.commands)
     agent.repl
+  end
+
+  def self.serve(provider: "ollama", port: 4567, toolbox: Toolbox.new)
+    client = Providers.build(provider)
+    agent = Agent.new(client, toolbox: toolbox, terminal: WebTerminal.new)
+    Plugins.setup!(agent)
+    Server.new(agent, port: port).start
   end
 
   def self.ask(prompt, provider: "ollama", toolbox: Toolbox.new)

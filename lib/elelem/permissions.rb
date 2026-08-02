@@ -32,7 +32,7 @@ module Elelem
     end
 
     def prompt(tool_name, args, terminal)
-      return true unless $stdin.tty?
+      return true unless terminal.interactive?
 
       answer = terminal.ask("  Allow? [Y/n] > ")&.downcase
       raise "User denied permission: #{tool_name}" if answer == "n"
