@@ -91,6 +91,41 @@ RSpec.describe Elelem::Terminal do
     end
   end
 
+  describe "#waiting" do
+    around do |example|
+      original = $stdout
+      $stdout = StringIO.new
+      example.run
+    ensure
+      $stdout = original
+    end
+
+    def dots_thread
+      terminal.instance_variable_get(:@dots_thread)
+    end
+
+    it "stops dots when say receives blank text" do
+      terminal.waiting
+      thread = dots_thread
+      terminal.say(nil)
+      expect(thread.join(1)).to eq(thread)
+    end
+
+    it "stops dots when print receives blank text" do
+      terminal.waiting
+      thread = dots_thread
+      terminal.print(nil)
+      expect(thread.join(1)).to eq(thread)
+    end
+
+    it "kills the previous dots thread when called again" do
+      terminal.waiting
+      previous = dots_thread
+      terminal.waiting
+      expect(previous.join(1)).to eq(previous)
+    end
+  end
+
   describe "spacing consistency" do
     it "produces single blank line between sections regardless of method used" do
       expect {

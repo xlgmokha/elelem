@@ -43,17 +43,21 @@ module Elelem
     end
 
     def print(text)
-      return if quiet? || blank?(text)
+      return if quiet?
 
       stop_dots
+      return if blank?(text)
+
       $stdout.print text
       @at_line_start = false
     end
 
     def say(text)
-      return if quiet? || blank?(text)
+      return if quiet?
 
       stop_dots
+      return if blank?(text)
+
       $stdout.puts text
       @at_line_start = true
     end
@@ -77,6 +81,7 @@ module Elelem
     def waiting
       return if quiet?
 
+      stop_dots
       @dots_thread = Thread.new do
         loop do
           $stdout.print "."
