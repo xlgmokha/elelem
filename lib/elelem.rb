@@ -1,76 +1,52 @@
 # frozen_string_literal: true
 
-require "base64"
-require "date"
-require "digest"
 require "erb"
-require "fileutils"
+require "forwardable"
 require "json"
 require "json_schemer"
 require "logger"
-require "net/hippie"
 require "open3"
-require "optparse"
 require "pathname"
-require "reline"
-require "securerandom"
 require "shellwords"
-require "stringio"
-require "tempfile"
-require "uri"
-require "webrick"
 
 require_relative "elelem/agent"
+require_relative "elelem/slash_command"
 require_relative "elelem/commands"
 require_relative "elelem/conversation"
-require_relative "elelem/mcp"
-require_relative "elelem/net"
-require_relative "elelem/permissions"
+require_relative "elelem/input"
+require_relative "elelem/null_input"
+require_relative "elelem/output"
+require_relative "elelem/null_output"
 require_relative "elelem/plugins"
-require_relative "elelem/providers"
-require_relative "elelem/server"
+require_relative "elelem/registration"
+require_relative "elelem/registry"
+require_relative "elelem/config"
+require_relative "elelem/result"
+require_relative "elelem/stub_provider"
 require_relative "elelem/system_prompt"
-require_relative "elelem/terminal"
 require_relative "elelem/tool"
+require_relative "elelem/null_tool"
 require_relative "elelem/toolbox"
 require_relative "elelem/version"
-require_relative "elelem/web_terminal"
 
 module Elelem
-  def self.sh(cmd, args: [], cwd: Dir.pwd, env: {})
-    output = StringIO.new
+  def self.start(provider: "stub", toolbox: Toolbox.new)
+    self.build(provider: provider, toolbox: toolbox).repl
+  end
 
-    Open3.popen2e(env, cmd, *args, chdir: cwd) do |stdin, out, wait_thr|
-      stdin.close
-      out.each_line do |line|
-        yield line if block_given?
-        output.write(line)
-      end
+  def self.ask(prompt, provider: "stub", toolbox: Toolbox.new, output: NullOutput.new)
+    self.build(provider: provider, toolbox: toolbox, input: NullInput.new, output: output).turn(prompt)
+  end
 
-      { exit_status: wait_thr.value.exitstatus, content: output.string }
+  def self.build(provider: "stub", toolbox: Toolbox.new, input: nil, output: nil)
+    Config.build_agent(provider, toolbox: toolbox, input: input, output: output)
+  end
+
+  def self.logger
+    @logger ||= Logger.new($stderr).tap do |log|
+      log.level = Logger.const_get(ENV.fetch("ELELEM_LOG_LEVEL", "warn").upcase)
     end
   end
-
-  def self.start(provider: "ollama", toolbox: Toolbox.new)
-    client = Providers.build(provider)
-    agent = Agent.new(client, toolbox: toolbox)
-    Plugins.setup!(agent)
-    agent.terminal = Terminal.new(commands: agent.commands)
-    agent.repl
-  end
-
-  def self.serve(provider: "ollama", port: 4567, toolbox: Toolbox.new)
-    client = Providers.build(provider)
-    agent = Agent.new(client, toolbox: toolbox, terminal: WebTerminal.new)
-    Plugins.setup!(agent)
-    Server.new(agent, port: port).start
-  end
-
-  def self.ask(prompt, provider: "ollama", toolbox: Toolbox.new)
-    client = Providers.build(provider)
-    agent = Agent.new(client, toolbox: toolbox, terminal: Terminal.new(quiet: true))
-    Plugins.setup!(agent)
-    agent.turn(prompt)
-    agent.conversation.last[:content]
-  end
 end
+
+Elelem.configure { |config| config.provider(:stub) { Elelem::StubProvider.new } }

@@ -1,31 +1,21 @@
 # frozen_string_literal: true
 
 module Elelem
-  module Plugins
+  class Plugins
     LOAD_PATHS = [
-      File.expand_path("plugins", __dir__),
-      "~/.elelem/plugins",
-      ".elelem/plugins"
+      "~/.agents/plugins",
+      ".agents/plugins"
     ].freeze
 
-    def self.setup!(agent)
-      load!
-      run!(agent)
+    def initialize(load_paths: LOAD_PATHS)
+      @loaded = false
+      @load_paths = load_paths
     end
 
-    def self.run!(agent)
-      registry.each_value { |plugin| plugin.call(agent) }
-    end
+    def load!(force: false)
+      return if @loaded && !force
 
-    def self.reload!(agent)
-      Providers.registry.clear
-      registry.clear
-      load!
-      run!(agent)
-    end
-
-    def self.load!
-      LOAD_PATHS.each do |path|
+      @load_paths.each do |path|
         dir = File.expand_path(path)
         next unless File.directory?(dir)
 
@@ -35,14 +25,8 @@ module Elelem
           warn "elelem: failed to load plugin #{file}: #{e.message}"
         end
       end
-    end
 
-    def self.register(name, &block)
-      registry[name] = block
-    end
-
-    def self.registry
-      @registry ||= {}
+      @loaded = true
     end
   end
 end
