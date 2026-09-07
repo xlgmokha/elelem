@@ -33,28 +33,7 @@ RSpec.describe Elelem::Commands do
 
     it "stores description" do
       commands.register("test", description: "Test command") { }
-      expect(commands.include?("test")).to be true
-    end
-  end
-
-  describe "#command_for" do
-    subject(:command) { commands.command_for("raise") }
-
-    context "when the command is registered" do
-      before do
-        commands.register("raise", description: "Raises an error", completions: ['heck']) do |args|
-          raise args.inspect
-        end
-      end
-
-      it { expect(command).not_to be_nil }
-      it { expect(command&.name).to eq("raise") }
-      it { expect(command&.description).to eq("Raises an error") }
-      it { expect(command&.completions).to match_array(['heck']) }
-    end
-
-    context "when the command is not registered" do
-      it { expect(command).to be_nil }
+      expect(commands.names).to include("/test")
     end
   end
 
@@ -77,14 +56,14 @@ RSpec.describe Elelem::Commands do
     end
   end
 
-  describe "#include?" do
-    it "returns true for registered commands" do
-      commands.register("test") { }
-      expect(commands.include?("test")).to be true
+  describe "#completions_for" do
+    it "returns matching completions for a registered command" do
+      commands.register("raise", completions: ["heck", "help"]) { |args| raise args.inspect }
+      expect(commands.completions_for("raise", "he")).to match_array(["heck", "help"])
     end
 
-    it "returns false for unregistered commands" do
-      expect(commands.include?("test")).to be false
+    it "returns an empty array for an unregistered command" do
+      expect(commands.completions_for("nonexistent")).to eq([])
     end
   end
 end

@@ -3,56 +3,33 @@
 RSpec.describe Elelem::SystemPrompt do
   subject(:prompt) { described_class.new }
 
-  before { described_class.reload! }
+  it { expect(prompt.template).to eq(described_class::DEFAULT) }
+  it { expect(prompt.render).to include("terminal coding agent") }
 
-  describe ".available_modes" do
-    subject(:modes) { described_class.available_modes }
+  context "with a custom template" do
+    subject(:prompt) { described_class.new("Custom template") }
 
-    it { is_expected.to include("default", "plan") }
-    it { is_expected.to eq(modes.sort) }
+    it { expect(prompt.render).to eq("Custom template") }
   end
 
-  describe ".get" do
-    it { expect(described_class.get("default")).to include("Terminal coding agent") }
-    it { expect(described_class.get("plan")).to include("Scrum Master") }
-    it { expect(described_class.get("nonexistent")).to eq(described_class.get("default")) }
-  end
-
-  it { expect(prompt.template).to include("Terminal coding agent") }
-  it { expect(prompt.mode).to eq("default") }
-
-  describe "#switch" do
-    before { prompt.switch("plan") }
-
-    it { expect(prompt.mode).to eq("plan") }
-    it { expect(prompt.template).to include("Scrum Master") }
-  end
-
-  describe "override behavior" do
-    let(:tmpdir) { Dir.mktmpdir }
-
-    around do |example|
-      original_dir = Dir.pwd
-      Dir.chdir(tmpdir)
-      dir = ".elelem/prompts"
-      FileUtils.mkdir_p(dir)
-      File.write("#{dir}/custom.erb", "Custom template")
-      described_class.reload!
-      example.run
-      Dir.chdir(original_dir)
-      FileUtils.rm_rf(tmpdir)
-      described_class.reload!
+  describe "#render" do
+    it "interpolates AGENTS.md from the current directory upward" do
+      Dir.mktmpdir do |tmpdir|
+        File.write(File.join(tmpdir, "AGENTS.md"), "project rules")
+        Dir.chdir(tmpdir) do
+          prompt = described_class.new("<%= agents_md %>")
+          expect(prompt.render).to eq("project rules")
+        end
+      end
     end
 
-    it { expect(described_class.available_modes).to include("custom") }
-    it { expect(described_class.get("custom")).to eq("Custom template") }
-
-    it "project templates override built-in" do
-      dir = ".elelem/prompts"
-      File.write("#{dir}/default.erb", "Overridden default")
-      described_class.reload!
-
-      expect(described_class.get("default")).to eq("Overridden default")
+    it "returns nil when no AGENTS.md is found" do
+      Dir.mktmpdir do |tmpdir|
+        Dir.chdir(tmpdir) do
+          prompt = described_class.new("<%= agents_md.inspect %>")
+          expect(prompt.render).to eq("nil")
+        end
+      end
     end
   end
 end

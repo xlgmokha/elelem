@@ -16,19 +16,12 @@ RSpec.describe Elelem::Toolbox do
       params: { path: { type: "string" }, content: { type: "string" } },
       required: ["path", "content"]
     ) { |a| { bytes: File.write(a["path"], a["content"]) } }
-
-    subject.add("execute",
-      description: "Run shell command",
-      params: { command: { type: "string" } },
-      required: ["command"],
-      aliases: ["bash", "sh", "exec"]
-    ) { |a| { output: `#{a["command"]}` } }
   end
 
   describe "#to_a" do
     it "returns all tools in API format" do
       tool_names = subject.to_a.map { |t| t.dig(:function, :name) }
-      expect(tool_names).to include("read", "write", "execute")
+      expect(tool_names).to include("read", "write")
     end
   end
 
@@ -49,15 +42,21 @@ RSpec.describe Elelem::Toolbox do
     end
   end
 
-  describe "#exec" do
-    it "escapes arguments and runs execute" do
-      result = subject.exec("echo", "hello world")
-      expect(result[:output]).to include("hello world")
+  describe "#tool_for" do
+    it "returns a NullTool for an unknown name" do
+      tool = subject.tool_for("nonexistent")
+      expect(tool.name).to eq("nonexistent?")
     end
+  end
 
-    it "handles arrays of arguments" do
-      result = subject.exec("echo", ["a", "b"])
-      expect(result[:output]).to include("a")
+  describe "hooks with unknown tools" do
+    it "does not fire before(:*) or after(:*) hooks for an unknown tool" do
+      called = false
+      subject.before { |_args, tool_name:| called = true }
+      subject.after { |_args, _result, tool_name:| called = true }
+      result = subject.run("nonexistent", {})
+      expect(called).to be false
+      expect(result[:error]).to include("unknown tool")
     end
   end
 
