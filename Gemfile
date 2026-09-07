@@ -2,9 +2,14 @@
 
 source "https://rubygems.org"
 
-# Specify your gem's dependencies in elelem.gemspec
-gemspec
+gemspec name: "elelem"
 
+gem "elelem-builtins"
+gem "elelem-llama"
+gem "elelem-mcp"
+gem "elelem-ollama"
+gem "elelem-skills"
+gem "elelem-tools"
 gem "irb"
 gem "rake", "~> 13.0"
 gem "rspec", "~> 3.0"

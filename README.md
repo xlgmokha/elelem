@@ -1,13 +1,12 @@
 # Elelem
 
-Fast, correct, autonomous – pick two.
+Fast, correct, autonomous - pick two.
 
 ## Purpose
 
-Elelem is a minimal coding agent written in Ruby. It is designed to help
-you write, edit, and manage code and plain-text files from the command line
-by delegating work to an LLM. The agent exposes a simple text-based UI and a
-set of built-in tools that give the LLM access to the local file system.
+Elelem is a minimal coding harness written in Ruby.
+It is designed to help you write, edit, and manage code and plain-text files from the command line by delegating work to an LLM.
+The agent exposes a simple text-based UI and a set of built-in tools that give the LLM access to the local file system.
 
 ## Design Principles
 
@@ -21,44 +20,12 @@ set of built-in tools that give the LLM access to the local file system.
 
 ## System Assumptions
 
-* Linux host with Alacritty, tmux, Bash, Vim.
-* Runs inside a Git repository.
-* Git is available and functional.
-
-## Dependencies
-
 Elelem relies on several external tools. Install the ones you need:
 
 | Tool | Purpose | Install |
 |------|---------|---------|
-| [ast-grep](https://ast-grep.github.io/) | Structural search (`sg`) | `brew install ast-grep` / `cargo install ast-grep` |
-| [ctags](https://ctags.io/) | Repo map generation | `brew install universal-ctags` / `apt install universal-ctags` |
-| [fd](https://github.com/sharkdp/fd) | File discovery | `brew install fd` / `apt install fd-find` |
 | [git](https://git-scm.com/) | Version control | `brew install git` / `apt install git` |
 | [glow](https://github.com/charmbracelet/glow) | Markdown rendering | `brew install glow` / `go install github.com/charmbracelet/glow@latest` |
-| [jq](https://jqlang.github.io/jq/) | JSON processing | `brew install jq` / `apt install jq` |
-| [ollama](https://ollama.ai/) | Default LLM provider | https://ollama.ai/download |
-| [ripgrep](https://github.com/BurntSushi/ripgrep) | Text search (`rg`) | `brew install ripgrep` / `apt install ripgrep` |
-
-**Required:** Git, Ollama (or another LLM provider)
-
-**Recommended:** glow, jq, ctags, ripgrep, fd
-
-**Optional:** ast-grep (for structural code search)
-
-## Scope
-
-Only plain-text and source-code files are supported. No binary handling,
-sandboxing, or permission checks are performed - the LLM has full access.
-
-## Configuration
-
-Prefer convention over configuration. Add environment variables only after
-repeated use proves their usefulness.
-
-## UI Expectations
-
-Keyboard-driven, minimal TUI. No mouse support or complex widgets.
 
 ## Coding Standards for the LLM
 
@@ -66,12 +33,6 @@ Keyboard-driven, minimal TUI. No mouse support or complex widgets.
 * Keep methods short, single-purpose.
 * Descriptive, conventional names.
 * Use Ruby standard library where possible.
-
-## Helpful Links
-
-* https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
-* https://www.anthropic.com/engineering/writing-tools-for-agents
-* https://simonwillison.net/2025/Sep/30/designing-agentic-loops/
 
 ## Installation
 
@@ -89,46 +50,6 @@ Start an interactive chat session:
 elelem chat
 ```
 
-### Options
-
-* `--provider` – LLM provider: `ollama`, `anthropic`, `openai`, or `vertex-ai` (default: `ollama`).
-* `--model` – Override the default model for the selected provider.
-
-### Examples
-
-```bash
-# Default (Ollama)
-elelem chat
-
-# Anthropic Claude
-ANTHROPIC_API_KEY=sk-... elelem chat --provider anthropic
-
-# OpenAI
-OPENAI_API_KEY=sk-... elelem chat --provider openai
-
-# VertexAI (uses gcloud ADC)
-elelem chat --provider vertex-ai --model claude-sonnet-4@20250514
-```
-
-### Provider Configuration
-
-Each provider reads its configuration from environment variables:
-
-| Provider    | Environment Variables                              |
-|-------------|---------------------------------------------------|
-| ollama      | `OLLAMA_HOST` (default: localhost:11434)          |
-| anthropic   | `ANTHROPIC_API_KEY`                               |
-| openai      | `OPENAI_API_KEY`, `OPENAI_BASE_URL`               |
-| vertex-ai   | `GOOGLE_CLOUD_PROJECT`, `GOOGLE_CLOUD_REGION`     |
-
-## Features
-
-* **Interactive REPL** – clean, streaming chat.
-* **Toolbox** – file I/O and shell execution.
-* **Streaming Responses** – output appears in real time.
-* **Conversation History** – persists across turns; can be cleared.
-* **Context Dump** – `/context` shows the current conversation state.
-
 ## Tools
 
 Built-in tools available to the LLM:
@@ -137,91 +58,9 @@ Built-in tools available to the LLM:
 | --------- | -------------------------- | ------------------------- |
 | `read`    | Read file contents         | `path`                    |
 | `write`   | Write file                 | `path`, `content`         |
-| `edit`    | Replace text in file       | `path`, `old`, `new`      |
 | `execute` | Run shell command          | `command`                 |
-| `eval`    | Execute Ruby code          | `ruby`                    |
-| `glob`    | Find files by pattern      | `pattern`, `path`         |
-| `grep`    | Search file contents       | `pattern`, `path`, `glob` |
-| `list`    | List directory             | `path`, `recursive`       |
-| `git`     | Run git command            | `command`, `args`         |
-| `task`    | Delegate to sub-agent      | `prompt`                  |
-| `verify`  | Check syntax and run tests | `path`                    |
 
-Aliases: `bash`, `sh`, `exec` → `execute`; `open` → `read`; `ls` → `list`
-
-## Plugins
-
-Plugins extend elelem with custom tools and commands. They are loaded from:
-- `lib/elelem/plugins/` (built-in)
-- `~/.elelem/plugins/` (user global)
-- `.elelem/plugins/` (project local)
-
-### Writing a Plugin
-
-```ruby
-# ~/.elelem/plugins/hello.rb
-Elelem::Plugins.register(:hello) do |agent|
-  # Add a tool
-  agent.toolbox.add("hello",
-    description: "Say hello",
-    params: { name: { type: "string" } },
-    required: ["name"]
-  ) do |args|
-    { message: "Hello, #{args["name"]}!" }
-  end
-
-  # Add a command
-  agent.commands.register("greet", description: "Greet the user") do
-    agent.terminal.say "Hello!"
-  end
-
-  # Add hooks
-  agent.toolbox.before("execute") { |args| puts "Running: #{args["command"]}" }
-  agent.toolbox.after("execute") { |args, result| puts "Exit: #{result[:exit_status]}" }
-
-  # Global hook (runs for all tools)
-  agent.toolbox.before { |args, tool_name:| puts "Calling #{tool_name}" }
-end
-```
-
-### Plugin API
-
-Plugins receive an `agent` object with access to:
-- `agent.toolbox` - add tools, register hooks
-- `agent.terminal` - output to the user (`say`, `ask`, `markdown`)
-- `agent.commands` - register slash commands
-- `agent.conversation` - access message history
-- `agent.client` - the LLM client
-- `agent.fork(system_prompt:)` - create a sub-agent
-
-## MCP Configuration
-
-Configure MCP servers in `~/.elelem/mcp.json` or `.elelem/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "gitlab": {
-      "type": "http",
-      "url": "https://gitlab.com/api/v4/mcp"
-    },
-    "playwright": {
-      "command": "npx",
-      "args": [
-        "@playwright/mcp@latest"
-      ]
-    }
-  }
-}
-```
-
-HTTP servers support OAuth authentication automatically.
-
-## Known Limitations
-
-* Assumes the current directory is a Git repository.
-* No sandboxing – the LLM can run arbitrary commands.
-* Error handling is minimal; exceptions are returned as an `error` field.
+Use the plugin API to add more tools.
 
 ## Contributing
 
@@ -229,7 +68,7 @@ HTTP servers support OAuth authentication automatically.
 $ git clone https://git.mokhan.ca/xlgmokha/elelem.git
 ```
 
-Send me an email. For instructions see https://git-send-email.io/.
+Send me a patch via email. For instructions see https://git-send-email.io/.
 
 ## License
 

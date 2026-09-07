@@ -3,6 +3,12 @@
 
 require "elelem/cli"
 
+begin
+  require "elelem/builtins"
+rescue LoadError
+  warn "elelem: gem install elelem-builtins for the default tools and commands"
+end
+
 Signal.trap("INT") { exit 1 }
 
 Elelem::CLI.new(ARGV).run

@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.11.0] - 2026-09-07
+
+### Changed
+- **Breaking:** extracted everything provider-, tool-, and transport-specific
+  out of core: `lib/elelem/net/*`, `lib/elelem/mcp/*`, `lib/elelem/plugins/*`,
+  `providers.rb`, `server.rb`, `web_terminal.rb`, `permissions.rb`, and
+  `Elelem.sh`. Moved to `elelem-anthropic`, `elelem-openai`, `elelem-ollama`,
+  `elelem-mcp`, `elelem-llama`, `elelem-server`, `elelem-builtins`, and
+  `elelem-tools`, with history.
+- **Breaking:** `Terminal` split into `Input` (prompting, completion) and
+  `Output` (rendering); `Registry`/`Config` split out of a single class into
+  `Registry`, `Registration`, and `Config`; `SlashCommand` extracted from
+  `Commands` into its own class.
+- **Breaking:** `Registry#build` renamed to `build_provider` (was
+  `build_client`); `Agent#client` renamed to `Agent#provider`; provider
+  implementations are named `Provider`, not `Client`, across every provider
+  gem.
+- **Breaking:** `Commands#include?` removed (zero callers); `#command_for`
+  is now private.
+- Added `Elelem::StubProvider`, registered at `provider: :stub`, so a
+  freshly-installed elelem with zero plugin gems still runs and terminates
+  instead of raising.
+- `exe/elelem` requires `elelem/builtins` if installed, rescuing `LoadError`.
+- `.elelem/` renamed to `.agents/`.
+
 ## [0.10.0] - 2026-01-27
 
 ### Changed

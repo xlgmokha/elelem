@@ -10,8 +10,6 @@
 *.o
 *.a
 *.log
+*.transcript
 target/
 *.gem
-
-# rspec failure tracking
-.rspec_status
