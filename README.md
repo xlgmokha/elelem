@@ -36,7 +36,7 @@ Use the plugin API to add tools.
 ## Contributing
 
 ```bash
-$ git clone https://git.mokhan.ca/xlgmokha/elelem.git
+$ git clone https://git.mokhan.ca/elelem/elelem.git
 ```
 
 Send me a patch via email. For instructions see https://git-send-email.io/.
